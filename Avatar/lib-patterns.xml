@@ -1,0 +1,94 @@
+<project name="lib-patterns" basedir=".">
+	<property name="lib.dir" location="../lib" />
+
+	<!-- j2e lib versions -->
+	<property name="tomcat.lib.dir" location="/home/tomcat/lib" />
+	<property name="j2e.lib.dir" location="${lib.dir}/j2e" />
+
+	<!-- joda lib versions -->
+	<property name="joda.lib.dir" location="${lib.dir}/joda/2.4" />
+
+	<!-- apns lib versions -->
+	<property name="apns.lib.dir" location="${lib.dir}/apns/2.2" />
+	<property name="bc.lib.dir" location="${lib.dir}/bouncycastle" />
+	<property name="log4j.lib.dir" location="${lib.dir}/log4j/1.2.15" />
+
+	<!-- spring lib versions -->
+	<property name="spring.version" value="4.1.4" />
+	<property name="spring.lib.dir" location="${lib.dir}/spring/${spring.version}" />
+
+	<!-- commons lib versions -->
+	<property name="commons.lib.dir" location="${lib.dir}/apache-commons" />
+
+	<!-- mail lib versions -->
+	<property name="mail.version" value="1.4.7" />
+	<property name="mail.lib.dir" location="${lib.dir}/mail/${mail.version}" />
+
+	<!-- guava lib versions -->
+	<property name="guava.version" value="18" />
+	<property name="guava.lib.dir" location="${lib.dir}/guava/${guava.version}" />
+
+	<!-- gson lib versions -->
+	<property name="gson.version" value="2.3.1" />
+	<property name="gson.lib.dir" location="${lib.dir}/gson/${gson.version}" />
+
+	<!-- mysql connector lib versions -->
+	<property name="mysqlconnector.version" value="5.1.34" />
+	<property name="mysqlconnector.lib.dir" location="${lib.dir}/mysql/${mysqlconnector.version}" />
+
+	<!-- Pattern Defs -->
+	<patternset id="mail.lib.pattern">
+		<include name="mail-*.jar" />
+	</patternset>
+
+	<patternset id="apns.lib.pattern">
+		<include name="JavaPNS*.jar" />
+	</patternset>
+
+	<patternset id="bc.lib.pattern">
+		<include name="bcprov*.jar" />
+	</patternset>
+
+	<patternset id="spring.lib.pattern">
+		<include name="spring-aop-*.jar" />
+		<include name="spring-beans-*.jar" />
+		<include name="spring-context-*.jar" />
+		<include name="spring-orm-*.jar" />
+		<include name="spring-core-*.jar" />
+		<include name="spring-expression-*.jar" />
+		<include name="spring-jdbc-*.jar" />
+		<include name="spring-tx-*.jar" />
+		<include name="spring-web*-*.jar" />
+		<include name="com.springsource.org.aopalliance-1.0.0.jar" />
+	</patternset>
+
+	<patternset id="mysqlconnector.lib.pattern">
+		<include name="mysql-connector-*.jar" />
+	</patternset>
+
+	<patternset id="commons.lib.pattern">
+		<include name="commons-logging-*.jar" />
+		<include name="commons-collections4*.jar" />
+		<include name="commons-codec-*.jar" />
+		<include name="commons-lang3-*.jar" />
+		<include name="commons-pool2-*.jar" />
+		<include name="commons-dbcp*.jar" />
+	</patternset>
+
+	<patternset id="guava.lib.pattern">
+		<include name="guava-*.jar" />
+	</patternset>
+
+	<patternset id="gson.lib.pattern">
+		<include name="gson-*.jar" />
+	</patternset>
+
+	<patternset id="log4j.lib.pattern">
+		<include name="log4j-*.jar" />
+	</patternset>
+
+	<patternset id="joda.lib.pattern">
+		<include name="joda-time-*.jar" />
+	</patternset>
+
+</project>

@@ -1,0 +1,79 @@
+package com.avatar.service;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import com.avatar.business.PromotionBusiness;
+import com.avatar.dao.AccountDao;
+import com.avatar.dao.BeaconDao;
+import com.avatar.dao.ClubDao;
+import com.avatar.dao.PromotionDao;
+import com.avatar.dto.club.AmenityDto;
+import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.promotion.Promotion;
+import com.avatar.exception.NotFoundException;
+
+@Service
+public class PromotionService implements PromotionBusiness {
+	@Resource(name = "promotionDaoJdbc")
+	private PromotionDao promotionDao;
+
+	@Resource(name = "clubDaoJdbc")
+	private ClubDao clubDao;
+
+	@Resource(name = "accountDaoJdbc")
+	private AccountDao accountDao;
+
+	@Resource(name = "beaconDaoJdbc")
+	private BeaconDao beaconDao;
+
+	@Override
+	public List<Promotion> getPromotions(final String beaconId)
+			throws NotFoundException {
+		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
+		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
+		final Integer amenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
+
+		final List<Promotion> promotions = promotionDao.getPromotions(clubIdPk,
+				amenityIdPk);
+		if (CollectionUtils.isNotEmpty(promotions)) {
+			final ClubDto club = clubDao.get(clubIdPk);
+			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
+			for (final Promotion promotion : promotions) {
+				promotion.setClub(club);
+				promotion.setAmenity(amenity);
+			}
+		}
+		return promotions;
+	}
+
+	@Override
+	public void newPromotion(final Promotion promotion)
+			throws NotFoundException {
+		Assert.notNull(promotion);
+		Assert.notNull(promotion.getClub());
+		Assert.hasText(promotion.getClub().getClubId());
+		Assert.notNull(promotion.getAmenity());
+		Assert.hasText(promotion.getAmenity().getAmenityId());
+		final Integer clubIdPk = clubDao.getClubIdPk(promotion.getClub()
+				.getClubId());
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(promotion
+				.getAmenity().getAmenityId());
+		promotion.getClub().setId(clubIdPk);
+		promotion.getAmenity().setId(amenityIdPk);
+		promotionDao.newPromotion(promotion);
+	}
+
+	@Override
+	public void recordPromotionRead(final Integer promotionIdPk,
+			final String userId, final boolean promoRead)
+			throws NotFoundException {
+		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
+		promotionDao.recordPromotionRead(promotionIdPk, userIdPk, promoRead);
+	}
+}

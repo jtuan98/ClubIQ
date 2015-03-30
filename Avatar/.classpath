@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring-4.1.4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/j2e"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/apache-commons"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/guava"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/gson"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/hibernate"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mail"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/tomcatRealms"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/apple-pns"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/quartz"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/joda"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

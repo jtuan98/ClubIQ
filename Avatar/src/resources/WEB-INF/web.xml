@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+	version="2.4">
+
+	<display-name>Avatar Application</display-name>
+	<description>
+	       This is the Avatar web backend.
+	   </description>
+
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<servlet>
+		<servlet-name>mvc-dispatcher</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/mvc-dispatcher-servlet.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>mvc-dispatcher</servlet-name>
+		<!-- ws version -->
+		<url-pattern>/1/*</url-pattern>
+	</servlet-mapping>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Restricted</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>user</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Restricted</web-resource-name>
+			<url-pattern>/1/BeaconMgr/*</url-pattern>
+			<url-pattern>/1/AcctMgr/GetMemberAcct</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>clubAdmin</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Public</web-resource-name>
+			<url-pattern>/1/open/*</url-pattern>
+			<url-pattern>/1/Registration/*</url-pattern>
+			<url-pattern>/1/SurveyMgr/*</url-pattern>
+			<url-pattern>/1/AcctMgr/Mobile/*</url-pattern>
+			<url-pattern>/1/AcctMgr/NonMobile/*</url-pattern>
+			<url-pattern>/1/AcctMgr/SetUserAccount</url-pattern>
+			<url-pattern>/1/AcctMgr/SetUserNonMobileAccount</url-pattern>
+		</web-resource-collection>
+	</security-constraint>
+
+	<security-role>
+		<role-name>SuperUser</role-name>
+	</security-role>
+	<security-role>
+		<role-name>staff</role-name>
+	</security-role>
+	<security-role>
+		<role-name>brUser</role-name>
+	</security-role>
+	<security-role>
+		<role-name>clubAdmin</role-name>
+	</security-role>
+	<security-role>
+		<role-name>user</role-name>
+	</security-role>
+
+	<login-config>
+		<auth-method>FORM</auth-method>
+		<form-login-config>
+			<form-login-page>/login.html</form-login-page>
+			<form-error-page>/login-failed.html</form-error-page>
+		</form-login-config>
+	</login-config>
+</web-app>     

@@ -1,0 +1,97 @@
+
+
+All services are ReSTful services.  The API returns all values in JSON format.  
+All calls are secured that is https.
+
+Read a resource without authentication: https://host:port/Avatar/rest/open/.... 
+Read a resource with authentication: https://host:port/Avatar/rest/restricted/....
+ 
+Roles are broken down into 5 roles/privileges: 
+	superUser
+	staff
+	brUser
+	clubAdmin
+	user 
+	
+
+API for Registration:
+=====================
+
+createAccount: 
+-------------
+Description: From the non mobile calls, such as browsers, iPads or Androids...
+URL:
+	https://host:8443/Avatar/rest/open/registration/createAccount
+	OR
+	https://host:8443/Avatar/rest/registration/createAccount
+URL Parameters:
+	email		String	Required
+	userid		String	Required
+	password	String	Required
+	realname	String	Required
+	picture		String	Not Required.  Format is Base64Encoded
+	address		String	Not Required
+	priviledge	String	Not Required.  
+						Must be of the following value: 
+							superUser
+							staff
+							brUser
+							clubAdmin
+							user  >>> This is the default if priviledge parameter is omitted.
+Json Response:	
+	token			String	It is a GUID, randomly generated.
+	expirationDate	Date	Date and Time of when the token is valid.
+Json Return Example:
+{"token":"f71ec898-0a90-4a86-a764-07fe3180c15d","expirationDate":"Mar 9, 2015 8:22:13 PM"}
+
+
+createAccountMobile: 
+-------------
+Description: From mobile device.
+URL:
+	https://host:8443/Avatar/rest/open/registration/createAccount
+	OR
+	https://host:8443/Avatar/rest/registration/createAccount
+URL Parameters:
+	mobileNumber	String	Required
+	userid			String	Required
+	password		String	Required
+	realname		String	Required
+	picture			String	Not Required.  Format is Base64Encoded
+	address			String	Not Required
+	priviledge		String	Not Required.  
+							Must be of the following value: 
+							superUser
+							staff
+							brUser
+							clubAdmin
+							user  >>> This is the default if priviledge parameter is omitted.
+Json Response:	
+	token			String	It is a GUID, randomly generated.
+	expirationDate	Date	Date and Time of when the token is valid.
+Json Return Example:
+{"token":"f71ec898-0a90-4a86-a764-07fe3180c15d","expirationDate":"Mar 9, 2015 8:22:13 PM"}
+
+
+
+activateAccount: 
+-------------
+Description: Activate the account using the activationToken
+URL:
+	https://host:8443/Avatar/rest/open/registration/activateAccount
+	OR
+	https://host:8443/Avatar/rest/registration/activateAccount
+URL Parameters:
+	activationToken	String	Required
+Json Response:	
+	status		boolean		true -> success
+							false -> failure
+	errorMsg	String		Only for failure.							
+Json Return Example:
+FAILURE:
+{"status":"false","errorMsg":"Error:  Please check activation token, might have expired [ac41bd57-88fb-493a-93c2-842d5e2c67b7xx]"}
+SUCCESS:
+{"status":"true","errorMsg":""}
+
+
+

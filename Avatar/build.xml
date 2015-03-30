@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Avatar" default="war" basedir=".">
+	<description>
+		Avatar build file
+	</description>
+
+	<import file="lib-patterns.xml" />
+
+	<property name="project-name" value="${ant.project.name}" />
+
+
+	<property name="war-file-name" value="${project-name}.war" />
+	<property name="config.build-directory" value="config/build" />
+	<property name="source-directory" value="src" />
+	<property name="build-directory" value="build" />
+	<property name="build-classes-directory" value="${build-directory}/classes" />
+	<property name="web-directory" value="src/resources" />
+	<property name="web-xml-file" value="src/resources/WEB-INF/web.xml" />
+
+	<property name="web-inf-lib-directory" value="${build-directory}/WEB-INF/lib" />
+
+	<path id="compile.classpath">
+		<fileset dir="${tomcat.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${j2e.lib.dir}">
+			<include name="servlet-api.jar" />
+		</fileset>
+		<fileset dir="${apns.lib.dir}">
+			<include name="JavaPNS*.jar" />
+		</fileset>
+		<fileset dir="${joda.lib.dir}">
+			<include name="joda-time*.jar" />
+		</fileset>
+		<fileset dir="${bc.lib.dir}">
+			<include name="bcprov*.jar" />
+		</fileset>
+		<fileset dir="${commons.lib.dir}">
+			<include name="commons-logging-*.jar" />
+			<include name="commons-collections4*.jar" />
+			<include name="commons-codec-*.jar" />
+			<include name="commons-lang3-*.jar" />
+			<include name="commons-pool2-*.jar" />
+			<include name="commons-dbcp*.jar" />
+		</fileset>
+		<fileset dir="${spring.lib.dir}">
+			<include name="spring-aop-*.jar" />
+			<include name="spring-beans-*.jar" />
+			<include name="spring-context-*.jar" />
+			<include name="spring-orm-*.jar" />
+			<include name="spring-core-*.jar" />
+			<include name="spring-expression-*.jar" />
+			<include name="spring-jdbc-*.jar" />
+			<include name="spring-tx-*.jar" />
+			<include name="spring-web*-*.jar" />
+		</fileset>
+		<fileset dir="${gson.lib.dir}">
+			<include name="gson-*.jar" />
+		</fileset>
+		<fileset dir="${guava.lib.dir}">
+			<include name="guava-*.jar" />
+		</fileset>
+		<fileset dir="${mail.lib.dir}">
+			<include name="mail-*.jar" />
+		</fileset>
+		<fileset dir="${mysqlconnector.lib.dir}">
+			<include name="mysql-connector-*.jar" />
+		</fileset>
+		<pathelement location="classes" />
+	</path>
+
+	<tstamp prefix="build-info">
+		<format property="current-date" pattern="d-MMMM-yyyy" locale="en" />
+		<format property="current-time" pattern="hh:mm:ss a z" locale="en" />
+	</tstamp>
+
+	<target name="init" description="Set up build dirs">
+		<echo>"buildFor=${buildFor}"</echo>
+		<mkdir dir="${build-directory}" />
+		<mkdir dir="${build-classes-directory}" />
+		<mkdir dir="${web-inf-lib-directory}" />
+		<copy todir="${build-classes-directory}/props" overwrite="true">
+			<fileset dir="${web-directory}/WEB-INF/props" />
+		</copy>
+		<copy todir="${build-directory}/WEB-INF" overwrite="true">
+			<fileset dir="${web-directory}/WEB-INF" includes="*.xml" />
+		</copy>
+		<replace file="${build-directory}/WEB-INF/applicationContext.xml"
+			replacefilterfile="${config.build-directory}/${buildFor}.props">
+		</replace>
+		<replace file="${build-directory}/WEB-INF/avatar-datasource.xml"
+			replacefilterfile="${config.build-directory}/${buildFor}.props">
+		</replace>
+		<replace file="${build-directory}/WEB-INF/avatar-mailsender.xml"
+			replacefilterfile="${config.build-directory}/${buildFor}.props">
+		</replace>
+	</target>
+
+	<target name="compile" description="compile code" depends="init">
+		<echo message="Ant java version: ${ant.java.version}" />
+		<javac srcdir="${source-directory}/main/java" destdir="${build-classes-directory}"
+			source="1.7" target="1.7" compiler="javac1.7" verbose="true" debug="true"
+			debuglevel="lines,vars,source">
+			<classpath refid="compile.classpath" />
+		</javac>
+
+		<javac srcdir="${source-directory}/test" destdir="${build-classes-directory}"
+			source="1.7" target="1.7">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+
+	<target name="jarAuthenticator" description="jaring the avatar-authenticator"
+		depends="compile">
+		<jar destfile="${build-directory}/avatar-authenticator.jar"
+			basedir="${build-classes-directory}" includes="com/avatar/authenticator/**" />
+	</target>
+
+	<target name="war" depends="compile, jarAuthenticator">
+		<delete file="${build-directory}/${war-file-name}" />
+		<war warfile="${build-directory}/${war-file-name}" webxml="${web-xml-file}">
+			<fileset dir="${source-directory}/main/front-end" />
+			<lib dir="${commons.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="commons.lib.pattern" />
+			</lib>
+			<lib dir="${mail.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="mail.lib.pattern" />
+			</lib>
+			<lib dir="${spring.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="spring.lib.pattern" />
+			</lib>
+			<lib dir="${apns.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="apns.lib.pattern" />
+			</lib>
+			<lib dir="${joda.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="joda.lib.pattern" />
+			</lib>
+			<lib dir="${bc.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="bc.lib.pattern" />
+			</lib>
+			<lib dir="${gson.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="gson.lib.pattern" />
+			</lib>
+			<lib dir="${guava.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="guava.lib.pattern" />
+			</lib>
+			<lib dir="${mysqlconnector.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="mysqlconnector.lib.pattern" />
+			</lib>
+			<lib dir="${log4j.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="log4j.lib.pattern" />
+			</lib>
+			<classes dir="${build-classes-directory}" />
+			<fileset dir="${build-directory}">
+				<!-- Need to exclude it since webxml is an attribute of the war tag above -->
+				<include name="WEB-INF/*.xml" />
+				<exclude name="WEB-INF/web.xml" />
+			</fileset>
+			<manifest>
+				<attribute name="Built-On" value="${build-info.current-date}" />
+				<attribute name="Built-At" value="${build-info.current-time}" />
+			</manifest>
+
+		</war>
+	</target>
+
+</project>
