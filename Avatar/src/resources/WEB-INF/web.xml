@@ -56,10 +56,19 @@
 			<url-pattern>/1/open/*</url-pattern>
 			<url-pattern>/1/Registration/*</url-pattern>
 			<url-pattern>/1/SurveyMgr/*</url-pattern>
+
 			<url-pattern>/1/AcctMgr/Mobile/*</url-pattern>
 			<url-pattern>/1/AcctMgr/NonMobile/*</url-pattern>
-			<url-pattern>/1/AcctMgr/SetUserAccount</url-pattern>
-			<url-pattern>/1/AcctMgr/SetUserNonMobileAccount</url-pattern>
+			<url-pattern>/1/AcctMgr/SetAccountInfo</url-pattern>
+			<url-pattern>/1/AcctMgr/SetNonMobileAccountInfo</url-pattern>
+			<url-pattern>/1/AcctMgr/GetAcctInfo</url-pattern>
+			<url-pattern>/1/AcctMgr/testApns</url-pattern>
+			<url-pattern>/1/AccountMgr/testApns</url-pattern>
+			<url-pattern>/1/AccountMgr/Mobile/*</url-pattern>
+			<url-pattern>/1/AccountMgr/NonMobile/*</url-pattern>
+			<url-pattern>/1/AccountMgr/SetAccountInfo</url-pattern>
+			<url-pattern>/1/AccountMgr/SetNonMobileAccountInfo</url-pattern>
+			<url-pattern>/1/AccountMgr/GetAcctInfo</url-pattern>
 		</web-resource-collection>
 	</security-constraint>
 

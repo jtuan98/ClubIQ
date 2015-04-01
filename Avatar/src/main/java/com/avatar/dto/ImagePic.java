@@ -24,6 +24,10 @@ public class ImagePic implements Serializable {
 	public ImagePic() {
 	}
 
+	public ImagePic(final Integer id) {
+		this.id = id;
+	}
+
 	public ImagePic(final String pictureBase64Encoded) {
 		final byte[] binary = Base64.decodeBase64(pictureBase64Encoded);
 		setPicture(binary);

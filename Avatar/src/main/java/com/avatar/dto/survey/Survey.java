@@ -1,10 +1,16 @@
 package com.avatar.dto.survey;
 
-
 public class Survey {
 	private Integer id; // pk
 	private String questionA;
 	private String questionB;
+
+	public Survey() {
+	}
+
+	public Survey(final Integer id) {
+		this.id = id;
+	}
 
 	public Integer getId() {
 		return id;

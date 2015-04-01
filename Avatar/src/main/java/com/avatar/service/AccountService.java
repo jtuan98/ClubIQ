@@ -205,6 +205,7 @@ public class AccountService implements AccountBusiness {
 	@Override
 	public AccountDto get(final String userId) throws NotFoundException {
 		final AccountDto retVal = accountDao.fetch(userId);
+
 		return retVal;
 	}
 

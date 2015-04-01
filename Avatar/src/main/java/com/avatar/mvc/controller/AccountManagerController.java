@@ -13,11 +13,31 @@ import org.springframework.web.servlet.ModelAndView;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.exception.InvalidDeviceId;
 import com.avatar.exception.NotFoundException;
 
 @Controller
-@RequestMapping(value = "/AcctMgr")
+@RequestMapping(value = {"/AcctMgr", "/AccountMgr"})
 public class AccountManagerController extends BaseController {
+
+	@RequestMapping(value = {"/GetAcctInfo", "/GetAccountInfo"} )
+	public ModelAndView getAcctInfo(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber)
+			throws Exception {
+		init();
+		WsResponse<AccountDto> apiResponse = null;
+		try {
+			final AccountDto account = accountService.get(mobileNumber);
+			apiResponse = new WsResponse<AccountDto>(ResponseStatus.success,
+					"", account);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
 
 	@RequestMapping(value = "/GetMemberAcct")
 	public ModelAndView getMemberAcct(
@@ -39,7 +59,24 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = { "/Mobile/SetUserAccount", "/SetUserAccount" })
+	@RequestMapping(value = "/testApns")
+	public ModelAndView testApns(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "deviceId") final String deviceId,
+			@RequestParam(required = true, value = "msg") final String msg)
+			throws Exception {
+		init();
+		String msgRetVal = "";
+		try {
+			mobileNotificationService.sendNotification(deviceId, msg);
+		} catch (final InvalidDeviceId e) {
+			msgRetVal = e.getMessage();
+		}
+		return new ModelAndView(jsonView, toModel(msgRetVal));
+	}
+
+	@RequestMapping(value = { "/Mobile/SetAccountInfo", "/SetAccountInfo" })
 	public ModelAndView updateAccount(
 			final Principal principal,
 			final HttpServletRequest req,
@@ -73,8 +110,8 @@ public class AccountManagerController extends BaseController {
 	}
 
 	// Update the email is not allowed since email is the USERID
-	@RequestMapping(value = { "/NonMobile/SetUserAccount",
-			"/SetUserNonMobileAccount" })
+	@RequestMapping(value = { "/NonMobile/SetAccountInfo",
+			"/SetNonMobileAccountInfo" })
 	public ModelAndView updateAccountNonMobile(
 			final Principal principal,
 			final HttpServletRequest req,

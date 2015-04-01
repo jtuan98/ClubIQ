@@ -83,6 +83,7 @@ public class RegistrationController extends BaseController {
 	public ModelAndView createAccountMobile(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber,
+			@RequestParam(required = false, value = "tangerineHandsetId") final String tangerineHandsetId,
 			@RequestParam(required = true, value = "deviceId") final String deviceId,
 			@RequestParam(required = true, value = "homeClubId") final String homeClubId)
 			throws Exception {
@@ -95,6 +96,7 @@ public class RegistrationController extends BaseController {
 					true, null, mobileNumber, userid, homeClubId, null, null,
 					null, null, Privilege.user.name());
 			accountInfo.setDeviceId(deviceId);
+			accountInfo.setTangerineHandsetId(tangerineHandsetId);
 			final MobileActivationPin activationToken = (MobileActivationPin) accountService
 					.createAccount(accountInfo);
 			accountInfo.setToken(activationToken);

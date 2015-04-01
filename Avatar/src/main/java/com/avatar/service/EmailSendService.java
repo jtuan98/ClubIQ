@@ -82,6 +82,13 @@ public class EmailSendService implements NotificationBusiness {
 		return retVal;
 	}
 
+	@Override
+	public boolean sendNotification(final String deviceId, final String msg)
+			throws AccountNotificationException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public void setMailSender(final MailSender mailSender) {
 		this.mailSender = mailSender;
 	}

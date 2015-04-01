@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
+import com.avatar.dto.ImagePic;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.MobileAccountDto;
 import com.avatar.dto.enums.AccountStatus;
@@ -22,6 +23,9 @@ public class AccountDtoMapper implements RowMapper<AccountDto> {
 		retVal.setStatus(AccountStatus.valueOf(rs.getString("STATUS")));
 		retVal.setName(rs.getString("REALNAME"));
 		retVal.setUserId(rs.getString("USERID"));
+		if (rs.getString("IMAGE_ID") != null) {
+			retVal.setPicture(new ImagePic(rs.getInt("IMAGE_ID")));
+		}
 		if (mobile) {
 			final MobileAccountDto mobileAcct = (MobileAccountDto)retVal;
 			mobileAcct.setMobileNumber(rs.getString("MOBILE_NUMBER"));

@@ -9,7 +9,7 @@
 	<import resource="avatar-mailsender.xml" />
 
 	<bean id="apnsCertificateP12" class="java.lang.String">
-		<constructor-arg value="props/iphone_dis.p12" />
+		<constructor-arg value="props/iphone_dis_2.p12" />
 	</bean>
 
 	<bean id="apnsCertificateP12Password" class="java.lang.String">

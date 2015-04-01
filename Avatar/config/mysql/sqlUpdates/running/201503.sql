@@ -1,1 +1,4 @@
 alter table BEACONS drop column DEPARTMENT;
+
+-- 3/3/1
+alter table CLUBS ADD (CLUB_TYPE VARCHAR(50), CLUB_WEBSITE VARCHAR(50));

@@ -36,6 +36,7 @@
 			<include name="bcprov*.jar" />
 		</fileset>
 		<fileset dir="${commons.lib.dir}">
+			<include name="commons-io-*.jar" />
 			<include name="commons-logging-*.jar" />
 			<include name="commons-collections4*.jar" />
 			<include name="commons-codec-*.jar" />

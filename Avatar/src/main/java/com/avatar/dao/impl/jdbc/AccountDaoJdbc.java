@@ -69,11 +69,10 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	private static String UPD_USER_TANGERINE_HANDSET_ID = "update USER_DEVICES set TANGERINE_HANDSET_ID=? "
 			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?) AND DEVICE_ID = ?";
 
-	private static final String DEL_USER_PIC = "delete from USER_IMAGES where USER_ID in (select ID from USERS where USERID=?)";
 
 	private static final String GET_USER_ID_PK = "select ID from USERS where USERID=?";
-	private static final String GET_STATUS_USER_ID = "select STATUS from USERS where USERID=?";
 
+	private static final String GET_IMAGE_ID_BYUSERID = "select IMAGE_ID from USERS where USERID=?";
 	private static final String GET_IMAGE_ID = "select IMAGE_ID from USERS where ID=?";
 	private static final String GET_HOME_CLUB_ID = "select HOME_CLUB_ID from USERS where ID=?";
 
@@ -156,6 +155,11 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 					mobileAccount.setDeviceId((String) result.get("DEVICE_ID"));
 					mobileAccount.setTangerineHandsetId((String) result
 							.get("TANGERINE_HANDSET_ID"));
+				}
+				if ((account.getPicture() != null) && (account.getPicture().getId() != null)) {
+					System.out.println("Getting the picture!!!");
+					final ImagePic image = getImage(account.getPicture().getId());
+					account.setPicture(image);
 				}
 			} catch (final EmptyResultDataAccessException e) {
 				throw new NotFoundException();
@@ -385,7 +389,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		final byte[] picture = Base64.decodeBase64(pictureBase64);
 		try {
 			final Integer imageIdPk = getJdbcTemplate().queryForObject(
-					GET_IMAGE_ID, Integer.class, userId);
+					GET_IMAGE_ID_BYUSERID, Integer.class, userId);
 			final Integer updateImageIdPk = updateImage(imageIdPk, picture);
 			if (updateImageIdPk != imageIdPk) {
 				// Update user image_id link
@@ -396,6 +400,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			// Not found!, so insert one in.
 			final ImagePic pic = new ImagePic(pictureBase64);
 			final Integer idImagePk = persistImage(pic);
+			System.out.println("updateAccountInfoPicture: Not found!, so insert one in. idImagePk="+ idImagePk);
 			getJdbcTemplate().update(UPD_USER_IMAGE_ID_LINK, idImagePk, userId);
 		}
 	}

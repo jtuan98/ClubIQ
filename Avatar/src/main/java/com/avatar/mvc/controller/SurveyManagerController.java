@@ -21,6 +21,7 @@ import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.dto.promotion.Promotion;
+import com.avatar.dto.survey.Survey;
 import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.InvalidParameterException;
 
@@ -66,20 +67,20 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
 			throws Exception {
 		init();
-		WsResponse<SurveyAnswer> apiResponse = null;
+		WsResponse<Survey> apiResponse = null;
 		try {
-			final SurveyAnswer survey = surveyService.getNextSurvey(
+			final Survey survey = surveyService.getNextSurvey(
 					beaconActionId, memberId);
 			if (survey != null) {
-				apiResponse = new WsResponse<SurveyAnswer>(
+				apiResponse = new WsResponse<Survey>(
 						ResponseStatus.success, "", survey, "survey");
 			} else {
-				apiResponse = new WsResponse<SurveyAnswer>(
+				apiResponse = new WsResponse<Survey>(
 						ResponseStatus.success, "No More Surveys", null, "");
 			}
 		} catch (final Exception e) {
 			e.printStackTrace();
-			apiResponse = new WsResponse<SurveyAnswer>(ResponseStatus.failure,
+			apiResponse = new WsResponse<Survey>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
@@ -173,18 +174,19 @@ public class SurveyManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String memberId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId,
-			@RequestParam(required = true, value = "surveyAnswerId") final int surveyAnswerId,
+			@RequestParam(required = true, value = "surveyQuestionId") final int surveyQuestionId,
 			@RequestParam(required = true, value = "answerA") final int answerA,
 			@RequestParam(required = true, value = "answerB") final int answerB)
 			throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		final SurveyAnswer surveyAnswer = new SurveyAnswer();
-		surveyAnswer.setId(surveyAnswerId);
+		surveyAnswer.setSurvey(new Survey(surveyQuestionId));
+
 		surveyAnswer.setAnswerA(answerA);
 		surveyAnswer.setAnswerB(answerB);
 		try {
-			surveyService.persistSurveyAnswer(surveyAnswer);
+			surveyService.persistSurveyAnswer(beaconActionId, memberId, surveyAnswer);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					null);
 		} catch (final Exception e) {

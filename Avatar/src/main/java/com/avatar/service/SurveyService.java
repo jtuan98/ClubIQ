@@ -49,8 +49,9 @@ public class SurveyService implements SurveyBusiness {
 	}
 
 	@Override
-	public SurveyAnswer getNextSurvey(final String beaconId,
-			final String memberId) throws NotFoundException {
+	public Survey getNextSurvey(final String beaconId, final String memberId)
+			throws NotFoundException {
+		Survey retVal = null;
 		// Get beaconIdPk
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
 		// Get amenityIdPk
@@ -62,34 +63,30 @@ public class SurveyService implements SurveyBusiness {
 		// Find Last Mon
 		final Date lastMondayDate = getLastMonday();
 		final Set<Integer> answerIdsSinceLastMonNotAnsweredYet = surveyDao
-				.getSurveyIdPkNotAnsweredHistory(clubIdPk, amenityIdPk, memberIdPk,
-						lastMondayDate);
+				.getSurveyIdPkNotAnsweredHistory(clubIdPk, amenityIdPk,
+						memberIdPk, lastMondayDate);
 		if (CollectionUtils.isNotEmpty(answerIdsSinceLastMonNotAnsweredYet)) {
-			final SurveyAnswer survey = surveyDao.fetchAnswer(answerIdsSinceLastMonNotAnsweredYet.iterator().next());
-			return survey;
+			final SurveyAnswer surveyAnswer = surveyDao
+					.fetchAnswer(answerIdsSinceLastMonNotAnsweredYet.iterator()
+							.next());
+			Assert.notNull(surveyAnswer.getSurvey());
+			Assert.notNull(surveyAnswer.getSurvey().getId());
+			retVal = surveyDao.getSurvey(surveyAnswer.getSurvey().getId());
 		}
-		final Set<Integer> surveyIdsSinceLastMon = surveyDao
-				.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
-						lastMondayDate);
-		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
-				clubIdPk, amenityIdPk);
-		for (final Integer surveyIdPk : surveyIdsSinceLastMon) {
-			surveyPks.remove(surveyIdPk);
+		if (retVal == null) {
+			final Set<Integer> surveyIdsSinceLastMon = surveyDao
+					.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
+							lastMondayDate);
+			final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
+					clubIdPk, amenityIdPk);
+			for (final Integer surveyIdPk : surveyIdsSinceLastMon) {
+				surveyPks.remove(surveyIdPk);
+			}
+			if (CollectionUtils.isNotEmpty(surveyPks)) {
+				retVal = surveyDao.getSurvey(surveyPks.iterator().next());
+			}
 		}
-		Survey survey = null;
-		if (CollectionUtils.isNotEmpty(surveyPks)) {
-			survey = surveyDao.getSurvey(surveyPks.iterator().next());
-		}
-		if (survey == null) {
-			return null;
-		}
-		// Create a survey answer
-		final SurveyAnswer answer = new SurveyAnswer();
-		answer.setSurvey(survey);
-		persistSurveyAnswer(clubIdPk, amenityIdPk, beaconIdPk, memberIdPk,
-				answer);
-
-		return answer;
+		return retVal;
 	}
 
 	private void persistSurveyAnswer(final Integer clubIdPk,
@@ -98,12 +95,29 @@ public class SurveyService implements SurveyBusiness {
 			throws NotFoundException {
 		surveyDao.persistSurveyAnswer(clubIdPk, amenityIdPk, beaconIdPk,
 				memberIdPk, answer);
+		surveyDao.updateAnswer(answer);
 	}
 
 	@Override
-	public void persistSurveyAnswer(final SurveyAnswer answer) throws NotFoundException {
+	public void persistSurveyAnswer(final String beaconId, final String memberId, final SurveyAnswer answer)
+			throws NotFoundException {
 		Assert.notNull(answer);
-		surveyDao.updateAnswer(answer);
+		Assert.notNull(answer.getSurvey());
+		Assert.notNull(answer.getSurvey().getId());
+		//Verify Question Id
+		surveyDao.getSurvey(answer.getSurvey().getId());
+		// Get beaconIdPk
+		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
+		// Get amenityIdPk
+		final Integer amenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
+		// Get clubIdPk
+		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
+		// Get memeberIdPk
+		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
+		// Create a survey answer
+		persistSurveyAnswer(clubIdPk, amenityIdPk, beaconIdPk, memberIdPk,
+				answer);
+
 	}
 
 }

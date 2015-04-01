@@ -79,6 +79,7 @@ public abstract class BaseJdbcDao {
 				: null;
 		final boolean hasImage = StringUtils.isNotEmpty(imageHash);
 		final Integer idImage = hasImage ? sequencer.nextVal("ID_SEQ") : null;
+		System.out.println("persistImage:  hasImage =>" + hasImage);
 		if (hasImage) {
 			getJdbcTemplate().update(
 					INS_IMAGES,
