@@ -13,4 +13,6 @@ public interface PromotionBusiness {
 
 	void recordPromotionRead(Integer promotionIdPk, String userId,
 			boolean promoRead) throws NotFoundException;
+
+	void update(Promotion promotion) throws NotFoundException;
 }

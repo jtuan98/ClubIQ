@@ -5,7 +5,9 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
 import com.avatar.dao.PromotionDao;
 import com.avatar.dao.impl.jdbc.mapper.PromotionMapper;
@@ -28,6 +30,15 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 			+ "ID, CLUB_ID, CLUB_AMENITY_ID,	TITLE, DETAILS, EFFECTIVE_DATE, ENDING_DATE, CREATE_DATE) "
 			+ "VALUES(?,?,?,?,?,?,?,NOW())";
 
+	private static String GET_PROMO_ID_PK = "select ID from PROMOTIONS where ID=?";
+
+	private static String UPD_PROMOTION_BY_PK = "update PROMOTIONS set "
+			+ "TITLE=?, DETAILS=? WHERE ID=?";
+	private static String UPD_PROMOTION_EFFECTIVE_DATE_BY_PK = "update PROMOTIONS set "
+			+ "EFFECTIVE_DATE=? WHERE ID=?";
+	private static String UPD_PROMOTION_ENDINGDATE_BY_PK = "update PROMOTIONS set "
+			+ "ENDING_DATE=? WHERE ID=?";
+
 	@Override
 	public List<Promotion> getPromotions(final Integer clubIdPk,
 			final Integer amenityIdPk) {
@@ -39,6 +50,12 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
 	@Override
 	public void newPromotion(final Promotion promotion) {
+		Assert.notNull(promotion);
+		Assert.notNull(promotion.getClub());
+		Assert.notNull(promotion.getClub().getId());
+		Assert.notNull(promotion.getAmenity());
+		Assert.notNull(promotion.getAmenity().getId());
+
 		final int idPk = sequencer.nextVal("ID_SEQ");
 		getJdbcTemplate().update(INS_NEW_PROMOTION, idPk,
 				promotion.getClub().getId(), promotion.getAmenity().getId(),
@@ -48,10 +65,11 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
 	@Override
 	public void recordPromotionRead(final Integer promotionIdPk,
-			final Integer userIdPk, final boolean promoRead) throws NotFoundException {
+			final Integer userIdPk, final boolean promoRead)
+			throws NotFoundException {
 		final int idPk = sequencer.nextVal("ID_SEQ");
-		final int recInserted = getJdbcTemplate().update(INS_PROMO_HISTORY, idPk,
-				userIdPk, promoRead ? "Y" : "N", promotionIdPk);
+		final int recInserted = getJdbcTemplate().update(INS_PROMO_HISTORY,
+				idPk, userIdPk, promoRead ? "Y" : "N", promotionIdPk);
 		if (recInserted == 0) {
 			throw new NotFoundException("promotionId " + promotionIdPk
 					+ " not found!");
@@ -64,4 +82,28 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 		initTemplate(ds);
 	}
 
+	@Override
+	public void update(final Promotion promotion) throws NotFoundException {
+		Assert.notNull(promotion);
+		Assert.notNull(promotion.getId());
+
+		// Check if id found
+		try {
+			final Integer promoIdPk = getJdbcTemplate().queryForObject(
+					GET_PROMO_ID_PK, Integer.class, promotion.getId());
+		} catch (final EmptyResultDataAccessException e) {
+			throw new NotFoundException("Promotion ID " + promotion.getId()
+					+ " not found");
+		}
+		getJdbcTemplate().update(UPD_PROMOTION_BY_PK, promotion.getTitle(),
+				promotion.getDescription(), promotion.getId());
+		if (promotion.getEffectiveDate() != null) {
+			getJdbcTemplate().update(UPD_PROMOTION_EFFECTIVE_DATE_BY_PK,
+					promotion.getEffectiveDate(), promotion.getId());
+		}
+		if (promotion.getEndingDate() != null) {
+			getJdbcTemplate().update(UPD_PROMOTION_ENDINGDATE_BY_PK,
+					promotion.getEndingDate(), promotion.getId());
+		}
+	}
 }

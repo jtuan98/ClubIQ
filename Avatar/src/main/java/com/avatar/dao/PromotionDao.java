@@ -14,4 +14,6 @@ public interface PromotionDao {
 	void recordPromotionRead(Integer promotionIdPk, Integer userIdPk,
 			boolean promoRead) throws NotFoundException;
 
+	void update(Promotion promotion) throws NotFoundException;
+
 }

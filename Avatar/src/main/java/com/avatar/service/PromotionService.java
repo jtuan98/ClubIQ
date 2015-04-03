@@ -55,6 +55,11 @@ public class PromotionService implements PromotionBusiness {
 	@Override
 	public void newPromotion(final Promotion promotion)
 			throws NotFoundException {
+		populatePkForClubsAndAmenity(promotion);
+		promotionDao.newPromotion(promotion);
+	}
+
+	private void populatePkForClubsAndAmenity(final Promotion promotion) throws NotFoundException {
 		Assert.notNull(promotion);
 		Assert.notNull(promotion.getClub());
 		Assert.hasText(promotion.getClub().getClubId());
@@ -66,7 +71,6 @@ public class PromotionService implements PromotionBusiness {
 				.getAmenity().getAmenityId());
 		promotion.getClub().setId(clubIdPk);
 		promotion.getAmenity().setId(amenityIdPk);
-		promotionDao.newPromotion(promotion);
 	}
 
 	@Override
@@ -75,5 +79,10 @@ public class PromotionService implements PromotionBusiness {
 			throws NotFoundException {
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
 		promotionDao.recordPromotionRead(promotionIdPk, userIdPk, promoRead);
+	}
+
+	@Override
+	public void update(final Promotion promotion) throws NotFoundException {
+		promotionDao.update(promotion);
 	}
 }

@@ -1,12 +1,13 @@
 package com.avatar.service;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -22,6 +23,13 @@ import com.avatar.exception.NotFoundException;
 @Service
 public class SurveyService implements SurveyBusiness {
 
+	public static void main(final String[] args) {
+		final SurveyService s = new SurveyService();
+		System.out.println("Date of last mon: " + s.getLastMonday(1));
+		System.out.println("Date of last mon: " + s.getLastMonday(2));
+		System.out.println("Date of last mon: " + s.getLastMonday(3));
+	}
+
 	@Resource(name = "surveyDaoJdbc")
 	private SurveyDao surveyDao;
 
@@ -34,18 +42,12 @@ public class SurveyService implements SurveyBusiness {
 	@Resource(name = "clubDaoJdbc")
 	private ClubDao clubDao;
 
-	private Date getLastMonday() {
-		final Calendar c = Calendar.getInstance();
-		// ensure the method works within current month
-		c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-		// go to the 1st week of february, in which monday was in january
-		c.set(Calendar.DAY_OF_MONTH, 1);
-		// test that setting day_of_week to monday gives a date in january
-		c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-		// same for tuesday
-		c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
-		// TODO Auto-generated method stub
-		return c.getTime();
+	private Date getLastMonday(final int pastWeeks) {
+		final DateTime today = DateTime.now();
+		final DateTime sameDayPastWeek = today.minusWeeks(pastWeeks);
+		final DateTime mondayPastWeek = sameDayPastWeek
+				.withDayOfWeek(DateTimeConstants.MONDAY);
+		return new Date(mondayPastWeek.getMillis());
 	}
 
 	@Override
@@ -61,22 +63,26 @@ public class SurveyService implements SurveyBusiness {
 		// Get memeberIdPk
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
 		// Find Last Mon
-		final Date lastMondayDate = getLastMonday();
-		final Set<Integer> surveyIdsSinceLastMon = surveyDao
+		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
+				clubIdPk, amenityIdPk);
+		final Date since = null;
+		final Date lastMondayDate = getLastMonday(1);
+		final Set<Integer> surveyIdsSincePastMon = surveyDao
 				.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
 						lastMondayDate);
 		// If member HAS NOT done any survey in the past week.
-		if (CollectionUtils.isEmpty(surveyIdsSinceLastMon)) {
-			final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
-					clubIdPk, amenityIdPk);
+		if (CollectionUtils.isEmpty(surveyIdsSincePastMon)) {
 			final Set<Integer> surveyIdsSinceBeginning = surveyDao
 					.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
-							null);
+							since);
 			for (final Integer surveyIdPk : surveyIdsSinceBeginning) {
 				surveyPks.remove(surveyIdPk);
 			}
 			if (CollectionUtils.isNotEmpty(surveyPks)) {
 				retVal = surveyDao.getSurvey(surveyPks.iterator().next());
+			} else if (CollectionUtils.isNotEmpty(surveyIdsSinceBeginning)) {
+				//recycle
+				retVal = surveyDao.getSurvey(surveyIdsSinceBeginning.iterator().next());
 			}
 		}
 		return retVal;

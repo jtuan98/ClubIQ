@@ -21,7 +21,7 @@ public class ClubManagerController {
 	public ModelAndView setAmenityDeptName(
 			final Principal principal,
 			final HttpServletRequest req,
-			@RequestParam(required = false, value = "userId") final String userIdNotUsed,
+			@RequestParam(required = false, value = "userId") final String userId,
 			@RequestParam(required = true, value = "apnsToken") final String apnsToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 			throws Exception {

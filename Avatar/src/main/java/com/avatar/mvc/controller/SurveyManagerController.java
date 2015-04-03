@@ -69,14 +69,14 @@ public class SurveyManagerController extends BaseController {
 		init();
 		WsResponse<Survey> apiResponse = null;
 		try {
-			final Survey survey = surveyService.getNextSurvey(
-					beaconActionId, memberId);
+			final Survey survey = surveyService.getNextSurvey(beaconActionId,
+					memberId);
 			if (survey != null) {
-				apiResponse = new WsResponse<Survey>(
-						ResponseStatus.success, "", survey, "survey");
+				apiResponse = new WsResponse<Survey>(ResponseStatus.success,
+						"", survey, "survey");
 			} else {
-				apiResponse = new WsResponse<Survey>(
-						ResponseStatus.success, "No More Surveys", null, "");
+				apiResponse = new WsResponse<Survey>(ResponseStatus.success,
+						"No More Surveys", null, "");
 			}
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -186,7 +186,36 @@ public class SurveyManagerController extends BaseController {
 		surveyAnswer.setAnswerA(answerA);
 		surveyAnswer.setAnswerB(answerB);
 		try {
-			surveyService.persistSurveyAnswer(beaconActionId, memberId, surveyAnswer);
+			surveyService.persistSurveyAnswer(beaconActionId, memberId,
+					surveyAnswer);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = "/UpdatePromotions")
+	public ModelAndView updatePromotions(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "promotionId") final Integer promotionId,
+			@RequestParam(required = true, value = "promotionTitle") final String promotionTitle,
+			@RequestParam(required = true, value = "promotionDetails") final String promotionDetails,
+			@RequestParam(required = false, value = "effectiveDate") final String effectiveDateYYYYMMDD,
+			@RequestParam(required = false, value = "endingDate") final String endingDateYYYYMMDD)
+			throws Exception {
+		init();
+		WsResponse<String> apiResponse = null;
+		try {
+			final Promotion promotion = getPromotionInstance(null, null,
+					promotionTitle, promotionDetails, effectiveDateYYYYMMDD,
+					endingDateYYYYMMDD);
+			promotion.setId(promotionId);
+			promotionService.update(promotion);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					null);
 		} catch (final Exception e) {

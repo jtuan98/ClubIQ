@@ -66,9 +66,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	private static String UPD_USER_DEVICEID = "update USER_DEVICES set DEVICE_ID=? "
 			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?)";
 
-	private static String UPD_USER_TANGERINE_HANDSET_ID = "update USER_DEVICES set TANGERINE_HANDSET_ID=? "
-			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?) AND DEVICE_ID = ?";
-
+	private static String UPD_USER_TANGERINE_HANDSET_ID = "update USER_DEVICES set TANGERINE_HANDSET_ID=?, DEVICE_ID = ? "
+			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?) ";
 
 	private static final String GET_USER_ID_PK = "select ID from USERS where USERID=?";
 
@@ -156,9 +155,11 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 					mobileAccount.setTangerineHandsetId((String) result
 							.get("TANGERINE_HANDSET_ID"));
 				}
-				if ((account.getPicture() != null) && (account.getPicture().getId() != null)) {
+				if ((account.getPicture() != null)
+						&& (account.getPicture().getId() != null)) {
 					System.out.println("Getting the picture!!!");
-					final ImagePic image = getImage(account.getPicture().getId());
+					final ImagePic image = getImage(account.getPicture()
+							.getId());
 					account.setPicture(image);
 				}
 			} catch (final EmptyResultDataAccessException e) {
@@ -281,7 +282,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				account.getId(),
 				// TOKEN,
 				activationToken.getToken(),
-				//MOBILE_PIN_FLAG,
+				// MOBILE_PIN_FLAG,
 				(mobile ? "Y" : "N"),
 				// VALID_TILL, "
 				activationToken.getExpirationDate(),
@@ -344,7 +345,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			// NP.
 		}
 
-		if (AccountStatus.New.equals(account.getStatus()) || AccountStatus.TokenSent.equals(account.getStatus())) {
+		if (AccountStatus.New.equals(account.getStatus())
+				|| AccountStatus.TokenSent.equals(account.getStatus())) {
 			// Get the account token
 			try {
 				final ActivationToken token = getJdbcTemplate().queryForObject(
@@ -400,7 +402,9 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			// Not found!, so insert one in.
 			final ImagePic pic = new ImagePic(pictureBase64);
 			final Integer idImagePk = persistImage(pic);
-			System.out.println("updateAccountInfoPicture: Not found!, so insert one in. idImagePk="+ idImagePk);
+			System.out
+					.println("updateAccountInfoPicture: Not found!, so insert one in. idImagePk="
+							+ idImagePk);
 			getJdbcTemplate().update(UPD_USER_IMAGE_ID_LINK, idImagePk, userId);
 		}
 	}
@@ -408,8 +412,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public void updateNewToken(final ActivationToken token)
 			throws NotFoundException {
-		getJdbcTemplate().update(UPD_TOKEN,
-				token.getToken(), token.getExpirationDate(), token.getId());
+		getJdbcTemplate().update(UPD_TOKEN, token.getToken(),
+				token.getExpirationDate(), token.getId());
 	}
 
 	@Override
@@ -427,11 +431,10 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			final String deviceId, final String tangerineHandSetId)
 			throws NotFoundException {
 		final int updated = getJdbcTemplate().update(
-				UPD_USER_TANGERINE_HANDSET_ID, tangerineHandSetId, userId,
-				deviceId);
+				UPD_USER_TANGERINE_HANDSET_ID, tangerineHandSetId, deviceId,
+				userId);
 		if (updated == 0) {
-			throw new NotFoundException("Mobile " + userId + "/" + deviceId
-					+ " not found!");
+			throw new NotFoundException("Mobile " + userId + " not found!");
 		}
 	}
 }
