@@ -2,6 +2,7 @@ package com.avatar.dao.impl.jdbc;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -93,7 +94,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 					SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID, Integer.class,
 					clubIdPk, amenityIdPk, memberId, since, "Y");
 		}
-		final Set<Integer> retVal = new HashSet<>();
+		final Set<Integer> retVal = new LinkedHashSet<>();
 		if (CollectionUtils.isNotEmpty(questionIdsPk)) {
 			retVal.addAll(questionIdsPk);
 		}

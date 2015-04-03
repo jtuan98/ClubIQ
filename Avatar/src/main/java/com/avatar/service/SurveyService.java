@@ -65,7 +65,7 @@ public class SurveyService implements SurveyBusiness {
 		// Find Last Mon
 		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
 				clubIdPk, amenityIdPk);
-		final Date since = null;
+		final Date since = getLastMonday(surveyPks.size());
 		final Date lastMondayDate = getLastMonday(1);
 		final Set<Integer> surveyIdsSincePastMon = surveyDao
 				.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
