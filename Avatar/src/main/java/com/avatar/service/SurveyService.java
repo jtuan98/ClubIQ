@@ -62,24 +62,17 @@ public class SurveyService implements SurveyBusiness {
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
 		// Find Last Mon
 		final Date lastMondayDate = getLastMonday();
-		final Set<Integer> answerIdsSinceLastMonNotAnsweredYet = surveyDao
-				.getSurveyIdPkNotAnsweredHistory(clubIdPk, amenityIdPk,
-						memberIdPk, lastMondayDate);
-		if (CollectionUtils.isNotEmpty(answerIdsSinceLastMonNotAnsweredYet)) {
-			final SurveyAnswer surveyAnswer = surveyDao
-					.fetchAnswer(answerIdsSinceLastMonNotAnsweredYet.iterator()
-							.next());
-			Assert.notNull(surveyAnswer.getSurvey());
-			Assert.notNull(surveyAnswer.getSurvey().getId());
-			retVal = surveyDao.getSurvey(surveyAnswer.getSurvey().getId());
-		}
-		if (retVal == null) {
-			final Set<Integer> surveyIdsSinceLastMon = surveyDao
-					.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
-							lastMondayDate);
+		final Set<Integer> surveyIdsSinceLastMon = surveyDao
+				.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
+						lastMondayDate);
+		// If member HAS NOT done any survey in the past week.
+		if (CollectionUtils.isEmpty(surveyIdsSinceLastMon)) {
 			final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
 					clubIdPk, amenityIdPk);
-			for (final Integer surveyIdPk : surveyIdsSinceLastMon) {
+			final Set<Integer> surveyIdsSinceBeginning = surveyDao
+					.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
+							null);
+			for (final Integer surveyIdPk : surveyIdsSinceBeginning) {
 				surveyPks.remove(surveyIdPk);
 			}
 			if (CollectionUtils.isNotEmpty(surveyPks)) {
@@ -99,12 +92,13 @@ public class SurveyService implements SurveyBusiness {
 	}
 
 	@Override
-	public void persistSurveyAnswer(final String beaconId, final String memberId, final SurveyAnswer answer)
+	public void persistSurveyAnswer(final String beaconId,
+			final String memberId, final SurveyAnswer answer)
 			throws NotFoundException {
 		Assert.notNull(answer);
 		Assert.notNull(answer.getSurvey());
 		Assert.notNull(answer.getSurvey().getId());
-		//Verify Question Id
+		// Verify Question Id
 		surveyDao.getSurvey(answer.getSurvey().getId());
 		// Get beaconIdPk
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);

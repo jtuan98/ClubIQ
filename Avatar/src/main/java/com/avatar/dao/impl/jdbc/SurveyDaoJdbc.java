@@ -26,6 +26,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	private static String SEL_QUESTION_IDS_SURVEY_BY_PK = "SELECT * FROM SURVEYS S WHERE ID = ? ";
 	private static String SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID = "SELECT ID FROM SURVEYS S WHERE CLUB_ID = ? AND CLUB_AMENITY_ID = ?";
 	private static String SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID = "SELECT SURVEY_ID FROM SURVEY_ANSWERS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID=? AND MEMBER_ID = ? AND CREATE_DATE > ? AND SURVEY_ANS=? ORDER BY CREATE_DATE";
+	private static String SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID_ALLDATES = "SELECT SURVEY_ID FROM SURVEY_ANSWERS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID=? AND MEMBER_ID = ? AND SURVEY_ANS=? ORDER BY CREATE_DATE";
 	private static String SEL_SURVEY_ANSIDS_BY_CLUBID_AMNT_ID_MEMID = "SELECT ID FROM SURVEY_ANSWERS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID=? AND MEMBER_ID = ? AND CREATE_DATE > ? AND SURVEY_ANS=? ORDER BY CREATE_DATE";
 
 	private static String INS_ANSWERS = "INSERT INTO SURVEY_ANSWERS (ID, CLUB_ID, CLUB_AMENITY_ID, "
@@ -82,9 +83,16 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	public Set<Integer> getSurveyIdPkHistory(final Integer clubIdPk,
 			final Integer amenityIdPk, final Integer memberId, final Date since)
 			throws NotFoundException {
-		final List<Integer> questionIdsPk = getJdbcTemplate().queryForList(
-				SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID, Integer.class,
-				clubIdPk, amenityIdPk, memberId, since, "Y");
+		List<Integer> questionIdsPk = null;
+		if (since == null) {
+			questionIdsPk = getJdbcTemplate().queryForList(
+					SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID_ALLDATES, Integer.class,
+					clubIdPk, amenityIdPk, memberId, "Y");
+		} else {
+			questionIdsPk = getJdbcTemplate().queryForList(
+					SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID, Integer.class,
+					clubIdPk, amenityIdPk, memberId, since, "Y");
+		}
 		final Set<Integer> retVal = new HashSet<>();
 		if (CollectionUtils.isNotEmpty(questionIdsPk)) {
 			retVal.addAll(questionIdsPk);
