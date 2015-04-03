@@ -23,30 +23,43 @@ import com.avatar.exception.InvalidDeviceId;
 @Service
 public class ApnsNotificationService implements NotificationBusiness {
 
-	@Resource(name = "apnsCertificateP12")
-	private String apnsServerCertificate;
+	@Resource(name = "apnsCertificateP12Staff")
+	private String apnsServerCertificateStaff;
+
+	@Resource(name = "apnsCertificateP12Member")
+	private String apnsServerCertificateMember;
 
 	@Resource(name = "apnsCertificateP12Password")
 	private String apnsServerCertificatePassword;
 
-	private byte[] p12Bytes = null;
+	private byte[] staffP12Bytes = null;
+	private byte[] memberP12Bytes = null;
 
 	private void init() {
-		if (p12Bytes == null) {
-			final InputStream p12is = this.getClass().getClassLoader()
-					.getResourceAsStream(apnsServerCertificate);
+		if (staffP12Bytes == null) {
+			staffP12Bytes = readP12(apnsServerCertificateStaff);
+		}
+		if (memberP12Bytes == null) {
+			memberP12Bytes = readP12(apnsServerCertificateMember);
+		}
+	}
+
+	private byte[] readP12(final String file) {
+		byte[] retVal = null;
+		final InputStream p12is = this.getClass().getClassLoader()
+				.getResourceAsStream(file);
+		try {
+			retVal = IOUtils.toByteArray(p12is);
+		} catch (final IOException e) {
+			e.printStackTrace();
+		} finally {
 			try {
-				p12Bytes = IOUtils.toByteArray(p12is);
+				p12is.close();
 			} catch (final IOException e) {
 				e.printStackTrace();
-			}finally {
-				try {
-					p12is.close();
-				} catch (final IOException e) {
-					e.printStackTrace();
-				}
 			}
 		}
+		return retVal;
 	}
 
 	@Override
@@ -54,18 +67,23 @@ public class ApnsNotificationService implements NotificationBusiness {
 			throws AccountNotificationException {
 		boolean retVal = true;
 		init();
+		final MobileAccountDto mobileAccount = (MobileAccountDto) account;
+		final String msg = "Your activation pin is "
+				+ mobileAccount.getToken().getToken();
 		try {
-			final MobileAccountDto mobileAccount = (MobileAccountDto) account;
-			final PushedNotifications notifications = Push.alert(
-					"Your activation pin is "
-							+ mobileAccount.getToken().getToken(), p12Bytes,
+			final PushedNotifications notifications = Push.alert(msg,
+					account.isStaff() ? staffP12Bytes : memberP12Bytes,
 					apnsServerCertificatePassword, true,
 					mobileAccount.getDeviceId());
 			for (final PushedNotification notification : notifications) {
 				if (notification.isSuccessful()) {
 					/* Apple accepted the notification and should deliver it */
 					System.out
-							.println("Apple accepted the notification and should deliver it");
+							.println("Apple accepted the notification and should deliver it: "
+									+ msg
+									+ "[staff?"
+									+ account.isStaff()
+									+ "]");
 				} else {
 					final String invalidToken = notification.getDevice()
 							.getToken();
@@ -84,18 +102,20 @@ public class ApnsNotificationService implements NotificationBusiness {
 	}
 
 	@Override
-	public boolean sendNotification(final String deviceId, final String msg)
-			throws AccountNotificationException {
+	public boolean sendNotification(final String deviceId, final String msg,
+			final boolean staff) throws AccountNotificationException {
 		boolean retVal = true;
 		init();
 		try {
-			final PushedNotifications notifications = Push.alert(msg, p12Bytes,
+			final PushedNotifications notifications = Push.alert(msg,
+					staff ? staffP12Bytes : memberP12Bytes,
 					apnsServerCertificatePassword, true, deviceId);
 			for (final PushedNotification notification : notifications) {
 				if (notification.isSuccessful()) {
 					/* Apple accepted the notification and should deliver it */
 					System.out
-							.println("Apple accepted the notification and should deliver it");
+							.println("Apple accepted the notification and should deliver it: "
+									+ msg);
 				} else {
 					final String invalidToken = notification.getDevice()
 							.getToken();

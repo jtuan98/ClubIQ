@@ -83,7 +83,7 @@ public class EmailSendService implements NotificationBusiness {
 	}
 
 	@Override
-	public boolean sendNotification(final String deviceId, final String msg)
+	public boolean sendNotification(final String deviceId, final String msg, final boolean staff)
 			throws AccountNotificationException {
 		// TODO Auto-generated method stub
 		return false;

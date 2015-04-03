@@ -64,12 +64,14 @@ public class AccountManagerController extends BaseController {
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "deviceId") final String deviceId,
-			@RequestParam(required = true, value = "msg") final String msg)
+			@RequestParam(required = false, value = "staff", defaultValue="true") final boolean staff,
+			@RequestParam(required = true, value = "msg") final String msg
+			)
 			throws Exception {
 		init();
 		String msgRetVal = "";
 		try {
-			mobileNotificationService.sendNotification(deviceId, msg);
+			mobileNotificationService.sendNotification(deviceId, msg, staff);
 		} catch (final InvalidDeviceId e) {
 			msgRetVal = e.getMessage();
 		}

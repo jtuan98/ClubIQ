@@ -87,6 +87,18 @@ public class AccountDto implements Serializable {
 		return userId;
 	}
 
+	public boolean hasRole(final Privilege role) {
+		boolean retVal = false;
+		if (priviledges != null) {
+			retVal = priviledges.contains(role);
+		}
+		return retVal;
+	}
+
+	public boolean isStaff() {
+		return hasRole(Privilege.staff);
+	}
+
 	public void setAddress(final String address) {
 		this.address = address;
 	}

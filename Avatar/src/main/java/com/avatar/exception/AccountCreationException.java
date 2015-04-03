@@ -2,10 +2,6 @@ package com.avatar.exception;
 
 public class AccountCreationException extends Exception{
 
-	public AccountCreationException() {
-		super();
-	}
-
 	public AccountCreationException(final String message) {
 		super(message);
 	}
