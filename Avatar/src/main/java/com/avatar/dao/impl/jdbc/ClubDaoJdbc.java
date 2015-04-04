@@ -1,5 +1,7 @@
 package com.avatar.dao.impl.jdbc;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
@@ -37,6 +39,12 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	private static String SEL_AMENITY_BY_PK = "SELECT * FROM CLUB_AMENITIES WHERE ID = ?";
 
 	private final AmenityMapper amenityMapper = new AmenityMapper();
+
+	private static String SEL_AMENITIES_BY_CLUBID = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ?";
+
+	private static String UPD_CLUB_INFO = "update CLUBS set NAME=?, ADDRESS=?, ZIPCODE=?,"
+			+ "CITY=?, STATE=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=? "
+			+ "WHERE ID=? ";
 
 	@Override
 	public void addUserToClub(final int clubIdPk, final int userIdPk)
@@ -87,6 +95,14 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
+	public List<AmenityDto> getAmenities(final Integer clubIdPk)
+			throws NotFoundException {
+		final List<AmenityDto> amenities = getJdbcTemplate().query(
+				SEL_AMENITIES_BY_CLUBID, amenityMapper, clubIdPk);
+		return amenities;
+	}
+
+	@Override
 	public AmenityDto getAmenity(final Integer amenityIdPk)
 			throws NotFoundException {
 		try {
@@ -127,6 +143,17 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	@Resource(name = "avatarDataSource")
 	public void setDataSource(final DataSource ds) {
 		initTemplate(ds);
+	}
+
+	@Override
+	public void update(final ClubDto club) throws NotFoundException {
+		final Integer clubIdPk = getClubIdPk(club.getClubId());
+		club.setId(clubIdPk);
+		getJdbcTemplate().update(UPD_CLUB_INFO,
+				club.getClubName(), club.getAddress(),
+				club.getZipCode(), club.getCity(), club.getState(),
+				club.getPhoneNumber(),club.getHzRestriction(),
+				club.getClubType(), club.getWebSite(), club.getId());
 	}
 
 }

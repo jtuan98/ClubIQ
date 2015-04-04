@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
+import com.avatar.dto.ImagePic;
 import com.avatar.dto.club.ClubDto;
 
 public class ClubDtoMapper implements RowMapper<ClubDto> {
@@ -21,7 +22,12 @@ public class ClubDtoMapper implements RowMapper<ClubDto> {
 		retVal.setPhoneNumber(rs.getString("PHONE_NUMBER"));
 		retVal.setState(rs.getString("STATE"));
 		retVal.setZipCode(rs.getString("ZIPCODE"));
-
+		retVal.setClubType(rs.getString("CLUB_TYPE"));
+		retVal.setWebSite(rs.getString("CLUB_WEBSITE"));
+		retVal.setHzRestriction(rs.getString("HZRESTRICTION"));
+		if (rs.getString("IMAGE_ID") != null) {
+			retVal.setImage(new ImagePic(rs.getInt("IMAGE_ID")));
+		}
 		return retVal;
 	}
 

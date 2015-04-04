@@ -32,8 +32,10 @@ import com.google.gson.reflect.TypeToken;
 public class BeaconManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
 			Privilege.superUser };
+
 	@Resource(name = "beaconService")
 	BeaconBusiness beaconService;
+
 	private final Type collectionAccountDtoType = new TypeToken<ArrayList<AccountDto>>() {
 	}.getType();
 
@@ -49,7 +51,7 @@ public class BeaconManagerController extends BaseController {
 			validateUserRoles(authToken, REQUIRED_ROLE);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
@@ -100,10 +102,27 @@ public class BeaconManagerController extends BaseController {
 			validateUserRoles(authToken, REQUIRED_ROLE);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setAmenityDeptName(clubId, apnsToken,
+					amenityDepartment);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	ModelAndView setAmenityDeptName(final String authToken,
+			final String apnsToken, final String amenityDepartment,
+			final String clubId) throws Exception {
+		init();
 		WsResponse<String> apiResponse = null;
 		try {
 			beaconService.setAmenityDeptName(clubId, apnsToken,
@@ -135,7 +154,7 @@ public class BeaconManagerController extends BaseController {
 			validateUserRoles(authToken, REQUIRED_ROLE);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
@@ -167,7 +186,7 @@ public class BeaconManagerController extends BaseController {
 			validateUserRoles(authToken, REQUIRED_ROLE);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
@@ -198,7 +217,7 @@ public class BeaconManagerController extends BaseController {
 			validateUserRoles(authToken, REQUIRED_ROLE);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}

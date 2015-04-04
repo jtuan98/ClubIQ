@@ -222,7 +222,7 @@ public class SurveyManagerController extends BaseController {
 			validateUserRoles(authToken, REQUIRED_ROLE);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}

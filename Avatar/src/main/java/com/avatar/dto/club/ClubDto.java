@@ -15,6 +15,9 @@ public class ClubDto implements Serializable {
 	protected String city;
 	protected String state;
 	protected String phoneNumber;
+	protected String clubType;
+	protected String webSite;
+	protected String hzRestriction;
 
 	public ClubDto() {
 	}
@@ -39,6 +42,14 @@ public class ClubDto implements Serializable {
 		return clubName;
 	}
 
+	public String getClubType() {
+		return clubType;
+	}
+
+	public String getHzRestriction() {
+		return hzRestriction;
+	}
+
 	public Integer getId() {
 		return id;
 	}
@@ -53,6 +64,10 @@ public class ClubDto implements Serializable {
 
 	public String getState() {
 		return state;
+	}
+
+	public String getWebSite() {
+		return webSite;
 	}
 
 	public String getZipCode() {
@@ -75,6 +90,14 @@ public class ClubDto implements Serializable {
 		this.clubName = clubName;
 	}
 
+	public void setClubType(final String clubType) {
+		this.clubType = clubType;
+	}
+
+	public void setHzRestriction(final String hzRestriction) {
+		this.hzRestriction = hzRestriction;
+	}
+
 	public void setId(final Integer id) {
 		this.id = id;
 	}
@@ -91,8 +114,11 @@ public class ClubDto implements Serializable {
 		this.state = state;
 	}
 
+	public void setWebSite(final String webSite) {
+		this.webSite = webSite;
+	}
+
 	public void setZipCode(final String zipCode) {
 		this.zipCode = zipCode;
 	}
-
 }

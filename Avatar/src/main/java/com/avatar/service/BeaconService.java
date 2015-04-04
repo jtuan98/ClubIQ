@@ -13,7 +13,9 @@ import com.avatar.dao.AccountDao;
 import com.avatar.dao.BeaconDao;
 import com.avatar.dao.ClubDao;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
+import com.avatar.dto.club.ClubDto;
 import com.avatar.exception.NotFoundException;
 
 @Service
@@ -32,6 +34,13 @@ public class BeaconService implements BeaconBusiness {
 	public void addUserIdToBeacon(final String beaconId, final String userId)
 			throws NotFoundException {
 		beaconDao.addUserIdToBeaconMapping(beaconId, userId);
+	}
+
+	@Override
+	public List<AmenityDto> getAmenities(final String clubId)
+			throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		return clubDao.getAmenities(clubIdPk);
 	}
 
 	@Override
@@ -54,6 +63,43 @@ public class BeaconService implements BeaconBusiness {
 		} else {
 			beaconDao.setAmenityDeptName(clubId, apnsToken, amenityDepartment);
 		}
+	}
+
+	@Override
+	public void update(final ClubDto club) throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(club.getClubId());
+		final ClubDto clubFromDb = clubDao.get(clubIdPk);
+		if (StringUtils.isNotEmpty(club.getAddress())) {
+			clubFromDb.setAddress(club.getAddress());
+		}
+		if (StringUtils.isNotEmpty(club.getCity())) {
+			clubFromDb.setCity(club.getCity());
+		}
+		if (StringUtils.isNotEmpty(club.getClubName())) {
+			clubFromDb.setClubName(club.getClubName());
+		}
+		if (StringUtils.isNotEmpty(club.getClubType())) {
+			clubFromDb.setClubType(club.getClubType());
+		}
+		if (StringUtils.isNotEmpty(club.getHzRestriction())) {
+			clubFromDb.setHzRestriction(club.getHzRestriction());
+		}
+		if (StringUtils.isNotEmpty(club.getPhoneNumber())) {
+			clubFromDb.setPhoneNumber(club.getPhoneNumber());
+		}
+		if (StringUtils.isNotEmpty(club.getState())) {
+			clubFromDb.setState(club.getState());
+		}
+		if (StringUtils.isNotEmpty(club.getWebSite())) {
+			clubFromDb.setWebSite(club.getWebSite());
+		}
+		if (StringUtils.isNotEmpty(club.getZipCode())) {
+			clubFromDb.setZipCode(club.getZipCode());
+		}
+		//TODO Must handle images...
+
+		clubDao.update(clubFromDb);
+
 	}
 
 	@Override
