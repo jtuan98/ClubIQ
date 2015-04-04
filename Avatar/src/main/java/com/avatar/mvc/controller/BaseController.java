@@ -2,15 +2,18 @@ package com.avatar.mvc.controller;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.avatar.business.AccountBusiness;
+import com.avatar.business.AuthenticationTokenizerBusiness;
 import com.avatar.business.NotificationBusiness;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.WsResponse;
+import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.promotion.Promotion;
 import com.avatar.dto.serializer.ImagePicSerializer;
 import com.avatar.dto.serializer.PairSerializer;
@@ -18,6 +21,9 @@ import com.avatar.dto.serializer.PromotionSerializer;
 import com.avatar.dto.serializer.SurveyAnswerSerializer;
 import com.avatar.dto.serializer.WsResponseSerializer;
 import com.avatar.dto.survey.SurveyAnswer;
+import com.avatar.exception.AuthenticationTokenExpiredException;
+import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
 
 public abstract class BaseController {
@@ -29,6 +35,9 @@ public abstract class BaseController {
 
 	@Resource(name = "apnsNotificationService")
 	protected NotificationBusiness mobileNotificationService;
+
+	@Resource(name = "authenticationTokenizer")
+	protected AuthenticationTokenizerBusiness authenticationService;
 
 	protected JsonView jsonView = null;
 
@@ -58,4 +67,24 @@ public abstract class BaseController {
 		retVal.put(JsonView.DATA, value);
 		return retVal;
 	}
+
+	protected void validateUserRoles(final String authToken,
+			final Privilege[] requiredRoles) throws NotFoundException,
+			AuthenticationTokenExpiredException, PermissionDeniedException {
+		final Set<Privilege> roles = authenticationService.getRoles(authToken);
+		boolean retVal = false;
+		String msg = "";
+		for (final Privilege privilege : requiredRoles) {
+			msg += privilege.name() + " ";
+			if (roles.contains(privilege)) {
+				retVal = true;
+				break;
+			}
+		}
+		if (retVal == false) {
+			throw new PermissionDeniedException("Roles [ " + msg
+					+ "] missing");
+		}
+	}
+
 }

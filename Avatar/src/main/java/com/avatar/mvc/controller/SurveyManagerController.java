@@ -19,11 +19,15 @@ import com.avatar.business.SurveyBusiness;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.dto.promotion.Promotion;
 import com.avatar.dto.survey.Survey;
 import com.avatar.dto.survey.SurveyAnswer;
+import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidParameterException;
+import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 
 @Controller
 @RequestMapping(value = "/SurveyMgr")
@@ -36,6 +40,9 @@ public class SurveyManagerController extends BaseController {
 	private PromotionBusiness promotionService;
 
 	private final DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyyMMdd");
+
+	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
+			Privilege.superUser };
 
 	@RequestMapping(value = "/GetPromotions")
 	public ModelAndView fetchPromotions(
@@ -202,6 +209,7 @@ public class SurveyManagerController extends BaseController {
 	public ModelAndView updatePromotions(
 			final Principal principal,
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "promotionId") final Integer promotionId,
 			@RequestParam(required = true, value = "promotionTitle") final String promotionTitle,
 			@RequestParam(required = true, value = "promotionDetails") final String promotionDetails,
@@ -209,6 +217,15 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = false, value = "endingDate") final String endingDateYYYYMMDD)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
 		WsResponse<String> apiResponse = null;
 		try {
 			final Promotion promotion = getPromotionInstance(null, null,

@@ -14,18 +14,20 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping(value = "/ClubMgr")
 public class ClubManagerController {
 
-	@Resource(name="beaconManagerController")
+	@Resource(name = "beaconManagerController")
 	BeaconManagerController beaconManager;
 
 	@RequestMapping(value = "/RegisterAPNsToken")
 	public ModelAndView setAmenityDeptName(
 			final Principal principal,
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = false, value = "userId") final String userId,
 			@RequestParam(required = true, value = "apnsToken") final String apnsToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 			throws Exception {
-		return beaconManager.setAmenityDeptName(principal, req, apnsToken, null, clubId);
+		return beaconManager.setAmenityDeptName(principal, req, authToken,
+				apnsToken, null, clubId);
 	}
 
 }

@@ -18,25 +18,42 @@ import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.enums.Location;
+import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidParameterException;
+import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 import com.google.gson.reflect.TypeToken;
 
 // User Must be Authenticated! and must have admin role
 @Controller
 @RequestMapping(value = "/BeaconMgr")
 public class BeaconManagerController extends BaseController {
+	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
+			Privilege.superUser };
 	@Resource(name = "beaconService")
 	BeaconBusiness beaconService;
 	private final Type collectionAccountDtoType = new TypeToken<ArrayList<AccountDto>>() {
 	}.getType();
 
-	@RequestMapping(value = "/getAmenityDeptName")
-	public ModelAndView getAmenityDeptName(final Principal principal,
+	@RequestMapping(value = "/GetAmenityDeptName")
+	public ModelAndView getAmenityDeptName(
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
 		WsResponse<List<String>> apiResponse = null;
 		try {
 			final List<String> amenityNames = beaconService
@@ -50,10 +67,11 @@ public class BeaconManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	private BeaconDto getBeaconInstance(final String clubId, final String amenityId,
-			final String beaconActionId, final String location, final String description,
+	private BeaconDto getBeaconInstance(final String clubId,
+			final String amenityId, final String beaconActionId,
+			final String location, final String description,
 			final String installerStaffUserId) throws InvalidParameterException {
-		final BeaconDto retVal = new BeaconDto ();
+		final BeaconDto retVal = new BeaconDto();
 		retVal.setBeaconid(beaconActionId);
 		retVal.setAmenityId(amenityId);
 		retVal.setClubId(clubId);
@@ -61,7 +79,7 @@ public class BeaconManagerController extends BaseController {
 		retVal.setDescription(description);
 		try {
 			retVal.setLocation(Location.valueOf(location));
-		} catch(final Exception e) {
+		} catch (final Exception e) {
 			throw new InvalidParameterException("Invalid location " + location);
 		}
 		return retVal;
@@ -71,11 +89,21 @@ public class BeaconManagerController extends BaseController {
 	public ModelAndView setAmenityDeptName(
 			final Principal principal,
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "apnsToken") final String apnsToken,
 			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
 		WsResponse<String> apiResponse = null;
 		try {
 			beaconService.setAmenityDeptName(clubId, apnsToken,
@@ -93,22 +121,28 @@ public class BeaconManagerController extends BaseController {
 	public ModelAndView setBeacon(
 			final Principal principal,
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
 			@RequestParam(required = true, value = "amenityId") final String amenityId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId,
 			@RequestParam(required = true, value = "location") final String location,
 			@RequestParam(required = true, value = "desc") final String description,
-			@RequestParam(required = true, value = "installerStaffUserId") final String installerStaffUserId		)
+			@RequestParam(required = true, value = "installerStaffUserId") final String installerStaffUserId)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
 		WsResponse<String> apiResponse = null;
 		try {
-			final BeaconDto beacon = getBeaconInstance(clubId,
-					amenityId,
-					beaconActionId,
-					location,
-					description,
-					installerStaffUserId);
+			final BeaconDto beacon = getBeaconInstance(clubId, amenityId,
+					beaconActionId, location, description, installerStaffUserId);
 			beaconService.updateBeacon(beacon);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					null);
@@ -123,10 +157,20 @@ public class BeaconManagerController extends BaseController {
 	public ModelAndView setMemberAcct(
 			final Principal principal,
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "mobileNumber") final String userId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconId)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
 		WsResponse<String> apiResponse = null;
 		try {
 			beaconService.addUserIdToBeacon(beaconId, userId);
@@ -144,10 +188,20 @@ public class BeaconManagerController extends BaseController {
 	public ModelAndView showMemberByDept(
 			final Principal principal,
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "beaconId") final String beaconId,
 			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
 		WsResponse<List<AccountDto>> apiResponse = null;
 		try {
 			final List<AccountDto> users = beaconService.getUsers(beaconId,

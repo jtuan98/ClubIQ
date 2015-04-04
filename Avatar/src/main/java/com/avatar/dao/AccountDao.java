@@ -1,7 +1,11 @@
 package com.avatar.dao;
 
+import java.util.List;
+
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
+import com.avatar.dto.enums.Privilege;
+import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 
 public interface AccountDao {
@@ -16,6 +20,10 @@ public interface AccountDao {
 
 	AccountDto fetchByToken(final String token, final String userId,
 			final String deviceId) throws NotFoundException;
+
+	List<Privilege> fetchRoles(final Integer userIdPk) throws NotFoundException;
+
+	List<Privilege> fetchRoles(final String userId) throws NotFoundException;
 
 	String getUserIdByDeviceId(String deviceId) throws NotFoundException;
 
@@ -43,7 +51,10 @@ public interface AccountDao {
 	void updateUserDeviceId(String userId, String deviceId)
 			throws NotFoundException;
 
-	void updateUserTangerineHandSetId(String userId, String deviceId, String snsToken)
-			throws NotFoundException;
+	void updateUserTangerineHandSetId(String userId, String deviceId,
+			String snsToken) throws NotFoundException;
+
+	boolean validateUserIdPasswd(String userId, String password)
+			throws NotFoundException, InvalidPasswordException;
 
 }

@@ -55,7 +55,9 @@
 			<web-resource-name>Public</web-resource-name>
 			<url-pattern>/1/AcctMgr/GetMemberAcct</url-pattern>
 			<url-pattern>/1/BeaconMgr/*</url-pattern>
-			
+			<url-pattern>/1/LoginMgr/*</url-pattern>
+			<url-pattern>/1/ClubMgr/*</url-pattern>
+												
 			<url-pattern>/1/open/*</url-pattern>
 			<url-pattern>/1/Registration/*</url-pattern>
 			<url-pattern>/1/SurveyMgr/*</url-pattern>

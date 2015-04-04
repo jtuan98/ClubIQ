@@ -27,6 +27,7 @@ import com.avatar.dto.account.MobileAccountDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
+import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 
 @Repository
@@ -107,6 +108,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private final ActivationTokenMapper activationTokenMapper = new ActivationTokenMapper();
 
+	private static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ?";
+
 	@Override
 	public void activate(final String userId, final String activationToken)
 			throws NotFoundException {
@@ -142,8 +145,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				account = getJdbcTemplate().queryForObject(sql,
 						accountDtoMapper, paramUserId);
 				populateAccountInfo(account);
-				final List<Privilege> roles = getJdbcTemplate().query(
-						SEL_ROLES_BY_USER_ID, rolesMapper, account.getId());
+				final List<Privilege> roles = fetchRoles(account.getId());
 				account.setPriviledges(new HashSet<Privilege>(roles));
 				if (account instanceof MobileAccountDto) {
 					final Map<String, Object> result = getJdbcTemplate()
@@ -187,6 +189,19 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			throw new NotFoundException();
 		}
 		return fetch(userIdPk);
+	}
+
+	@Override
+	public List<Privilege> fetchRoles(final Integer userIdPk)
+			throws NotFoundException {
+		return getJdbcTemplate().query(SEL_ROLES_BY_USER_ID, rolesMapper,
+				userIdPk);
+	}
+
+	@Override
+	public List<Privilege> fetchRoles(final String userId)
+			throws NotFoundException {
+		return fetchRoles(getUserIdPkByUserId(userId));
 	}
 
 	@Override
@@ -436,5 +451,18 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		if (updated == 0) {
 			throw new NotFoundException("Mobile " + userId + " not found!");
 		}
+	}
+
+	@Override
+	public boolean validateUserIdPasswd(final String userId,
+			final String password) throws NotFoundException,
+			InvalidPasswordException {
+		final Integer userIdPk = getUserIdPkByUserId(userId);
+		final int validate = getJdbcTemplate().queryForObject(
+				VALIDATE_USERID_PASSWD, Integer.class, userIdPk, password);
+		if (validate == 0) {
+			throw new InvalidPasswordException("Incorrect Password");
+		}
+		return true;
 	}
 }
