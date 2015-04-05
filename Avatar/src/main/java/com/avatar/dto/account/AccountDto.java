@@ -9,7 +9,7 @@ import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 
-public class AccountDto implements Serializable {
+public abstract class AccountDto implements Serializable {
 
 	protected Integer id; // primary key.
 
@@ -33,6 +33,12 @@ public class AccountDto implements Serializable {
 
 	protected ClubDto homeClub;
 
+	protected String mobileNumber;
+
+	protected String deviceId;
+
+	protected String tangerineHandsetId;
+
 	public AccountDto add(final Privilege priviledge) {
 		if (priviledge != null) {
 			if (priviledges == null) {
@@ -47,6 +53,10 @@ public class AccountDto implements Serializable {
 		return address;
 	}
 
+	public String getDeviceId() {
+		return deviceId;
+	}
+
 	public String getEmail() {
 		return email;
 	}
@@ -57,6 +67,10 @@ public class AccountDto implements Serializable {
 
 	public Integer getId() {
 		return id;
+	}
+
+	public String getMobileNumber() {
+		return mobileNumber;
 	}
 
 	public String getName() {
@@ -79,6 +93,10 @@ public class AccountDto implements Serializable {
 		return status;
 	}
 
+	public String getTangerineHandsetId() {
+		return tangerineHandsetId;
+	}
+
 	public ActivationToken getToken() {
 		return token;
 	}
@@ -87,20 +105,16 @@ public class AccountDto implements Serializable {
 		return userId;
 	}
 
-	public boolean hasRole(final Privilege role) {
-		boolean retVal = false;
-		if (priviledges != null) {
-			retVal = priviledges.contains(role);
-		}
-		return retVal;
-	}
-
 	public boolean isStaff() {
-		return hasRole(Privilege.staff);
+		return (this instanceof EmployeeAccountDto);
 	}
 
 	public void setAddress(final String address) {
 		this.address = address;
+	}
+
+	public void setDeviceId(final String deviceId) {
+		this.deviceId = deviceId;
 	}
 
 	public void setEmail(final String email) {
@@ -113,6 +127,10 @@ public class AccountDto implements Serializable {
 
 	public void setId(final Integer id) {
 		this.id = id;
+	}
+
+	public void setMobileNumber(final String mobileNumber) {
+		this.mobileNumber = mobileNumber;
 	}
 
 	public void setName(final String name) {
@@ -133,6 +151,10 @@ public class AccountDto implements Serializable {
 
 	public void setStatus(final AccountStatus status) {
 		this.status = status;
+	}
+
+	public void setTangerineHandsetId(final String tangerineHandsetId) {
+		this.tangerineHandsetId = tangerineHandsetId;
 	}
 
 	public void setToken(final ActivationToken token) {

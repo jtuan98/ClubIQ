@@ -16,8 +16,10 @@ import com.avatar.dto.ImagePic;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
-import com.avatar.dto.account.MobileAccountDto;
+import com.avatar.dto.account.EmployeeAccountDto;
+import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
+import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
@@ -26,9 +28,9 @@ import com.avatar.exception.InvalidDeviceId;
 @Controller
 public class RegistrationController extends BaseController {
 	@RequestMapping(value = { "/Registration/ActivateAccount",
-			"/Registration/ActivateAccountMobile",
-			"/open/Registration/ActivateAccount",
-			"/open/Registration/ActivateAccountMobile" })
+			"/Registration/ActivateAccountMember",
+			"/Registration/ActivateAccountMobile" //ActivateAccountMobile will be deprecated soon
+			})
 	public ModelAndView activateAccount(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "activationToken") final String activationToken,
@@ -53,9 +55,10 @@ public class RegistrationController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = { "/Registration/NonMobile/ActivateAccount",
-			"/open/Registration/NonMobile/ActivateAccount" })
-	public ModelAndView activateNonMobileAccount(
+	@RequestMapping(value = { "/Registration/Employee/ActivateAccount",
+			"/Registration/NonMobile/ActivateAccount" //NonMobile will be deprecated, use Employee
+			})
+	public ModelAndView activateEmployeeAccount(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "activationToken") final String activationToken)
 			throws Exception {
@@ -77,6 +80,7 @@ public class RegistrationController extends BaseController {
 	}
 
 	@RequestMapping(value = { "/Registration/CreateAccountMobile",
+			"/Registration/CreateAccountMember",
 			"/Registration/CreateAccount",
 			"/open/Registration/CreateAccountMobile",
 			"/open/Registration/CreateAccount" })
@@ -92,9 +96,9 @@ public class RegistrationController extends BaseController {
 		WsResponse<ActivationToken> apiResponse = null;
 		try {
 			final String userid = mobileNumber;
-			final MobileAccountDto accountInfo = (MobileAccountDto) createActivationAccountDto(
+			final MemberAccountDto accountInfo = (MemberAccountDto) createActivationAccountDto(
 					true, null, mobileNumber, userid, homeClubId, null, null,
-					null, null, Privilege.user.name());
+					null, null, Privilege.user.name(), null);
 			accountInfo.setDeviceId(deviceId);
 			accountInfo.setTangerineHandsetId(tangerineHandsetId);
 			final MobileActivationPin activationToken = (MobileActivationPin) accountService
@@ -103,8 +107,9 @@ public class RegistrationController extends BaseController {
 			String msg = "";
 			try {
 				mobileNotificationService.sendNotification(accountInfo);
-			} catch( final InvalidDeviceId e) {
-				msg = "Account created but unable to send notification: " + e.getMessage();
+			} catch (final InvalidDeviceId e) {
+				msg = "Account created but unable to send notification: "
+						+ e.getMessage();
 			}
 			apiResponse = new WsResponse<ActivationToken>(
 					ResponseStatus.success, msg, activationToken);
@@ -116,13 +121,14 @@ public class RegistrationController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = { "/Registration/NonMobile/CreateAccount",
-			"/open/Registration/NonMobile/CreateAccount" })
+	@RequestMapping(value = { "/Registration/Employee/CreateAccount",
+			"/Registration/NonMobile/CreateAccount"})
 	public ModelAndView createAccountNonMobile(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "email") final String email,
 			@RequestParam(required = true, value = "password") final String password,
-			@RequestParam(required = false, value = "homeClubId") final String homeClubId,
+			@RequestParam(required = true, value = "homeClubId") final String homeClubId,
+			@RequestParam(required = true, value = "clubAmenityId") final String clubAmenityId,
 			@RequestParam(required = false, value = "realname") final String name,
 			@RequestParam(required = false, value = "pictureBase64") final String pictureBase64Encoded,
 			@RequestParam(required = false, value = "address") final String address,
@@ -135,7 +141,7 @@ public class RegistrationController extends BaseController {
 			System.out.println("In................createAccount");
 			final AccountDto accountInfo = createActivationAccountDto(false,
 					email, null, userid, homeClubId, password, name,
-					pictureBase64Encoded, address, privilege);
+					pictureBase64Encoded, address, privilege, clubAmenityId);
 			final ActivationToken activationToken = accountService
 					.createAccount(accountInfo);
 			System.out.println("In................activationToken=>"
@@ -156,14 +162,15 @@ public class RegistrationController extends BaseController {
 			final String email, final String mobile, final String userid,
 			final String homeClubId, final String password, final String name,
 			final String pictureBase64Encoded, final String address,
-			final String privilege) {
+			final String privilege, final String amenityId) {
 		init();
 		AccountDto retVal = null;
 		if (mobileFlag) {
-			retVal = new MobileAccountDto();
-			((MobileAccountDto) retVal).setMobileNumber(mobile);
+			retVal = new MemberAccountDto();
+			((MemberAccountDto) retVal).setMobileNumber(mobile);
 		} else {
-			retVal = new AccountDto();
+			retVal = new EmployeeAccountDto();
+			((EmployeeAccountDto) retVal).add(new AmenityDto(amenityId));
 		}
 		if (StringUtils.isNotEmpty(homeClubId)) {
 			final ClubDto homeClub = new ClubDto();

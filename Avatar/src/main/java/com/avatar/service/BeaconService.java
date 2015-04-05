@@ -4,11 +4,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.avatar.business.BeaconBusiness;
+import com.avatar.business.NotificationBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.BeaconDao;
 import com.avatar.dao.ClubDao;
@@ -17,6 +19,7 @@ import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.exception.NotFoundException;
+import com.avatar.exception.NotificationException;
 
 @Service
 public class BeaconService implements BeaconBusiness {
@@ -30,10 +33,34 @@ public class BeaconService implements BeaconBusiness {
 	@Resource(name = "accountDaoJdbc")
 	private AccountDao accountDao;
 
+	@Resource(name = "apnsNotificationService")
+	private NotificationBusiness apnsNotificationService;
+
 	@Override
 	public void addUserIdToBeacon(final String beaconId, final String userId)
 			throws NotFoundException {
+		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
 		beaconDao.addUserIdToBeaconMapping(beaconId, userId);
+
+		final AccountDto member = accountDao.fetch(userId);
+
+		//Find the amenity associated to beacon
+		final Integer clubAmenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
+
+		//Find the staff associated to amenity
+		final List<Integer> amenityEmployeeIdsPk = clubDao.getAmenityEmployees(clubAmenityIdPk);
+
+		//Send alert to staff
+		if (CollectionUtils.isNotEmpty(amenityEmployeeIdsPk)) {
+			for (final Integer employeeIdPk : amenityEmployeeIdsPk) {
+				final AccountDto empoyee = accountDao.fetch(employeeIdPk);
+				try {
+					apnsNotificationService.sendAlert(empoyee, member);
+				} catch (final NotificationException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@Override

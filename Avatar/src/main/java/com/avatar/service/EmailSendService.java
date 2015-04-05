@@ -12,11 +12,11 @@ import com.avatar.business.NotificationBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
-import com.avatar.exception.AccountNotificationException;
+import com.avatar.exception.NotificationException;
 
 @Service
 public class EmailSendService implements NotificationBusiness {
-	public static void main(final String[] args) throws AccountNotificationException {
+	public static void main(final String[] args) throws NotificationException {
 		final org.springframework.mail.javamail.JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 		mailSender.setHost("smtp.gmail.com");
 		mailSender.setPort(587);
@@ -53,8 +53,14 @@ public class EmailSendService implements NotificationBusiness {
 	}
 
 	@Override
+	public boolean sendAlert(final AccountDto staffAccount, final AccountDto memberAccount)
+			throws NotificationException {
+		return false;
+	}
+
+	@Override
 	public boolean sendNotification(final AccountDto account)
-			throws AccountNotificationException {
+			throws NotificationException {
 		boolean retVal = false;
 		try {
 			final SimpleMailMessage message = new SimpleMailMessage();
@@ -77,19 +83,25 @@ public class EmailSendService implements NotificationBusiness {
 			retVal = true;
 		} catch (final Exception e) {
 			retVal = false;
-			throw new AccountNotificationException(e.getMessage());
+			throw new NotificationException(e.getMessage());
 		}
 		return retVal;
 	}
 
 	@Override
 	public boolean sendNotification(final String deviceId, final String msg, final boolean staff)
-			throws AccountNotificationException {
-		// TODO Auto-generated method stub
+			throws NotificationException {
 		return false;
 	}
 
 	public void setMailSender(final MailSender mailSender) {
 		this.mailSender = mailSender;
+	}
+
+	@Override
+	public boolean testAlert(final String deviceId, final boolean staff)
+			throws NotificationException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

@@ -15,10 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.avatar.business.AccountBusiness;
 import com.avatar.dao.AccountDao;
+import com.avatar.dao.ClubDao;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
-import com.avatar.dto.account.MobileAccountDto;
+import com.avatar.dto.account.EmployeeAccountDto;
+import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
+import com.avatar.dto.club.AmenityDto;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.AccountExistedException;
 import com.avatar.exception.NotFoundException;
@@ -69,6 +72,9 @@ public class AccountService implements AccountBusiness {
 	@Resource(name = "accountDaoJdbc")
 	private AccountDao accountDao;
 
+	@Resource(name = "clubDaoJdbc")
+	private ClubDao clubDao;
+
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public boolean activateAccount(final String activationToken)
@@ -113,18 +119,22 @@ public class AccountService implements AccountBusiness {
 	}
 
 	@Override
+	public void addAmenityToUser(final String userId, final String clubAmenityId)
+			throws NotFoundException {
+		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
+		final Integer clubAmenityIdPk = clubDao.getClubAmenityIdPk(clubAmenityId);
+		accountDao.addAmenityToUser(userIdPk, clubAmenityIdPk);
+	}
+
+	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public ActivationToken createAccount(final AccountDto accountInfo)
 			throws NotFoundException, AccountCreationException {
 		final Date now = new Date();
-		final boolean mobile = accountInfo instanceof MobileAccountDto;
+		final boolean mobile = accountInfo instanceof MemberAccountDto;
 		final ActivationToken activationToken = generateActivationToken(mobile);
 
-		String deviceId = null;
-		if (mobile) {
-			final MobileAccountDto mobileAccount = (MobileAccountDto) accountInfo;
-			deviceId = mobileAccount.getDeviceId();
-		}
+		final String deviceId = accountInfo.getDeviceId();;
 		// Check if account already exists...
 		try {
 			final AccountDto checkAcct = accountDao.fetch(accountInfo
@@ -154,6 +164,17 @@ public class AccountService implements AccountBusiness {
 		} catch (final NotFoundException e) {
 		}
 
+		// Verify amenity id
+		if (!mobile) {
+			final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) accountInfo;
+			for (final AmenityDto amenity : employeeAccountInfo.getAmenities()) {
+				final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenity
+						.getAmenityId());
+				final AmenityDto amenityFromDb = clubDao
+						.getAmenity(amenityIdPk);
+				amenity.makeCopy(amenityFromDb);
+			}
+		}
 		// Persist account info
 		accountDao.newAccount(accountInfo, activationToken);
 		activationCache.put(

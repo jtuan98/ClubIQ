@@ -12,15 +12,51 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidDeviceId;
 import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 
 @Controller
-@RequestMapping(value = {"/AcctMgr", "/AccountMgr"})
+@RequestMapping(value = { "/AcctMgr", "/AccountMgr" })
 public class AccountManagerController extends BaseController {
+	private static Privilege[] REQUIRED_ROLE = { Privilege.clubAdmin,
+			Privilege.staff, Privilege.superUser };
 
-	@RequestMapping(value = {"/GetAcctInfo", "/GetAccountInfo"} )
+	@RequestMapping(value = { "/AddClubAmenityToAccount" })
+	public ModelAndView addClubAmenityToAccount(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "userId") final String userId,
+			@RequestParam(required = true, value = "clubAmenityId") final String clubAmenityId)
+			throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<String> apiResponse = null;
+		try {
+			accountService.addAmenityToUser(userId, clubAmenityId);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = { "/GetAcctInfo", "/GetAccountInfo" })
 	public ModelAndView getAcctInfo(
 			final Principal principal,
 			final HttpServletRequest req,
@@ -63,15 +99,19 @@ public class AccountManagerController extends BaseController {
 	public ModelAndView testApns(
 			final Principal principal,
 			final HttpServletRequest req,
+			@RequestParam(required = true, value = "alert", defaultValue="true") final boolean alert,
 			@RequestParam(required = true, value = "deviceId") final String deviceId,
-			@RequestParam(required = false, value = "staff", defaultValue="true") final boolean staff,
-			@RequestParam(required = true, value = "msg") final String msg
-			)
+			@RequestParam(required = false, value = "staff", defaultValue = "true") final boolean staff,
+			@RequestParam(required = true, value = "msg") final String msg)
 			throws Exception {
 		init();
 		String msgRetVal = "";
 		try {
-			mobileNotificationService.sendNotification(deviceId, msg, staff);
+			if (!alert) {
+				mobileNotificationService.sendNotification(deviceId, msg, staff);
+			} else {
+				mobileNotificationService.testAlert(deviceId, staff);
+			}
 		} catch (final InvalidDeviceId e) {
 			msgRetVal = e.getMessage();
 		}
@@ -112,9 +152,9 @@ public class AccountManagerController extends BaseController {
 	}
 
 	// Update the email is not allowed since email is the USERID
-	@RequestMapping(value = { "/NonMobile/SetAccountInfo",
-			"/SetNonMobileAccountInfo" })
-	public ModelAndView updateAccountNonMobile(
+	@RequestMapping(value = { "/Employee/SetAccountInfo",
+			"/SetEmployeeAccountInfo" })
+	public ModelAndView updateAccountEmployee(
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "email") final String userId,

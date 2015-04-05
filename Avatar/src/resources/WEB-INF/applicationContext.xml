@@ -8,6 +8,10 @@
 	<import resource="avatar-datasource.xml" />
 	<import resource="avatar-mailsender.xml" />
 
+	<bean id="apnsPushThreads" class="java.lang.Integer">
+		<constructor-arg value="10" />
+	</bean>
+
 	<bean id="apnsCertificateP12Staff" class="java.lang.String">
 		<constructor-arg value="props/iphone_dis_staff.p12" />
 	</bean>
@@ -16,7 +20,7 @@
 		<constructor-arg value="props/iphone_dis_member.p12" />
 	</bean>
 
-		<bean id="apnsCertificateP12Password" class="java.lang.String">
+	<bean id="apnsCertificateP12Password" class="java.lang.String">
 		<constructor-arg value="hdinguyen" />
 	</bean>
 

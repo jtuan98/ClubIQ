@@ -18,6 +18,10 @@ public class AmenityDto implements Serializable {
 		this.id = id;
 	}
 
+	public AmenityDto(final String amenityId) {
+		this.amenityId = amenityId;
+	}
+
 	public String getAmenityId() {
 		return amenityId;
 	}
@@ -36,6 +40,14 @@ public class AmenityDto implements Serializable {
 
 	public ImagePic getImage() {
 		return image;
+	}
+
+	public void makeCopy(final AmenityDto theCopy) {
+		id = theCopy.id;
+		amenityId = theCopy.amenityId;
+		description = theCopy.description;
+		hoursOfOperation = theCopy.hoursOfOperation;
+		image = theCopy.image;
 	}
 
 	public void setAmenityId(final String amenityId) {
@@ -57,5 +69,4 @@ public class AmenityDto implements Serializable {
 	public void setImage(final ImagePic image) {
 		this.image = image;
 	}
-
 }

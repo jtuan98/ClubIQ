@@ -46,6 +46,8 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			+ "CITY=?, STATE=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=? "
 			+ "WHERE ID=? ";
 
+	private static String GET_EMPLOYEES_FOR_AMENITY_PK = "select USER_ID from AMENITY_EMPLOYEE where CLUB_AMENITY_ID = ? ";
+
 	@Override
 	public void addUserToClub(final int clubIdPk, final int userIdPk)
 			throws NotFoundException {
@@ -116,6 +118,14 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
+	public List<Integer> getAmenityEmployees(final Integer clubAmenityId)
+			throws NotFoundException {
+		final List<Integer> retVal = getJdbcTemplate().queryForList(
+				GET_EMPLOYEES_FOR_AMENITY_PK, Integer.class, clubAmenityId);
+		return retVal;
+	}
+
+	@Override
 	public Integer getClubAmenityIdPk(final String clubAmenityId)
 			throws NotFoundException {
 		try {
@@ -149,11 +159,11 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	public void update(final ClubDto club) throws NotFoundException {
 		final Integer clubIdPk = getClubIdPk(club.getClubId());
 		club.setId(clubIdPk);
-		getJdbcTemplate().update(UPD_CLUB_INFO,
-				club.getClubName(), club.getAddress(),
-				club.getZipCode(), club.getCity(), club.getState(),
-				club.getPhoneNumber(),club.getHzRestriction(),
-				club.getClubType(), club.getWebSite(), club.getId());
+		getJdbcTemplate().update(UPD_CLUB_INFO, club.getClubName(),
+				club.getAddress(), club.getZipCode(), club.getCity(),
+				club.getState(), club.getPhoneNumber(),
+				club.getHzRestriction(), club.getClubType(), club.getWebSite(),
+				club.getId());
 	}
 
 }

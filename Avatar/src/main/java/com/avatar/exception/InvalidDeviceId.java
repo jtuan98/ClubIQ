@@ -1,6 +1,6 @@
 package com.avatar.exception;
 
-public class InvalidDeviceId extends AccountNotificationException {
+public class InvalidDeviceId extends NotificationException {
 
 	public InvalidDeviceId() {
 	}

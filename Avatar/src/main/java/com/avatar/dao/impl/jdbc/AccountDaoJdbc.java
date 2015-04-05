@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -23,7 +24,9 @@ import com.avatar.dao.impl.jdbc.mapper.RolesMapper;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
-import com.avatar.dto.account.MobileAccountDto;
+import com.avatar.dto.account.EmployeeAccountDto;
+import com.avatar.dto.account.MemberAccountDto;
+import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
@@ -60,9 +63,9 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private static String UPD_ACCOUNT_STATUS_NOTIFIED = "update USERS set STATUS='"
 			+ AccountStatus.TokenSent.name()
-			+ "' WHERE USERID = ? AND STATUS='"
-			+ AccountStatus.New.name()
-			+ "'";
+			+ "' WHERE USERID = ? AND STATUS in ('"
+			+ AccountStatus.New.name() + "', '"+AccountStatus.TokenSent.name()
+			+ "')";
 
 	private static String UPD_USER_DEVICEID = "update USER_DEVICES set DEVICE_ID=? "
 			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?)";
@@ -110,6 +113,12 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ?";
 
+	private static String INS_AMENITY_EMPLOYEE = "INSERT INTO AMENITY_EMPLOYEE (ID, CLUB_AMENITY_ID, USER_ID, CREATE_DATE) VALUES (?,?,?,NOW())";
+
+	private static String SEL_AMENITY_ID_BY_USERID = "select distinct CLUB_AMENITY_ID from AMENITY_EMPLOYEE where USER_ID = ? ";
+
+	private static String SEL_AMENITY_USER_EXISTS = "select count(*) from AMENITY_EMPLOYEE where CLUB_AMENITY_ID = ? and USER_ID = ? ";
+
 	@Override
 	public void activate(final String userId, final String activationToken)
 			throws NotFoundException {
@@ -118,6 +127,24 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		if (updated == 0) {
 			throw new NotFoundException();
 		}
+	}
+
+	@Override
+	public void addAmenityToUser(final Integer userIdPk,
+			final Integer clubAmenityIdPk) throws NotFoundException {
+		final int exists = getJdbcTemplate().queryForObject(
+				SEL_AMENITY_USER_EXISTS, Integer.class, clubAmenityIdPk,
+				userIdPk);
+		if (exists == 0) {
+			addLinkAmenityUserId(clubAmenityIdPk, userIdPk);
+		}
+	}
+
+	private void addLinkAmenityUserId(final Integer amenityIdPk,
+			final Integer userIdPk) {
+		final int idAmenityEmployee = sequencer.nextVal("ID_SEQ");
+		getJdbcTemplate().update(INS_AMENITY_EMPLOYEE, idAmenityEmployee,
+				amenityIdPk, userIdPk);
 	}
 
 	@Override
@@ -147,15 +174,30 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				populateAccountInfo(account);
 				final List<Privilege> roles = fetchRoles(account.getId());
 				account.setPriviledges(new HashSet<Privilege>(roles));
-				if (account instanceof MobileAccountDto) {
+				try {
 					final Map<String, Object> result = getJdbcTemplate()
 							.queryForMap(
 									SEL_DEVICE_TANGERINE_HANDSET_ID_BY_USER_ID,
 									account.getId());
-					final MobileAccountDto mobileAccount = (MobileAccountDto) account;
-					mobileAccount.setDeviceId((String) result.get("DEVICE_ID"));
-					mobileAccount.setTangerineHandsetId((String) result
-							.get("TANGERINE_HANDSET_ID"));
+					if (MapUtils.isNotEmpty(result)) {
+						account.setDeviceId((String) result.get("DEVICE_ID"));
+						account.setTangerineHandsetId((String) result
+								.get("TANGERINE_HANDSET_ID"));
+					}
+				} catch (final EmptyResultDataAccessException e) {
+
+				}
+				if (account instanceof EmployeeAccountDto) {
+					final List<Integer> amenityIdsPk = getJdbcTemplate()
+							.queryForList(SEL_AMENITY_ID_BY_USERID,
+									Integer.class, account.getId());
+					final EmployeeAccountDto nonMobileAccount = (EmployeeAccountDto) account;
+					if (CollectionUtils.isNotEmpty(amenityIdsPk)) {
+						for (final Integer amenityIdPk : amenityIdsPk) {
+							nonMobileAccount.add(clubDao
+									.getAmenity(amenityIdPk));
+						}
+					}
 				}
 				if ((account.getPicture() != null)
 						&& (account.getPicture().getId() != null)) {
@@ -242,13 +284,13 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		account.setId(id);
 		final int idToken = sequencer.nextVal("ID_SEQ");
 		String mobileNumber = "";
-		final boolean mobile = (account instanceof MobileAccountDto);
+		final boolean mobile = (account instanceof MemberAccountDto);
 		final Integer idImage = persistImage(account.getPicture());
 		Validate.notEmpty(this.getClass().getName() + " USER_ID",
 				account.getUserId());
 		// Get mobile stuff
 		if (mobile) {
-			final MobileAccountDto accountMobile = (MobileAccountDto) account;
+			final MemberAccountDto accountMobile = (MemberAccountDto) account;
 			mobileNumber = accountMobile.getMobileNumber();
 			Validate.notEmpty(this.getClass().getName() + " MOBILE_NUMBER",
 					mobileNumber);
@@ -290,6 +332,14 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		if (clubIdPk != null) {
 			clubDao.addUserToClub(clubIdPk, account.getId());
 		}
+		if (!mobile) {
+			final EmployeeAccountDto nonMobileAccount = (EmployeeAccountDto) account;
+			if (CollectionUtils.isNotEmpty(nonMobileAccount.getAmenities())) {
+				for (final AmenityDto amenity : nonMobileAccount.getAmenities()) {
+					addLinkAmenityUserId(amenity.getId(), account.getId());
+				}
+			}
+		}
 		getJdbcTemplate().update(INS_TOKEN,
 		// ID
 				idToken,
@@ -321,7 +371,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		}
 
 		if (mobile) {
-			final MobileAccountDto accountMobile = (MobileAccountDto) account;
+			final MemberAccountDto accountMobile = (MemberAccountDto) account;
 			final int idDevice = sequencer.nextVal("ID_SEQ");
 			getJdbcTemplate().update(INS_DEVICES,
 			// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId

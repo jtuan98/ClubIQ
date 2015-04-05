@@ -12,6 +12,9 @@ public interface AccountDao {
 	void activate(String userId, String activationToken)
 			throws NotFoundException;
 
+	void addAmenityToUser(Integer userIdPk, Integer clubAmenityIdPk)
+			throws NotFoundException;
+
 	void deactivate(String userId) throws NotFoundException;
 
 	AccountDto fetch(Integer userIdPk) throws NotFoundException;

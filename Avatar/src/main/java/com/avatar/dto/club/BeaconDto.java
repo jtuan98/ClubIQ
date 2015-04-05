@@ -3,6 +3,7 @@ package com.avatar.dto.club;
 import java.io.Serializable;
 
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.enums.Location;
 
 public class BeaconDto implements Serializable {
@@ -84,7 +85,7 @@ public class BeaconDto implements Serializable {
 
 	public AccountDto setInstallerStaffId(final String userId) {
 		if (installerStaff == null) {
-			installerStaff = new AccountDto();
+			installerStaff = new EmployeeAccountDto();
 		}
 		installerStaff.setUserId(userId);
 		return installerStaff;

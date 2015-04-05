@@ -14,6 +14,8 @@ public interface AccountBusiness {
 			String activationToken) throws NotFoundException,
 			AccountCreationException;
 
+	void addAmenityToUser(String userId, String amenityId)throws NotFoundException;
+
 	// Returns a activationToken and expiration date.
 	ActivationToken createAccount(AccountDto accountInfo)
 			throws NotFoundException, AccountCreationException;

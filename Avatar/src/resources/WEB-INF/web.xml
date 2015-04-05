@@ -39,16 +39,10 @@
 		</auth-constraint>
 	</security-constraint>
 
-	<!-- security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Restricted</web-resource-name>
-			<url-pattern>/1/BeaconMgr/*</url-pattern>
-			<url-pattern>/1/AcctMgr/GetMemberAcct</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>clubAdmin</role-name>
-		</auth-constraint>
-	</security-constraint-->
+	<!-- security-constraint> <web-resource-collection> <web-resource-name>Restricted</web-resource-name> 
+		<url-pattern>/1/BeaconMgr/*</url-pattern> <url-pattern>/1/AcctMgr/GetMemberAcct</url-pattern> 
+		</web-resource-collection> <auth-constraint> <role-name>clubAdmin</role-name> 
+		</auth-constraint> </security-constraint -->
 
 	<security-constraint>
 		<web-resource-collection>
@@ -57,25 +51,33 @@
 			<url-pattern>/1/BeaconMgr/*</url-pattern>
 			<url-pattern>/1/LoginMgr/*</url-pattern>
 			<url-pattern>/1/ClubMgr/*</url-pattern>
-												
+
 			<url-pattern>/1/open/*</url-pattern>
 			<url-pattern>/1/Registration/*</url-pattern>
 			<url-pattern>/1/SurveyMgr/*</url-pattern>
 
 			<url-pattern>/1/AcctMgr/Mobile/*</url-pattern>
+			<url-pattern>/1/AcctMgr/Member/*</url-pattern>
 			<url-pattern>/1/AcctMgr/NonMobile/*</url-pattern>
+			<url-pattern>/1/AcctMgr/Employee/*</url-pattern>
 			<url-pattern>/1/AcctMgr/Mobile/MapTangerineHandsetIDwithUser</url-pattern>
+			<url-pattern>/1/AcctMgr/Member/MapTangerineHandsetIDwithUser</url-pattern>
+			<url-pattern>/1/AcctMgr/AddClubAmenityToAccount</url-pattern>
 			<url-pattern>/1/AcctMgr/SetAccountInfo</url-pattern>
-			<url-pattern>/1/AcctMgr/SetNonMobileAccountInfo</url-pattern>
+			<url-pattern>/1/AcctMgr/SetEmployeeAccountInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/GetAcctInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/testApns</url-pattern>
 			<url-pattern>/1/AccountMgr/MapTangerineHandsetIDwithUser</url-pattern>
+			<url-pattern>/1/AccountMgr/Member/MapTangerineHandsetIDwithUser</url-pattern>
 			<url-pattern>/1/AccountMgr/Mobile/MapTangerineHandsetIDwithUser</url-pattern>
 			<url-pattern>/1/AccountMgr/testApns</url-pattern>
 			<url-pattern>/1/AccountMgr/Mobile/*</url-pattern>
+			<url-pattern>/1/AccountMgr/Member/*</url-pattern>
 			<url-pattern>/1/AccountMgr/NonMobile/*</url-pattern>
+			<url-pattern>/1/AccountMgr/Employee/*</url-pattern>
 			<url-pattern>/1/AccountMgr/SetAccountInfo</url-pattern>
 			<url-pattern>/1/AccountMgr/SetNonMobileAccountInfo</url-pattern>
+			<url-pattern>/1/AccountMgr/SetEmployeeAccountInfo</url-pattern>
 			<url-pattern>/1/AccountMgr/GetAcctInfo</url-pattern>
 		</web-resource-collection>
 	</security-constraint>
