@@ -15,6 +15,7 @@ import javapns.notification.transmission.PushQueue;
 import javax.annotation.Resource;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import com.avatar.business.NotificationBusiness;
@@ -41,15 +42,25 @@ public class ApnsNotificationService implements NotificationBusiness {
 	private PushQueue queueAlert = null;
 
 	@Resource(name = "apnsPushThreads")
-	int pushThreads;
+	private int pushThreads;
+
+	@Resource(name = "apnsAlertMsg")
+	private String alertMsg;
 
 	private static final String ALERT_JSON = "{'alert':'USER_INFO', 'sound':'default', 'ads':'%s', 'user_define':'%s'}";
 
-	private String buildAlertJson(final AccountDto memberAccount) {
-		final String retVal = String.format(ALERT_JSON, memberAccount.getName()
-				.replaceAll("'", ""), memberAccount.getMobileNumber()
-				.replaceAll("'", ""));
-		return retVal;
+	private PushNotificationPayload buildAlertPayload(
+			final AccountDto memberAccount) throws JSONException {
+		final PushNotificationPayload payload = new PushNotificationPayload();
+		payload.addCustomAlertBody(String.format(alertMsg,
+				memberAccount.getName()));
+		payload.addBadge(1);
+		payload.addSound("default");
+
+		payload.addCustomDictionary("phoneNumber",
+				memberAccount.getMobileNumber());
+
+		return payload;
 	}
 
 	private void init() throws NotificationException {
@@ -117,13 +128,15 @@ public class ApnsNotificationService implements NotificationBusiness {
 		boolean retVal = true;
 		init();
 
-		final String msg = buildAlertJson(memberAccount);
 		try {
+			final PushNotificationPayload payload = buildAlertPayload(memberAccount);
 			/* Prepare a simple payload to push */
-			final PushNotificationPayload payload = PushNotificationPayload
-					.alert(msg);
 			queueNotificationEmployee.add(payload, staffAccount.getDeviceId());
-		} catch (final InvalidDeviceTokenFormatException e) {
+		} catch (final InvalidDeviceTokenFormatException | JSONException e) {
+			final String msg = String.format(ALERT_JSON, memberAccount.getName()
+					.replaceAll("'", ""), memberAccount.getMobileNumber()
+					.replaceAll("'", ""));
+
 			retVal = sendNotification(staffAccount.getDeviceId(), msg,
 					staffAccount.isStaff());
 		}
@@ -191,8 +204,8 @@ public class ApnsNotificationService implements NotificationBusiness {
 			throws NotificationException {
 		final boolean retVal = true;
 		init();
-		final String msg = String.format(ALERT_JSON, "John Doe",
-				"123-456-1234");
+		final String msg = String
+				.format(ALERT_JSON, "John Doe", "123-456-1234");
 		try {
 			/* Prepare a simple payload to push */
 			final PushNotificationPayload payload = PushNotificationPayload
@@ -203,7 +216,9 @@ public class ApnsNotificationService implements NotificationBusiness {
 				queueNotificationMember.add(payload, deviceId);
 			}
 		} catch (final InvalidDeviceTokenFormatException e) {
-			throw new NotificationException("InvalidDeviceTokenFormatException was thrown: " + e.getMessage());
+			throw new NotificationException(
+					"InvalidDeviceTokenFormatException was thrown: "
+							+ e.getMessage());
 		}
 		return retVal;
 	}

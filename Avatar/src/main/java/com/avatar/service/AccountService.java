@@ -38,12 +38,12 @@ public class AccountService implements AccountBusiness {
 		// final ActivationToken token = service.generateActivationToken(true);
 		// final Gson gson = new Gson();
 		// System.out.println(gson.toJson(token));
-		final String activationTokenParam = "123";
-		final String[] activationToken = activationTokenParam.split("_");
-		System.out.println(activationToken.length);
+		final Date test = new Date(System.currentTimeMillis()
+				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000));
+		System.out.println(test);
 	}
 
-	private static long KEY_VALID_FOR_IN_MINUTES = 2000;
+	private static long KEY_VALID_FOR_IN_MINUTES = 60*7*24;
 
 	private final LoadingCache<String, AccountDto> activationCache = CacheBuilder
 			.newBuilder().maximumSize(1000)
