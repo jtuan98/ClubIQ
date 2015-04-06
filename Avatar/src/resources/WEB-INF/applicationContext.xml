@@ -12,6 +12,10 @@
 		<constructor-arg value="10" />
 	</bean>
 
+	<bean id="apnsAlertMsg" class="java.lang.String">
+		<constructor-arg value="Member %s is approaching..." />
+	</bean>
+
 	<bean id="apnsCertificateP12Staff" class="java.lang.String">
 		<constructor-arg value="props/iphone_dis_staff.p12" />
 	</bean>

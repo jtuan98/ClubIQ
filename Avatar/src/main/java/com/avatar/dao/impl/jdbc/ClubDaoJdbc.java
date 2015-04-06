@@ -36,11 +36,11 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private static String SEL_AMENITY_PK_BY_AMENITYID = "SELECT ID FROM CLUB_AMENITIES WHERE AMENITYID = ? ";
 
-	private static String SEL_AMENITY_BY_PK = "SELECT * FROM CLUB_AMENITIES WHERE ID = ?";
+	private static String SEL_AMENITY_BY_PK = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
 
 	private final AmenityMapper amenityMapper = new AmenityMapper();
 
-	private static String SEL_AMENITIES_BY_CLUBID = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ?";
+	private static String SEL_AMENITIES_BY_CLUBID = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CLUB_ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
 
 	private static String UPD_CLUB_INFO = "update CLUBS set NAME=?, ADDRESS=?, ZIPCODE=?,"
 			+ "CITY=?, STATE=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=? "

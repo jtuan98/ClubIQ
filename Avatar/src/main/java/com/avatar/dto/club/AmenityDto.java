@@ -10,6 +10,7 @@ public class AmenityDto implements Serializable {
 	protected String description;
 	protected String hoursOfOperation;
 	protected ImagePic image;
+	protected String amenityType;
 
 	public AmenityDto() {
 	}
@@ -24,6 +25,10 @@ public class AmenityDto implements Serializable {
 
 	public String getAmenityId() {
 		return amenityId;
+	}
+
+	public String getAmenityType() {
+		return amenityType;
 	}
 
 	public String getDescription() {
@@ -52,6 +57,10 @@ public class AmenityDto implements Serializable {
 
 	public void setAmenityId(final String amenityId) {
 		this.amenityId = amenityId;
+	}
+
+	public void setAmenityType(final String amenityType) {
+		this.amenityType = amenityType;
 	}
 
 	public void setDescription(final String description) {

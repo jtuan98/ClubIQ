@@ -176,20 +176,10 @@ public class BeaconManagerController extends BaseController {
 	public ModelAndView setMemberAcct(
 			final Principal principal,
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "mobileNumber") final String userId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconId)
 			throws Exception {
 		init();
-		WsResponse<String> apiDeniedResponse = null;
-		try {
-			validateUserRoles(authToken, REQUIRED_ROLE);
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
 		WsResponse<String> apiResponse = null;
 		try {
 			beaconService.addUserIdToBeacon(beaconId, userId);

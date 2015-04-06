@@ -16,6 +16,7 @@ import com.avatar.dao.AccountDao;
 import com.avatar.dao.BeaconDao;
 import com.avatar.dao.ClubDao;
 import com.avatar.dao.SurveyDao;
+import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.survey.Survey;
 import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.NotFoundException;
@@ -62,9 +63,11 @@ public class SurveyService implements SurveyBusiness {
 		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
 		// Get memeberIdPk
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
+		// Get the Amenity type
+		final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
 		// Find Last Mon
 		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
-				clubIdPk, amenityIdPk);
+				amenity.getAmenityType());
 		final Date since = getLastMonday(surveyPks.size());
 		final Date lastMondayDate = getLastMonday(1);
 		final Set<Integer> surveyIdsSincePastMon = surveyDao

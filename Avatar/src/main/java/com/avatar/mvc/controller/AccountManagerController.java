@@ -99,7 +99,7 @@ public class AccountManagerController extends BaseController {
 	public ModelAndView testApns(
 			final Principal principal,
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "alert", defaultValue="true") final boolean alert,
+			@RequestParam(required = true, value = "alert", defaultValue = "true") final boolean alert,
 			@RequestParam(required = true, value = "deviceId") final String deviceId,
 			@RequestParam(required = false, value = "staff", defaultValue = "true") final boolean staff,
 			@RequestParam(required = true, value = "msg") final String msg)
@@ -108,7 +108,8 @@ public class AccountManagerController extends BaseController {
 		String msgRetVal = "";
 		try {
 			if (!alert) {
-				mobileNotificationService.sendNotification(deviceId, msg, staff);
+				mobileNotificationService
+						.sendNotification(deviceId, msg, staff);
 			} else {
 				mobileNotificationService.testAlert(deviceId, staff);
 			}
@@ -118,7 +119,9 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(msgRetVal));
 	}
 
-	@RequestMapping(value = { "/Mobile/SetAccountInfo", "/SetAccountInfo" })
+	@RequestMapping(value = { "/Mobile/SetAccountInfo", // This will be
+														// deprecated
+			"/Member/SetAccountInfo", "/SetAccountInfo" })
 	public ModelAndView updateAccount(
 			final Principal principal,
 			final HttpServletRequest req,
@@ -184,8 +187,7 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = { "/MapTangerineHandsetIDwithUser",
-			"/Mobile/MapTangerineHandsetIDwithUser" })
+	@RequestMapping(value = { "/MapTangerineHandsetIDwithUser" })
 	public ModelAndView updateTangerineHandsetIDwithUser(
 			final Principal principal,
 			final HttpServletRequest req,
