@@ -15,6 +15,8 @@ import javapns.notification.transmission.PushQueue;
 import javax.annotation.Resource;
 
 import org.apache.commons.io.IOUtils;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +27,6 @@ import com.avatar.exception.NotificationException;
 
 @Service
 public class ApnsNotificationService implements NotificationBusiness {
-
 	@Resource(name = "apnsCertificateP12Staff")
 	private String apnsServerCertificateStaff;
 
@@ -48,6 +49,7 @@ public class ApnsNotificationService implements NotificationBusiness {
 	private String alertMsg;
 
 	private static final String ALERT_JSON = "{'alert':'USER_INFO', 'sound':'default', 'ads':'%s', 'user_define':'%s'}";
+	private final DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss");
 
 	private PushNotificationPayload buildAlertPayload(
 			final AccountDto memberAccount) throws JSONException {
@@ -57,8 +59,8 @@ public class ApnsNotificationService implements NotificationBusiness {
 		payload.addBadge(1);
 		payload.addSound("default");
 
-		payload.addCustomDictionary("phoneNumber",
-				memberAccount.getMobileNumber());
+		payload.addCustomDictionary("phoneNumber", memberAccount.getMobileNumber());
+		payload.addCustomDictionary("checkIn", dtf.print(System.currentTimeMillis()));
 
 		return payload;
 	}

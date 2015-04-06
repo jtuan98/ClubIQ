@@ -79,6 +79,43 @@ public class RegistrationController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = { "/Registration/Employee/CreateAccount",
+			"/Registration/NonMobile/CreateAccount"})
+	public ModelAndView createAccountEmployee(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "email") final String email,
+			@RequestParam(required = true, value = "password") final String password,
+			@RequestParam(required = true, value = "homeClubId") final String homeClubId,
+			@RequestParam(required = true, value = "clubAmenityId") final String clubAmenityId,
+			@RequestParam(required = false, value = "realname") final String name,
+			@RequestParam(required = false, value = "pictureBase64") final String pictureBase64Encoded,
+			@RequestParam(required = false, value = "address") final String address,
+			@RequestParam(required = true, value = "privilege", defaultValue = "user") final String privilege)
+			throws Exception {
+		init();
+		WsResponse<ActivationToken> apiResponse = null;
+		try {
+			final String userid = email;
+			System.out.println("In................createAccount");
+			final AccountDto accountInfo = createActivationAccountDto(false,
+					email, null, userid, homeClubId, password, name,
+					pictureBase64Encoded, address, privilege, clubAmenityId);
+			final ActivationToken activationToken = accountService
+					.createAccount(accountInfo);
+			System.out.println("In................activationToken=>"
+					+ activationToken.getToken());
+			accountInfo.setToken(activationToken);
+			emailNotificationService.sendNotification(accountInfo);
+			apiResponse = new WsResponse<ActivationToken>(
+					ResponseStatus.success, "Token Sent", null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<ActivationToken>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	@RequestMapping(value = { "/Registration/CreateAccountMobile",
 			"/Registration/CreateAccountMember",
 			"/Registration/CreateAccount",
@@ -113,43 +150,6 @@ public class RegistrationController extends BaseController {
 			}
 			apiResponse = new WsResponse<ActivationToken>(
 					ResponseStatus.success, msg, activationToken);
-		} catch (final Exception e) {
-			e.printStackTrace();
-			apiResponse = new WsResponse<ActivationToken>(
-					ResponseStatus.failure, e.getMessage(), null);
-		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
-	}
-
-	@RequestMapping(value = { "/Registration/Employee/CreateAccount",
-			"/Registration/NonMobile/CreateAccount"})
-	public ModelAndView createAccountNonMobile(
-			final HttpServletRequest req,
-			@RequestParam(required = true, value = "email") final String email,
-			@RequestParam(required = true, value = "password") final String password,
-			@RequestParam(required = true, value = "homeClubId") final String homeClubId,
-			@RequestParam(required = true, value = "clubAmenityId") final String clubAmenityId,
-			@RequestParam(required = false, value = "realname") final String name,
-			@RequestParam(required = false, value = "pictureBase64") final String pictureBase64Encoded,
-			@RequestParam(required = false, value = "address") final String address,
-			@RequestParam(required = true, value = "privilege", defaultValue = "user") final String privilege)
-			throws Exception {
-		init();
-		WsResponse<ActivationToken> apiResponse = null;
-		try {
-			final String userid = email;
-			System.out.println("In................createAccount");
-			final AccountDto accountInfo = createActivationAccountDto(false,
-					email, null, userid, homeClubId, password, name,
-					pictureBase64Encoded, address, privilege, clubAmenityId);
-			final ActivationToken activationToken = accountService
-					.createAccount(accountInfo);
-			System.out.println("In................activationToken=>"
-					+ activationToken.getToken());
-			accountInfo.setToken(activationToken);
-			emailNotificationService.sendNotification(accountInfo);
-			apiResponse = new WsResponse<ActivationToken>(
-					ResponseStatus.success, "Token Sent", null);
 		} catch (final Exception e) {
 			e.printStackTrace();
 			apiResponse = new WsResponse<ActivationToken>(
