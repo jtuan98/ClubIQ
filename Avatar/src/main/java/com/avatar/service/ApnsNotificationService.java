@@ -15,6 +15,7 @@ import javapns.notification.transmission.PushQueue;
 import javax.annotation.Resource;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONException;
@@ -49,7 +50,8 @@ public class ApnsNotificationService implements NotificationBusiness {
 	private String alertMsg;
 
 	private static final String ALERT_JSON = "{'alert':'USER_INFO', 'sound':'default', 'ads':'%s', 'user_define':'%s'}";
-	private final DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss");
+	private final DateTimeFormatter dtf = DateTimeFormat
+			.forPattern("MM/dd/yyyy HH:mm:ss");
 
 	private PushNotificationPayload buildAlertPayload(
 			final AccountDto memberAccount) throws JSONException {
@@ -59,8 +61,10 @@ public class ApnsNotificationService implements NotificationBusiness {
 		payload.addBadge(1);
 		payload.addSound("default");
 
-		payload.addCustomDictionary("phoneNumber", memberAccount.getMobileNumber());
-		payload.addCustomDictionary("checkIn", dtf.print(System.currentTimeMillis()));
+		payload.addCustomDictionary("phoneNumber",
+				memberAccount.getMobileNumber());
+		payload.addCustomDictionary("checkIn",
+				dtf.print(System.currentTimeMillis()));
 
 		return payload;
 	}
@@ -130,17 +134,29 @@ public class ApnsNotificationService implements NotificationBusiness {
 		boolean retVal = true;
 		init();
 
-		try {
-			final PushNotificationPayload payload = buildAlertPayload(memberAccount);
-			/* Prepare a simple payload to push */
-			queueNotificationEmployee.add(payload, staffAccount.getDeviceId());
-		} catch (final InvalidDeviceTokenFormatException | JSONException e) {
-			final String msg = String.format(ALERT_JSON, memberAccount.getName()
-					.replaceAll("'", ""), memberAccount.getMobileNumber()
-					.replaceAll("'", ""));
+		if (StringUtils.isNotEmpty(staffAccount.getDeviceId())) {
+			try {
+				final PushNotificationPayload payload = buildAlertPayload(memberAccount);
+				/* Prepare a simple payload to push */
+				queueNotificationEmployee.add(payload,
+						staffAccount.getDeviceId());
+			} catch (final InvalidDeviceTokenFormatException | JSONException e) {
+				final String name = StringUtils
+						.isEmpty(memberAccount.getName()) ? "" : memberAccount
+						.getName();
+				final String mobileNumber = StringUtils.isEmpty(memberAccount
+						.getMobileNumber()) ? "" : memberAccount
+						.getMobileNumber();
+				final String msg = String.format(ALERT_JSON,
+						name.replaceAll("'", ""),
+						mobileNumber.replaceAll("'", ""));
 
-			retVal = sendNotification(staffAccount.getDeviceId(), msg,
-					staffAccount.isStaff());
+				retVal = sendNotification(staffAccount.getDeviceId(), msg,
+						staffAccount.isStaff());
+			}
+		} else {
+			System.out.println("INFO: skip Alert... Staff does not have any deviceId");
+			retVal = false;
 		}
 		return retVal;
 	}

@@ -23,7 +23,8 @@ import com.avatar.exception.NotFoundException;
 public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static final String GET_BEACON_ID = "SELECT ID FROM BEACONS WHERE BEACONID = ? ";
-	private static final String GET_COUNT_BEACON_ID_USERID = "SELECT COUNT(*) FROM BEACON_USERS BU, USERS U WHERE USER_ID = U.ID AND BEACON_ID = ? and U.USERID=?";
+	private static final String GET_COUNT_BEACON_ID_USERID = "SELECT COUNT(*) FROM BEACON_USERS BU, USERS U WHERE USER_ID = U.ID AND BEACON_ID = ? and U.USERID=? " +
+			" and DATE(BU.CREATE_DATE) = DATE(NOW()) ";
 	private static final String INS_BEACON_ID_USERID = "INSERT INTO BEACON_USERS (ID, BEACON_ID, USER_ID, CREATE_DATE) VALUES (?, ?, ?, ?)";
 	private static final String INS_CLUB_APNS_TOKEN = "INSERT INTO CLUB_APNS_TOKEN(ID, CLUB_AMENITY_ID, APNS_TOKEN, CREATE_DATE) VALUES(?,?,?,NOW())";
 	private static final String UPD_CLUB_APNS_TOKEN = "UPDATE CLUB_APNS_TOKEN SET APNS_TOKEN=? WHERE CLUB_AMENITY_ID = ?";

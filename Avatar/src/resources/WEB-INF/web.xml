@@ -67,6 +67,7 @@
 			<url-pattern>/1/AcctMgr/SetEmployeeAccountInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/GetAcctInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/testApns</url-pattern>
+			<url-pattern>/1/AcctMgr/testEmail</url-pattern>
 			<url-pattern>/1/AcctMgr/AddClubAmenityToAccount</url-pattern>
 			<url-pattern>/1/AccountMgr/AddClubAmenityToAccount</url-pattern>
 			<url-pattern>/1/AccountMgr/MapTangerineHandsetIDwithUser</url-pattern>

@@ -119,6 +119,24 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(msgRetVal));
 	}
 
+	@RequestMapping(value = "/testEmail")
+	public ModelAndView testEmail(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "email") final String email,
+			@RequestParam(required = true, value = "msg") final String msg)
+			throws Exception {
+		init();
+		String msgRetVal = "";
+		try {
+				emailNotificationService
+						.sendNotification(email, msg, false);
+		} catch (final InvalidDeviceId e) {
+			msgRetVal = e.getMessage();
+		}
+		return new ModelAndView(jsonView, toModel(msgRetVal));
+	}
+
 	@RequestMapping(value = { "/Mobile/SetAccountInfo", // This will be
 														// deprecated
 			"/Member/SetAccountInfo", "/SetAccountInfo" })

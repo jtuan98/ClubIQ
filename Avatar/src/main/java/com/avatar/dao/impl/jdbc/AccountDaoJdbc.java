@@ -59,13 +59,13 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			+ AccountStatus.Activated.name()
 			+ "' WHERE ID = (SELECT USER_ID FROM USER_ACTIVATION_TOKEN WHERE TOKEN=? AND USER_ID = USERS.ID) AND USERID=? "
 			+ "AND STATUS in ('" + AccountStatus.TokenSent.name() + "', '"
-			+ AccountStatus.Activated.name() + "')";
+			+ AccountStatus.Activated.name() + "', '" + AccountStatus.New.name() + "')";
 
 	private static String UPD_ACCOUNT_STATUS_NOTIFIED = "update USERS set STATUS='"
 			+ AccountStatus.TokenSent.name()
 			+ "' WHERE USERID = ? AND STATUS in ('"
-			+ AccountStatus.New.name() + "', '"+AccountStatus.TokenSent.name()
-			+ "')";
+			+ AccountStatus.New.name()
+			+ "', '" + AccountStatus.TokenSent.name() + "')";
 
 	private static String UPD_USER_DEVICEID = "update USER_DEVICES set DEVICE_ID=? "
 			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?)";
@@ -484,10 +484,22 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public void updateUserDeviceId(final String userId, final String deviceId)
 			throws NotFoundException {
+		final int userIdPk = getUserIdPkByUserId(userId);
 		final int updated = getJdbcTemplate().update(UPD_USER_DEVICEID,
 				deviceId, userId);
 		if (updated == 0) {
-			throw new NotFoundException();
+			final int idDevice = sequencer.nextVal("ID_SEQ");
+			getJdbcTemplate().update(INS_DEVICES,
+			// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
+					idDevice,
+					// USER_ID,
+					userIdPk,
+					// DEVICE_ID,
+					deviceId,
+					// TANGERINE_HANDSET_ID
+					null,
+					// CREATE_DATEcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
+					new Date());
 		}
 	}
 
@@ -495,11 +507,23 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	public void updateUserTangerineHandSetId(final String userId,
 			final String deviceId, final String tangerineHandSetId)
 			throws NotFoundException {
+		final int userIdPk = getUserIdPkByUserId(userId);
 		final int updated = getJdbcTemplate().update(
 				UPD_USER_TANGERINE_HANDSET_ID, tangerineHandSetId, deviceId,
 				userId);
 		if (updated == 0) {
-			throw new NotFoundException("Mobile " + userId + " not found!");
+			final int idDevice = sequencer.nextVal("ID_SEQ");
+			getJdbcTemplate().update(INS_DEVICES,
+			// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
+					idDevice,
+					// USER_ID,
+					userIdPk,
+					// DEVICE_ID,
+					deviceId,
+					// TANGERINE_HANDSET_ID
+					tangerineHandSetId,
+					// CREATE_DATEcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
+					new Date());
 		}
 	}
 

@@ -53,8 +53,8 @@ public class EmailSendService implements NotificationBusiness {
 	}
 
 	@Override
-	public boolean sendAlert(final AccountDto staffAccount, final AccountDto memberAccount)
-			throws NotificationException {
+	public boolean sendAlert(final AccountDto staffAccount,
+			final AccountDto memberAccount) throws NotificationException {
 		return false;
 	}
 
@@ -89,9 +89,22 @@ public class EmailSendService implements NotificationBusiness {
 	}
 
 	@Override
-	public boolean sendNotification(final String deviceId, final String msg, final boolean staff)
-			throws NotificationException {
-		return false;
+	public boolean sendNotification(final String emailId, final String msg,
+			final boolean staff) throws NotificationException {
+		final boolean retVal = false;
+		try {
+			final SimpleMailMessage message = new SimpleMailMessage();
+			Validate.notBlank(emailId);
+			message.setFrom(fromAddress);
+			message.setTo(emailId);
+			message.setSubject("Testing email");
+
+			message.setText(msg);
+			mailSender.send(message);
+		} catch (final Exception e) {
+			throw new NotificationException(e.getMessage());
+		}
+		return retVal;
 	}
 
 	public void setMailSender(final MailSender mailSender) {
