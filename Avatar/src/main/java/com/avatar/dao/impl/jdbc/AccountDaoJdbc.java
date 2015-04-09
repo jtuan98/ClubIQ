@@ -1,6 +1,5 @@
 package com.avatar.dao.impl.jdbc;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,6 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
@@ -39,27 +37,28 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	private static String INS_ACCOUNT = "INSERT INTO USERS (ID, "
 			+ "USERID, MOBILE_IND, MOBILE_NUMBER, HOME_CLUB_ID, "
 			+ "EMAIL, PASSWORD, REALNAME, ADDRESS, IMAGE_ID, STATUS, "
-			+ "CREATE_DATE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "CREATE_DATE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
 	private static String INS_TOKEN = "INSERT INTO USER_ACTIVATION_TOKEN (ID, "
 			+ "USER_ID, TOKEN, MOBILE_PIN_FLAG, VALID_TILL, "
-			+ "CREATE_DATE) VALUES (?, ?, ?, ?, ?, ?)";
+			+ "CREATE_DATE) VALUES (?, ?, ?, ?, ?, NOW())";
 
 	private static String UPD_TOKEN = "UPDATE USER_ACTIVATION_TOKEN SET TOKEN=?, VALID_TILL=?, CREATE_DATE=NOW() "
 			+ " WHERE ID = ?";
 
 	private static String INS_DEVICES = "INSERT INTO USER_DEVICES (ID, "
 			+ "USER_ID, DEVICE_ID, TANGERINE_HANDSET_ID, "
-			+ "CREATE_DATE) VALUES (?, ?, ?, ?, ?)";
+			+ "CREATE_DATE) VALUES (?, ?, ?, ?, NOW())";
 
 	private static String INS_ROLES = "INSERT INTO USER_ROLES (ID, "
-			+ "USER_ID, ROLE, CREATE_DATE) VALUES (?, ?, ?, ?)";
+			+ "USER_ID, ROLE, CREATE_DATE) VALUES (?, ?, ?, NOW())";
 
 	private static String UPD_ACCOUNT_ACTIVATION = "update USERS set STATUS='"
 			+ AccountStatus.Activated.name()
 			+ "' WHERE ID = (SELECT USER_ID FROM USER_ACTIVATION_TOKEN WHERE TOKEN=? AND USER_ID = USERS.ID) AND USERID=? "
 			+ "AND STATUS in ('" + AccountStatus.TokenSent.name() + "', '"
-			+ AccountStatus.Activated.name() + "', '" + AccountStatus.New.name() + "')";
+			+ AccountStatus.Activated.name() + "', '"
+			+ AccountStatus.New.name() + "')";
 
 	private static String UPD_ACCOUNT_STATUS_NOTIFIED = "update USERS set STATUS='"
 			+ AccountStatus.TokenSent.name()
@@ -114,6 +113,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	private static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ?";
 
 	private static String INS_AMENITY_EMPLOYEE = "INSERT INTO AMENITY_EMPLOYEE (ID, CLUB_AMENITY_ID, USER_ID, CREATE_DATE) VALUES (?,?,?,NOW())";
+	private static String UPD_AMENITY_EMPLOYEE = "UPDATE AMENITY_EMPLOYEE SET CLUB_AMENITY_ID=?, CREATE_DATE=NOW() WHERE USER_ID=? ";
 
 	private static String SEL_AMENITY_ID_BY_USERID = "select distinct CLUB_AMENITY_ID from AMENITY_EMPLOYEE where USER_ID = ? ";
 
@@ -132,19 +132,19 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public void addAmenityToUser(final Integer userIdPk,
 			final Integer clubAmenityIdPk) throws NotFoundException {
-		final int exists = getJdbcTemplate().queryForObject(
-				SEL_AMENITY_USER_EXISTS, Integer.class, clubAmenityIdPk,
-				userIdPk);
-		if (exists == 0) {
-			addLinkAmenityUserId(clubAmenityIdPk, userIdPk);
-		}
+		addLinkAmenityUserId(clubAmenityIdPk, userIdPk);
 	}
 
 	private void addLinkAmenityUserId(final Integer amenityIdPk,
 			final Integer userIdPk) {
-		final int idAmenityEmployee = sequencer.nextVal("ID_SEQ");
-		getJdbcTemplate().update(INS_AMENITY_EMPLOYEE, idAmenityEmployee,
+
+		final int updated = getJdbcTemplate().update(UPD_AMENITY_EMPLOYEE,
 				amenityIdPk, userIdPk);
+		if (updated == 0) {
+			final int idAmenityEmployee = sequencer.nextVal("ID_SEQ");
+			getJdbcTemplate().update(INS_AMENITY_EMPLOYEE, idAmenityEmployee,
+					amenityIdPk, userIdPk);
+		}
 	}
 
 	@Override
@@ -188,15 +188,13 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 				}
 				if (account instanceof EmployeeAccountDto) {
-					final List<Integer> amenityIdsPk = getJdbcTemplate()
-							.queryForList(SEL_AMENITY_ID_BY_USERID,
-									Integer.class, account.getId());
-					final EmployeeAccountDto nonMobileAccount = (EmployeeAccountDto) account;
-					if (CollectionUtils.isNotEmpty(amenityIdsPk)) {
-						for (final Integer amenityIdPk : amenityIdsPk) {
-							nonMobileAccount.add(clubDao
-									.getAmenity(amenityIdPk));
-						}
+					try {
+						final Integer amenityIdPk = getJdbcTemplate()
+								.queryForObject(SEL_AMENITY_ID_BY_USERID,
+										Integer.class, account.getId());
+						final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
+						employeeAccount.setAmenity(clubDao.getAmenity(amenityIdPk));
+					} catch (final EmptyResultDataAccessException e) {
 					}
 				}
 				if ((account.getPicture() != null)
@@ -279,7 +277,6 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public void newAccount(final AccountDto account,
 			final ActivationToken activationToken) throws NotFoundException {
-		final Date entry = new Date();
 		final int id = sequencer.nextVal("ID_SEQ");
 		account.setId(id);
 		final int idToken = sequencer.nextVal("ID_SEQ");
@@ -326,18 +323,16 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				// IMAGE_ID
 				idImage,
 				// STATUS
-				AccountStatus.New.name(),
-				// "CREATE_DATE";
-				entry);
+				AccountStatus.New.name()
+				);
 		if (clubIdPk != null) {
 			clubDao.addUserToClub(clubIdPk, account.getId());
 		}
 		if (!mobile) {
-			final EmployeeAccountDto nonMobileAccount = (EmployeeAccountDto) account;
-			if (CollectionUtils.isNotEmpty(nonMobileAccount.getAmenities())) {
-				for (final AmenityDto amenity : nonMobileAccount.getAmenities()) {
-					addLinkAmenityUserId(amenity.getId(), account.getId());
-				}
+			final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
+			if (employeeAccount.getAmenity() != null) {
+				addLinkAmenityUserId(employeeAccount.getAmenity().getId(),
+						account.getId());
 			}
 		}
 		getJdbcTemplate().update(INS_TOKEN,
@@ -350,9 +345,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				// MOBILE_PIN_FLAG,
 				(mobile ? "Y" : "N"),
 				// VALID_TILL, "
-				activationToken.getExpirationDate(),
-				// CREATE_DATE
-				entry);
+				activationToken.getExpirationDate());
 
 		// Roles
 		if (CollectionUtils.isNotEmpty(account.getPriviledges())) {
@@ -364,9 +357,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 						// "USER_ID,
 						account.getId(),
 						// ROLE
-						role.name(),
-						// CREATE_DATE
-						entry);
+						role.name());
 			}
 		}
 
@@ -381,9 +372,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 					// DEVICE_ID,
 					accountMobile.getDeviceId(),
 					// TANGERINE_HANDSET_ID
-					accountMobile.getTangerineHandsetId(),
-					// CREATE_DATEcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
-					entry);
+					accountMobile.getTangerineHandsetId());
 		}
 
 	}
@@ -497,9 +486,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 					// DEVICE_ID,
 					deviceId,
 					// TANGERINE_HANDSET_ID
-					null,
-					// CREATE_DATEcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
-					new Date());
+					null);
 		}
 	}
 
@@ -521,9 +508,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 					// DEVICE_ID,
 					deviceId,
 					// TANGERINE_HANDSET_ID
-					tangerineHandSetId,
-					// CREATE_DATEcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
-					new Date());
+					tangerineHandSetId);
 		}
 	}
 

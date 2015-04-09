@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.avatar.business.AccountBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.ClubDao;
+import com.avatar.dao.NowDao;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
@@ -43,7 +44,7 @@ public class AccountService implements AccountBusiness {
 		System.out.println(test);
 	}
 
-	private static long KEY_VALID_FOR_IN_MINUTES = 60*7*24;
+	private static long KEY_VALID_FOR_IN_MINUTES = 60 * 7 * 24;
 
 	private final LoadingCache<String, AccountDto> activationCache = CacheBuilder
 			.newBuilder().maximumSize(1000)
@@ -74,6 +75,9 @@ public class AccountService implements AccountBusiness {
 
 	@Resource(name = "clubDaoJdbc")
 	private ClubDao clubDao;
+
+	@Resource(name = "accountDaoJdbc")
+	private NowDao dbNowDao;
 
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
@@ -122,7 +126,8 @@ public class AccountService implements AccountBusiness {
 	public void addAmenityToUser(final String userId, final String clubAmenityId)
 			throws NotFoundException {
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
-		final Integer clubAmenityIdPk = clubDao.getClubAmenityIdPk(clubAmenityId);
+		final Integer clubAmenityIdPk = clubDao
+				.getClubAmenityIdPk(clubAmenityId);
 		accountDao.addAmenityToUser(userIdPk, clubAmenityIdPk);
 	}
 
@@ -130,11 +135,12 @@ public class AccountService implements AccountBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public ActivationToken createAccount(final AccountDto accountInfo)
 			throws NotFoundException, AccountCreationException {
-		final Date now = new Date();
+		final Date now = dbNowDao.getNow();
 		final boolean mobile = accountInfo instanceof MemberAccountDto;
 		final ActivationToken activationToken = generateActivationToken(mobile);
 
-		final String deviceId = accountInfo.getDeviceId();;
+		final String deviceId = accountInfo.getDeviceId();
+
 		// Check if account already exists...
 		try {
 			final AccountDto checkAcct = accountDao.fetch(accountInfo
@@ -167,12 +173,13 @@ public class AccountService implements AccountBusiness {
 		// Verify amenity id
 		if (!mobile) {
 			final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) accountInfo;
-			for (final AmenityDto amenity : employeeAccountInfo.getAmenities()) {
-				final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenity
-						.getAmenityId());
+			if (employeeAccountInfo.getAmenity() != null) {
+				final Integer amenityIdPk = clubDao
+						.getClubAmenityIdPk(employeeAccountInfo.getAmenity()
+								.getAmenityId());
 				final AmenityDto amenityFromDb = clubDao
 						.getAmenity(amenityIdPk);
-				amenity.makeCopy(amenityFromDb);
+				employeeAccountInfo.getAmenity().makeCopy(amenityFromDb);
 			}
 		}
 		// Persist account info
@@ -208,7 +215,8 @@ public class AccountService implements AccountBusiness {
 		final ActivationToken retVal = mobile ? new MobileActivationPin()
 				: new ActivationToken();
 		retVal.setToken(UUID.randomUUID().toString());
-		retVal.setExpirationDate(new Date(System.currentTimeMillis()
+		final Date now = dbNowDao.getNow();
+		retVal.setExpirationDate(new Date(now.getTime()
 				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000)));
 		return retVal;
 	}

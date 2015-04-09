@@ -16,11 +16,12 @@ import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
+import com.avatar.dao.NowDao;
 import com.avatar.dao.Sequencer;
 import com.avatar.dao.impl.jdbc.mapper.ImageMapper;
 import com.avatar.dto.ImagePic;
 
-public abstract class BaseJdbcDao {
+public abstract class BaseJdbcDao implements NowDao {
 
 	protected LobHandler lobHandler = new DefaultLobHandler();
 
@@ -31,14 +32,17 @@ public abstract class BaseJdbcDao {
 	protected Sequencer sequencer;
 
 	private static String INS_IMAGES = "INSERT INTO IMAGES (ID, "
-			+ "IMAGE_ID, IMAGE_BINARY, " + "CREATE_DATE) VALUES (?, ?, ?, ?)";
+			+ "IMAGE_ID, IMAGE_BINARY, CREATE_DATE) VALUES (?, ?, ?, NOW())";
 
 	private static String UPD_IMAGES = "UPDATE IMAGES set "
-			+ "IMAGE_ID=?, IMAGE_BINARY=?, CREATE_DATE=? WHERE ID=?";
+			+ "IMAGE_ID=?, IMAGE_BINARY=?, CREATE_DATE=NOW() WHERE ID=?";
 
 	private static final String SEL_IMAGE_BY_ID = "SELECT * FROM IMAGES where ID = ? ";
 
 	private final ImageMapper imageMapper = new ImageMapper(lobHandler);
+
+	@Resource(name = "timezone")
+	private String timezone;
 
 	protected ImagePic getImage(final Integer imageIdPk) {
 		ImagePic image = null;
@@ -64,6 +68,12 @@ public abstract class BaseJdbcDao {
 		return namedParam;
 	}
 
+	@Override
+	public Date getNow() {
+		return getJdbcTemplate().queryForObject("SELECT NOW()", Date.class);
+
+	}
+
 	protected void initTemplate(final DataSource ds) {
 		try {
 			ds.getConnection().setAutoCommit(false);
@@ -72,6 +82,8 @@ public abstract class BaseJdbcDao {
 		}
 		namedParam = new NamedParameterJdbcTemplate(ds);
 		jdbcTemplate = new JdbcTemplate(ds);
+		System.out.println("Setting time zone to " + timezone);
+		jdbcTemplate.execute("SET time_zone = '" + timezone + "'");
 	}
 
 	protected Integer persistImage(final ImagePic picture) {
@@ -81,19 +93,14 @@ public abstract class BaseJdbcDao {
 		final Integer idImage = hasImage ? sequencer.nextVal("ID_SEQ") : null;
 		System.out.println("persistImage:  hasImage =>" + hasImage);
 		if (hasImage) {
-			getJdbcTemplate().update(
-					INS_IMAGES,
-					new Object[] {
-							// ID
-							idImage,
-							// IMAGE_ID,
-							imageHash,
-							// IMAGE_BINARY,
-							new SqlLobValue(picture.getPicture()),
-							// CREATE_DATE
-							new Date() },
-					new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB,
-							Types.DATE });
+			getJdbcTemplate().update(INS_IMAGES, new Object[] {
+					// ID
+					idImage,
+					// IMAGE_ID,
+					imageHash,
+					// IMAGE_BINARY,
+					new SqlLobValue(picture.getPicture()) },
+					new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB });
 		}
 
 		return idImage;
@@ -102,7 +109,7 @@ public abstract class BaseJdbcDao {
 	public abstract void setDataSource(DataSource ds);
 
 	public void setJdbcTemplate(final JdbcTemplate template) {
-		jdbcTemplate = jdbcTemplate;
+		jdbcTemplate = template;
 	}
 
 	protected void setLobHandler(final LobHandler lobHandler) {
@@ -121,8 +128,6 @@ public abstract class BaseJdbcDao {
 							imageHash,
 							// IMAGE_BINARY,
 							new SqlLobValue(picture),
-							// CREATE_DATE
-							new Date(),
 							// ID
 							imageIdPk },
 					new int[] { Types.VARCHAR, Types.BLOB, Types.DATE,
@@ -131,19 +136,14 @@ public abstract class BaseJdbcDao {
 			// insert
 			final int idImage = sequencer.nextVal("ID_SEQ");
 			retVal = idImage;
-			getJdbcTemplate().update(
-					INS_IMAGES,
-					new Object[] {
-							// ID
-							idImage,
-							// IMAGE_ID,
-							imageHash,
-							// IMAGE_BINARY,
-							new SqlLobValue(picture),
-							// CREATE_DATE
-							new Date() },
-					new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB,
-							Types.DATE });
+			getJdbcTemplate().update(INS_IMAGES, new Object[] {
+					// ID
+					idImage,
+					// IMAGE_ID,
+					imageHash,
+					// IMAGE_BINARY,
+					new SqlLobValue(picture) },
+					new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB });
 		}
 		return retVal;
 	}
