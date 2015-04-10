@@ -14,6 +14,19 @@
 	<bean id="mailSenderFrom" class="java.lang.String">
 		<constructor-arg value="ClubIQ" />
 	</bean>
+	<bean id="mailSmtpHost" class="java.lang.String">
+		<constructor-arg value="smtp.gmail.com" />
+	</bean>
+	<bean id="mailSmtpPort" class="java.lang.String">
+		<constructor-arg value="587" />
+	</bean>
+	<bean id="mailSmtpUserId" class="java.lang.String">
+		<constructor-arg value="clubiq2015@gmail.com" />
+	</bean>
+	<bean id="mailSmtpPassword" class="java.lang.String">
+		<constructor-arg value="avatar2015" />
+	</bean>
+
 
 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="smtp.gmail.com" />

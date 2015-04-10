@@ -149,7 +149,7 @@ public class SurveyManagerController extends BaseController {
 	public ModelAndView newPromotion(
 			final Principal principal,
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "mobileNumber") final String memberId,
+			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
 			@RequestParam(required = true, value = "amenityId") final String amenityId,
 			@RequestParam(required = true, value = "promotionTitle") final String promotionTitle,
@@ -158,6 +158,16 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "endingDate") final String endingDateYYYYMMDD)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		//TODO: Use authToken and check if staff is linked to the clubId and amenityId or not.
 		WsResponse<String> apiResponse = null;
 		try {
 			final Promotion promotion = getPromotionInstance(clubId, amenityId,
@@ -226,6 +236,7 @@ public class SurveyManagerController extends BaseController {
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
+		//TODO: Use authToken and check if staff is linked to the clubId and amenityId or not.
 		WsResponse<String> apiResponse = null;
 		try {
 			final Promotion promotion = getPromotionInstance(null, null,
