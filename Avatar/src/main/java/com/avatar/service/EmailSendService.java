@@ -16,7 +16,6 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.commons.lang3.Validate;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 import com.avatar.business.NotificationBusiness;
@@ -27,21 +26,6 @@ import com.avatar.exception.NotificationException;
 
 @Service
 public class EmailSendService implements NotificationBusiness {
-	public static void main(final String[] args) throws NotificationException {
-		final org.springframework.mail.javamail.JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-		mailSender.setHost("smtp.gmail.com");
-		mailSender.setPort(587);
-		mailSender.setUsername("clubiq2015@gmail.com");
-		mailSender.setPassword("avatar2015");
-		mailSender.getJavaMailProperties().put("mail.smtp.auth", true);
-		mailSender.getJavaMailProperties().put("mail.smtp.starttls.enable",
-				true);
-
-		final EmailSendService testService = new EmailSendService();
-		testService.setMailSender(mailSender);
-		testService.sendNotification(null);
-	}
-
 	@Resource(name = "accountDaoJdbc")
 	private AccountDao accountDao;
 
