@@ -117,8 +117,9 @@ public class EmailSendService implements NotificationBusiness {
 			msgBody.setText(emailText.replaceAll(":THELINK:",
 					buildLink(account.getToken())));
 			msgBody.setHeader("Content-Type", "text/html");
-			message.setText(emailTextPlain.replaceAll(":THELINK:",
-					buildLink(account.getToken())));
+			final MimeMultipart multipart = new MimeMultipart();
+			multipart.addBodyPart(msgBody);
+			message.setContent(multipart);
 
 			// Send message
 			Transport.send(message);
