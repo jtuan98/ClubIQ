@@ -1,11 +1,13 @@
 package com.avatar.service;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -44,13 +46,14 @@ public class BeaconService implements BeaconBusiness {
 
 		final AccountDto member = accountDao.fetch(userId);
 
-		//Find the amenity associated to beacon
+		// Find the amenity associated to beacon
 		final Integer clubAmenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
 
-		//Find the staff associated to amenity
-		final List<Integer> amenityEmployeeIdsPk = clubDao.getAmenityEmployees(clubAmenityIdPk);
+		// Find the staff associated to amenity
+		final List<Integer> amenityEmployeeIdsPk = clubDao
+				.getAmenityEmployees(clubAmenityIdPk);
 
-		//Send alert to staff
+		// Send alert to staff
 		if (CollectionUtils.isNotEmpty(amenityEmployeeIdsPk)) {
 			for (final Integer employeeIdPk : amenityEmployeeIdsPk) {
 				final AccountDto empoyee = accountDao.fetch(employeeIdPk);
@@ -77,9 +80,9 @@ public class BeaconService implements BeaconBusiness {
 	}
 
 	@Override
-	public List<AccountDto> getUsers(final String beaconId,
-			final String amenityDepartment) {
-		return beaconDao.getUsers(beaconId, amenityDepartment);
+	public List<ImmutablePair<AccountDto, Date>> getUsers(final String amenityId,
+			final Date onDate) {
+		return beaconDao.getUsers(amenityId, onDate);
 	}
 
 	@Override
@@ -123,7 +126,7 @@ public class BeaconService implements BeaconBusiness {
 		if (StringUtils.isNotEmpty(club.getZipCode())) {
 			clubFromDb.setZipCode(club.getZipCode());
 		}
-		//TODO Must handle images...
+		// TODO Must handle images...
 
 		clubDao.update(clubFromDb);
 

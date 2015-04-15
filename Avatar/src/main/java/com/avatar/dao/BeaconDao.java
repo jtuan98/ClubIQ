@@ -1,6 +1,9 @@
 package com.avatar.dao;
 
+import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
@@ -21,7 +24,7 @@ public interface BeaconDao {
 	Integer getClubIdPkByBeaconIdPk(Integer beaconIdPk)
 			throws NotFoundException;
 
-	List<AccountDto> getUsers(String beaconId, String amenityDepartment);
+	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityDepartment, Date onDate);
 
 	void setAmenityDeptName(String clubId, String apnsToken,
 			String amenityDepartment) throws NotFoundException;

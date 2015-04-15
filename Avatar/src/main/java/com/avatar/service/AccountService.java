@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.avatar.business.AccountBusiness;
+import com.avatar.business.NowBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.ClubDao;
 import com.avatar.dao.NowDao;
@@ -33,7 +34,7 @@ import com.google.common.cache.LoadingCache;
 
 @Service
 @Transactional("transactionManager")
-public class AccountService implements AccountBusiness {
+public class AccountService implements AccountBusiness, NowBusiness {
 	public static void main(final String[] args) {
 		// final AccountService service = new AccountService();
 		// final ActivationToken token = service.generateActivationToken(true);
@@ -236,6 +237,11 @@ public class AccountService implements AccountBusiness {
 		final AccountDto retVal = accountDao.fetch(userId);
 
 		return retVal;
+	}
+
+	@Override
+	public Date getNow() {
+		return dbNowDao.getNow();
 	}
 
 	@Override

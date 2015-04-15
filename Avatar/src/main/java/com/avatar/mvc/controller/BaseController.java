@@ -7,12 +7,16 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.util.Assert;
 
 import com.avatar.business.AccountBusiness;
 import com.avatar.business.AuthenticationTokenizerBusiness;
 import com.avatar.business.NotificationBusiness;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.WsResponse;
+import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.promotion.Promotion;
 import com.avatar.dto.serializer.ImagePicSerializer;
@@ -38,6 +42,8 @@ public abstract class BaseController {
 
 	@Resource(name = "authenticationTokenizer")
 	protected AuthenticationTokenizerBusiness authenticationService;
+
+	protected final DateTimeFormatter yyyyMMddDtf = DateTimeFormat.forPattern("yyyyMMdd");
 
 	protected JsonView jsonView = null;
 
@@ -68,6 +74,23 @@ public abstract class BaseController {
 		return retVal;
 	}
 
+	protected void validateStaffInClub(final AccountDto staff,
+			final String clubId) throws PermissionDeniedException {
+		Assert.notNull(staff);
+		Assert.notNull(staff.getHomeClub());
+		Assert.notNull(staff.getHomeClub().getClubId());
+		Assert.notNull(clubId);
+
+		if (!staff.getPriviledges().contains(Privilege.superUser)) {
+			final boolean retVal = clubId.equalsIgnoreCase(staff.getHomeClub()
+					.getClubId());
+			if (!retVal) {
+				throw new PermissionDeniedException("Staff "
+						+ staff.getUserId() + " is not in " + clubId);
+			}
+		}
+	}
+
 	protected void validateUserRoles(final String authToken,
 			final Privilege[] requiredRoles) throws NotFoundException,
 			AuthenticationTokenExpiredException, PermissionDeniedException {
@@ -82,9 +105,7 @@ public abstract class BaseController {
 			}
 		}
 		if (retVal == false) {
-			throw new PermissionDeniedException("Roles [ " + msg
-					+ "] missing");
+			throw new PermissionDeniedException("Roles [ " + msg + "] missing");
 		}
 	}
-
 }

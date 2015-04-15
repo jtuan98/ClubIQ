@@ -44,6 +44,9 @@ public class ClubManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Check authToken with clubId
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
@@ -91,6 +94,7 @@ public class ClubManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			validateStaffInClub(authenticationService.getAccount(authToken), clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
@@ -118,6 +122,10 @@ public class ClubManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,

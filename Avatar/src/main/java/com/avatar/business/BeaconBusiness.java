@@ -1,6 +1,9 @@
 package com.avatar.business;
 
+import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
@@ -16,7 +19,7 @@ public interface BeaconBusiness {
 
 	List<String> getAmenityDeptName(String clubId) throws NotFoundException;
 
-	List<AccountDto> getUsers(String beaconId, String amenityDepartment)
+	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityId, Date onDate)
 			throws NotFoundException;
 
 	void setAmenityDeptName(String clubId, String apnsToken,

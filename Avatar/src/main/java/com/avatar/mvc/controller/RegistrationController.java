@@ -171,7 +171,9 @@ public class RegistrationController extends BaseController {
 			((MemberAccountDto) retVal).setMobileNumber(mobile);
 		} else {
 			retVal = new EmployeeAccountDto();
-			((EmployeeAccountDto) retVal).setAmenity(new AmenityDto(amenityId));
+			if (StringUtils.isNotEmpty(amenityId)) {
+				((EmployeeAccountDto) retVal).setAmenity(new AmenityDto(amenityId));
+			}
 		}
 		if (StringUtils.isNotEmpty(homeClubId)) {
 			final ClubDto homeClub = new ClubDto();

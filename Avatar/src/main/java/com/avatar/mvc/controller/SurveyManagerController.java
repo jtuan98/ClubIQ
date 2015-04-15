@@ -7,8 +7,6 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,8 +37,6 @@ public class SurveyManagerController extends BaseController {
 	@Resource(name = "promotionService")
 	private PromotionBusiness promotionService;
 
-	private final DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyyMMdd");
-
 	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
 			Privilege.superUser };
 
@@ -65,6 +61,7 @@ public class SurveyManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
+
 
 	@RequestMapping(value = "/GetSurveyQuestion")
 	public ModelAndView fetchSurveyQuestion(
@@ -105,14 +102,14 @@ public class SurveyManagerController extends BaseController {
 		promotion.setTitle(promotionTitle);
 		promotion.setDescription(promotionDetails);
 		try {
-			promotion.setEffectiveDate(new Date(dtf
+			promotion.setEffectiveDate(new Date(yyyyMMddDtf
 					.parseMillis(effectiveDateYYYYMMDD)));
 		} catch (final IllegalArgumentException e) {
 			throw new InvalidParameterException("Invalid EffectiveDate: "
 					+ effectiveDateYYYYMMDD);
 		}
 		try {
-			promotion.setEndingDate(new Date(dtf
+			promotion.setEndingDate(new Date(yyyyMMddDtf
 					.parseMillis(endingDateYYYYMMDD)));
 		} catch (final IllegalArgumentException e) {
 			throw new InvalidParameterException("Invalid EndingDate: "
@@ -120,6 +117,30 @@ public class SurveyManagerController extends BaseController {
 		}
 
 		return promotion;
+	}
+
+	@RequestMapping(value = "/GetPromotionsList")
+	public ModelAndView getPromotionsList(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId
+			)
+			throws Exception {
+		init();
+		WsResponse<List<Promotion>> apiResponse = null;
+		try {
+			final List<Promotion> promotions = promotionService
+					.getPromotions(clubId, amenityId);
+			apiResponse = new WsResponse<List<Promotion>>(
+					ResponseStatus.success, "", promotions, "promotions");
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<List<Promotion>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
 	@RequestMapping(value = "/PromotionRead")

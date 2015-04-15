@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.avatar.business.AuthenticationTokenizerBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dto.AuthenticationTokenPrincipal;
+import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidPasswordException;
@@ -38,6 +39,29 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 					return null;
 				}
 			});
+
+	private final LoadingCache<String, AccountDto> accountCache = CacheBuilder
+			.newBuilder().maximumSize(1000)
+			.expireAfterWrite(KEY_VALID_FOR_IN_MINUTES, TimeUnit.MINUTES)
+			.build(new CacheLoader<String, AccountDto>() {
+				@Override
+				public AccountDto load(final String uuidToken) {
+					return null;
+				}
+			});
+
+	@Override
+	public AccountDto getAccount(final String token) throws NotFoundException,
+			AuthenticationTokenExpiredException {
+		AccountDto retVal = null;
+		try {
+			retVal = accountCache.get(token);
+		} catch (InvalidCacheLoadException | ExecutionException e) {
+			throw new AuthenticationTokenExpiredException(
+					"Token not found or expired");
+		}
+		return retVal;
+	}
 
 	@Override
 	public Set<Privilege> getRoles(final String token)
@@ -66,6 +90,8 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 			retVal = new AuthenticationTokenPrincipal(new HashSet<Privilege>(
 					accountDao.fetchRoles(userId)));
 			tokenCache.put(retVal.getToken().toString(), retVal);
+			final AccountDto account = accountDao.fetch(userId);
+			accountCache.put(retVal.getToken().toString(), account);
 		}
 		return retVal;
 	}

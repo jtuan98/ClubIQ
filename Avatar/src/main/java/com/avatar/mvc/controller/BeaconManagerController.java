@@ -3,11 +3,14 @@ package com.avatar.mvc.controller;
 import java.lang.reflect.Type;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +23,7 @@ import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.enums.Location;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.dto.serializer.AccountDtoCheckInDateSerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
@@ -49,6 +53,10 @@ public class BeaconManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
@@ -100,23 +108,18 @@ public class BeaconManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
-		WsResponse<String> apiResponse = null;
-		try {
-			beaconService.setAmenityDeptName(clubId, apnsToken,
-					amenityDepartment);
-			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
-					null);
-		} catch (final Exception e) {
-			apiResponse = new WsResponse<String>(ResponseStatus.failure,
-					e.getMessage(), null);
-		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
+
+		return setAmenityDeptName(authToken, apnsToken, amenityDepartment, clubId);
 	}
 
 	ModelAndView setAmenityDeptName(final String authToken,
@@ -152,6 +155,10 @@ public class BeaconManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
@@ -198,10 +205,13 @@ public class BeaconManagerController extends BaseController {
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
-			@RequestParam(required = true, value = "beaconId") final String beaconId,
-			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment)
+			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment,
+			@RequestParam(required = false, value = "date") final String onDate
+			)
 			throws Exception {
 		init();
+		jsonView.register(ImmutablePair.class, new AccountDtoCheckInDateSerializer());
+
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
@@ -211,21 +221,20 @@ public class BeaconManagerController extends BaseController {
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
-		WsResponse<List<AccountDto>> apiResponse = null;
+		Date entryDate = null;
+		if (StringUtils.isNotEmpty(onDate)) {
+			entryDate = new Date(yyyyMMddDtf.parseMillis(onDate));
+		}
+		WsResponse<List<ImmutablePair<AccountDto, Date>>> apiResponse = null;
 		try {
-			final List<AccountDto> users = beaconService.getUsers(beaconId,
-					amenityDepartment);
+			final List<ImmutablePair<AccountDto, Date>> users = beaconService.getUsers(
+					amenityDepartment, entryDate);
 			System.out.println(users.getClass());
-			if (users != null) {
-				for (final AccountDto accountDto : users) {
-					System.out.println(accountDto.getUserId());
-				}
-			}
-			apiResponse = new WsResponse<List<AccountDto>>(
+			apiResponse = new WsResponse<List<ImmutablePair<AccountDto, Date>>>(
 					ResponseStatus.success, "", users,
 					collectionAccountDtoType, "users");
 		} catch (final Exception e) {
-			apiResponse = new WsResponse<List<AccountDto>>(
+			apiResponse = new WsResponse<List<ImmutablePair<AccountDto, Date>>>(
 					ResponseStatus.failure, e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));

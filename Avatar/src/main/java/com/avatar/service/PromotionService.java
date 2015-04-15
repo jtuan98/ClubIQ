@@ -53,6 +53,24 @@ public class PromotionService implements PromotionBusiness {
 	}
 
 	@Override
+	public List<Promotion> getPromotions(final String clubId, final String amenityId)
+			throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final List<Promotion> promotions = promotionDao.getPromotions(clubIdPk,
+				amenityIdPk);
+		if (CollectionUtils.isNotEmpty(promotions)) {
+			final ClubDto club = clubDao.get(clubIdPk);
+			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
+			for (final Promotion promotion : promotions) {
+				promotion.setClub(club);
+				promotion.setAmenity(amenity);
+			}
+		}
+		return promotions;
+	}
+
+	@Override
 	public void newPromotion(final Promotion promotion)
 			throws NotFoundException {
 		populatePkForClubsAndAmenity(promotion);

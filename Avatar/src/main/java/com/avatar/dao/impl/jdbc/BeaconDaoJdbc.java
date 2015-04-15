@@ -1,18 +1,20 @@
 package com.avatar.dao.impl.jdbc;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.BeaconDao;
-import com.avatar.dao.impl.jdbc.mapper.AccountDtoMapper;
+import com.avatar.dao.impl.jdbc.mapper.AccountDtoCheckInDateMapper;
 import com.avatar.dao.impl.jdbc.mapper.StringMapper;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
@@ -22,9 +24,10 @@ import com.avatar.exception.NotFoundException;
 public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static final String GET_BEACON_ID = "SELECT ID FROM BEACONS WHERE BEACONID = ? ";
-	private static final String GET_COUNT_BEACON_ID_USERID = "SELECT COUNT(*) FROM BEACON_USERS BU, USERS U WHERE USER_ID = U.ID AND BEACON_ID = ? and U.USERID=? " +
-			" and DATE(BU.CREATE_DATE) = DATE(NOW()) ";
+	private static final String GET_COUNT_BEACON_ID_USERID = "SELECT COUNT(*) FROM BEACON_USERS BU, USERS U WHERE USER_ID = U.ID AND BEACON_ID = ? and U.USERID=? "
+			+ " and DATE(BU.CREATE_DATE) = DATE(NOW()) ";
 	private static final String INS_BEACON_ID_USERID = "INSERT INTO BEACON_USERS (ID, BEACON_ID, USER_ID, CREATE_DATE) VALUES (?, ?, ?, NOW())";
+
 	private static final String INS_CLUB_APNS_TOKEN = "INSERT INTO CLUB_APNS_TOKEN(ID, CLUB_AMENITY_ID, APNS_TOKEN, CREATE_DATE) VALUES(?,?,?,NOW())";
 	private static final String UPD_CLUB_APNS_TOKEN = "UPDATE CLUB_APNS_TOKEN SET APNS_TOKEN=? WHERE CLUB_AMENITY_ID = ?";
 	private static final String UPD_CLUB_APNS_TOKEN_USING_CLUBID = "UPDATE CLUB_APNS_TOKEN SET APNS_TOKEN=? WHERE CLUB_AMENITY_ID IN(SELECT ID FROM CLUBS WHERE CLUBID=?)";
@@ -34,15 +37,16 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static String GET_CLUB_ID = "SELECT ID FROM CLUBS WHERE CLUBID=?";
 
-	private static String GET_AMENITY_DEPT_NAMES = "SELECT CA.NAME FROM CLUB_AMENITIES CA WHERE CLUB_ID=? ORDER BY 1";
+	private static String GET_AMENITY_DEPT_NAMES = "SELECT CA.AMENITYID FROM CLUB_AMENITIES CA WHERE CLUB_ID=? ORDER BY 1";
 
 	private static String GET_AMENITY_ID_BY_NAME_CLUBID = "SELECT ID FROM CLUB_AMENITIES WHERE NAME=? AND CLUB_ID=? ";
 	private static String CHECK_AMENITY_DEPT_NAME = "SELECT COUNT(*) FROM CLUB_AMENITIES WHERE NAME=? AND CLUB_ID=? ";
 	private static String INS_AMENITY_DEPT_NAME = "INSERT INTO CLUB_AMENITIES (ID, CLUB_ID, NAME, IMAGE_ID, DESCRIPTION, AVAILABLE_DATE_TIME, CREATE_DATE) VALUES (?,?,?,?,?,NOW(), NOW())";
 
-	private static String SEL_USER = "select USERS.* FROM USERS, BEACONS, BEACON_USERS BU, CLUB_AMENITIES CA WHERE USER_ID=USERS.ID AND BEACONID=? AND CA.NAME=? AND BU.BEACON_ID=BEACONS.ID AND CA.ID = BEACONS.AMENITY_ID ORDER BY USERID";
+	private static String SEL_USER = "select distinct USERS.*, MAX(BU.CREATE_DATE) CHECKIN_DATE FROM USERS, BEACONS B, BEACON_USERS BU, CLUB_AMENITIES CA WHERE USER_ID=USERS.ID "
+			+ " AND B.CLUB_ID=CA.CLUB_ID AND CA.AMENITYID=? AND BU.BEACON_ID=B.ID AND CA.ID = B.AMENITY_ID AND DATE(BU.CREATE_DATE) =  ";
 
-	private final AccountDtoMapper accountDtoMapper = new AccountDtoMapper();
+	private final AccountDtoCheckInDateMapper accountDtoCheckInDateMapper = new AccountDtoCheckInDateMapper();
 
 	private final StringMapper stringMapper = new StringMapper();
 
@@ -69,9 +73,9 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			final int counter = getJdbcTemplate().queryForObject(
 					GET_COUNT_BEACON_ID_USERID, Integer.class, beaconIdPk,
 					userId);
+			final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 			if (counter == 0) {
 				// Insert
-				final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 				final int id = sequencer.nextVal("ID_SEQ");
 				getJdbcTemplate().update(INS_BEACON_ID_USERID, id, beaconIdPk,
 						userIdPk);
@@ -136,13 +140,19 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
-	public List<AccountDto> getUsers(final String beaconId,
-			final String amenityDepartment) {
-		final List<AccountDto> users = getJdbcTemplate().query(SEL_USER,
-				accountDtoMapper, beaconId, amenityDepartment);
+	public List<ImmutablePair<AccountDto, Date>> getUsers(final String amenityId,
+			final Date onDate) {
+		List<ImmutablePair<AccountDto, Date>> users = null;
+		if (onDate == null) {
+			users = getJdbcTemplate().query(SEL_USER + "DATE(NOW())",
+					accountDtoCheckInDateMapper, amenityId);
+		} else {
+			users = getJdbcTemplate().query(SEL_USER + "DATE(?)",
+					accountDtoCheckInDateMapper, amenityId, onDate);
+		}
 		if (CollectionUtils.isNotEmpty(users)) {
-			for (final AccountDto user : users) {
-				accountDao.populateAccountInfo(user);
+			for (final ImmutablePair<AccountDto, Date> user : users) {
+				accountDao.populateAccountInfo(user.getKey());
 			}
 		}
 		return users;
