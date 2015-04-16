@@ -38,7 +38,7 @@ public interface AccountDao {
 	void newAccount(AccountDto account, ActivationToken activationToken)
 			throws NotFoundException;
 
-	public void populateAccountInfo(final AccountDto account);
+	public void populateAccountInfo(final AccountDto account, boolean includePicture);
 
 	void updateAccountInfoEmail(String userId, String email)
 			throws NotFoundException;

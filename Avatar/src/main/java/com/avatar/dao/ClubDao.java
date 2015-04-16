@@ -11,7 +11,7 @@ public interface ClubDao {
 
 	void addUserToClub(String clubId, String userId) throws NotFoundException;
 
-	ClubDto get(Integer clubIdPk) throws NotFoundException;
+	ClubDto get(Integer clubIdPk, boolean includePicture) throws NotFoundException;
 
 	ClubDto get(String clubId) throws NotFoundException;
 

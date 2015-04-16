@@ -171,7 +171,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			try {
 				account = getJdbcTemplate().queryForObject(sql,
 						accountDtoMapper, paramUserId);
-				populateAccountInfo(account);
+				populateAccountInfo(account, true);
 				final List<Privilege> roles = fetchRoles(account.getId());
 				account.setPriviledges(new HashSet<Privilege>(roles));
 				try {
@@ -193,7 +193,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 								.queryForObject(SEL_AMENITY_ID_BY_USERID,
 										Integer.class, account.getId());
 						final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
-						employeeAccount.setAmenity(clubDao.getAmenity(amenityIdPk));
+						employeeAccount.setAmenity(clubDao
+								.getAmenity(amenityIdPk));
 					} catch (final EmptyResultDataAccessException e) {
 					}
 				}
@@ -323,8 +324,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				// IMAGE_ID
 				idImage,
 				// STATUS
-				AccountStatus.New.name()
-				);
+				AccountStatus.New.name());
 		if (clubIdPk != null) {
 			clubDao.addUserToClub(clubIdPk, account.getId());
 		}
@@ -378,22 +378,24 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	}
 
 	@Override
-	public void populateAccountInfo(final AccountDto account) {
+	public void populateAccountInfo(final AccountDto account,
+			final boolean includePicture) {
 
-		try {
-			final Integer imageIdPk = getJdbcTemplate().queryForObject(
-					GET_IMAGE_ID, Integer.class, account.getId());
-			final ImagePic image = getImage(imageIdPk);
-			account.setPicture(image);
-		} catch (final EmptyResultDataAccessException e1) {
+		if (includePicture) {
+			try {
+				final Integer imageIdPk = getJdbcTemplate().queryForObject(
+						GET_IMAGE_ID, Integer.class, account.getId());
+				final ImagePic image = getImage(imageIdPk);
+				account.setPicture(image);
+			} catch (final EmptyResultDataAccessException e1) {
+			}
 		}
-
 		// Fetch homeClubID
 		try {
 			final Integer homeClubIdPk = getJdbcTemplate().queryForObject(
 					GET_HOME_CLUB_ID, Integer.class, account.getId());
 
-			final ClubDto homeClub = clubDao.get(homeClubIdPk);
+			final ClubDto homeClub = clubDao.get(homeClubIdPk, includePicture);
 			account.setHomeClub(homeClub);
 		} catch (final NotFoundException e) {
 			// NP.

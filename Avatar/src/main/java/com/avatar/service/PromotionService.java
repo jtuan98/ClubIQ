@@ -42,7 +42,7 @@ public class PromotionService implements PromotionBusiness {
 		final List<Promotion> promotions = promotionDao.getPromotions(clubIdPk,
 				amenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
-			final ClubDto club = clubDao.get(clubIdPk);
+			final ClubDto club = clubDao.get(clubIdPk, false);
 			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
 			for (final Promotion promotion : promotions) {
 				promotion.setClub(club);
@@ -60,7 +60,7 @@ public class PromotionService implements PromotionBusiness {
 		final List<Promotion> promotions = promotionDao.getPromotions(clubIdPk,
 				amenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
-			final ClubDto club = clubDao.get(clubIdPk);
+			final ClubDto club = clubDao.get(clubIdPk, true);
 			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
 			for (final Promotion promotion : promotions) {
 				promotion.setClub(club);

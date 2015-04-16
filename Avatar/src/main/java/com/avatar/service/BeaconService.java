@@ -98,7 +98,7 @@ public class BeaconService implements BeaconBusiness {
 	@Override
 	public void update(final ClubDto club) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(club.getClubId());
-		final ClubDto clubFromDb = clubDao.get(clubIdPk);
+		final ClubDto clubFromDb = clubDao.get(clubIdPk, true);
 		if (StringUtils.isNotEmpty(club.getAddress())) {
 			clubFromDb.setAddress(club.getAddress());
 		}

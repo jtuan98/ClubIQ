@@ -14,7 +14,7 @@ public class AccountDtoCheckInDateMapper implements RowMapper<ImmutablePair<Acco
 	@Override
 	public ImmutablePair<AccountDto, Date> mapRow(final ResultSet rs, final int rowNo) throws SQLException {
 		final AccountDto accountDto = accountDtoMapper.mapRow(rs, rowNo);
-		final Date checkInDate = rs.getDate("CHECKIN_DATE");
+		final Date checkInDate = rs.getTimestamp("CHECKIN_DATE");
 		final ImmutablePair<AccountDto, Date> retVal = new ImmutablePair<AccountDto, Date>(accountDto, checkInDate);
 		return retVal;
 	}

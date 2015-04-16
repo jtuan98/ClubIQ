@@ -43,7 +43,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	private static String CHECK_AMENITY_DEPT_NAME = "SELECT COUNT(*) FROM CLUB_AMENITIES WHERE NAME=? AND CLUB_ID=? ";
 	private static String INS_AMENITY_DEPT_NAME = "INSERT INTO CLUB_AMENITIES (ID, CLUB_ID, NAME, IMAGE_ID, DESCRIPTION, AVAILABLE_DATE_TIME, CREATE_DATE) VALUES (?,?,?,?,?,NOW(), NOW())";
 
-	private static String SEL_USER = "select distinct USERS.*, MAX(BU.CREATE_DATE) CHECKIN_DATE FROM USERS, BEACONS B, BEACON_USERS BU, CLUB_AMENITIES CA WHERE USER_ID=USERS.ID "
+	private static String SEL_USER = "select distinct USERS.*, BU.CREATE_DATE CHECKIN_DATE FROM USERS, BEACONS B, BEACON_USERS BU, CLUB_AMENITIES CA WHERE USER_ID=USERS.ID "
 			+ " AND B.CLUB_ID=CA.CLUB_ID AND CA.AMENITYID=? AND BU.BEACON_ID=B.ID AND CA.ID = B.AMENITY_ID AND DATE(BU.CREATE_DATE) =  ";
 
 	private final AccountDtoCheckInDateMapper accountDtoCheckInDateMapper = new AccountDtoCheckInDateMapper();
@@ -152,7 +152,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 		}
 		if (CollectionUtils.isNotEmpty(users)) {
 			for (final ImmutablePair<AccountDto, Date> user : users) {
-				accountDao.populateAccountInfo(user.getKey());
+				accountDao.populateAccountInfo(user.getKey(), true);
 			}
 		}
 		return users;
