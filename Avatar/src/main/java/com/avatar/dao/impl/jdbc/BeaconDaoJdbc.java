@@ -181,11 +181,12 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	public List<ImmutablePair<AccountDto, Date>> getUsers(
 			final String amenityId, final Date onDate) {
 		List<ImmutablePair<AccountDto, Date>> users = null;
+		final String orderBy = " ORDER BY BU.CREATE_DATE DESC ";
 		if (onDate == null) {
-			users = getJdbcTemplate().query(SEL_USER + "DATE(NOW())",
+			users = getJdbcTemplate().query(SEL_USER + "DATE(NOW()) " + orderBy,
 					accountDtoCheckInDateMapper, amenityId);
 		} else {
-			users = getJdbcTemplate().query(SEL_USER + "DATE(?)",
+			users = getJdbcTemplate().query(SEL_USER + "DATE(?) "+ orderBy,
 					accountDtoCheckInDateMapper, amenityId, onDate);
 		}
 		if (CollectionUtils.isNotEmpty(users)) {

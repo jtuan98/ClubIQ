@@ -40,6 +40,41 @@ public class SurveyManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
 			Privilege.superUser };
 
+	@RequestMapping(value = "/DeletePromotion")
+	public ModelAndView deletePromotion(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "promotionId") final Integer promotionId)
+			throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			//Use authToken and check if staff is linked to the clubId and amenityId or not.
+			final Promotion promo = promotionService.getPromotion(promotionId);
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					promo.getClub().getClubId());
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<List<Promotion>> apiResponse = null;
+		try {
+			promotionService.delete(promotionId);
+			apiResponse = new WsResponse<List<Promotion>>(
+					ResponseStatus.success, "", null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<List<Promotion>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+
 	@RequestMapping(value = "/GetPromotions")
 	public ModelAndView fetchPromotions(
 			final Principal principal,
@@ -61,7 +96,6 @@ public class SurveyManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
-
 
 	@RequestMapping(value = "/GetSurveyQuestion")
 	public ModelAndView fetchSurveyQuestion(

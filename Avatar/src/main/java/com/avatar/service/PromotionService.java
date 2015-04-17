@@ -17,6 +17,7 @@ import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.promotion.Promotion;
 import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 
 @Service
 public class PromotionService implements PromotionBusiness {
@@ -31,6 +32,12 @@ public class PromotionService implements PromotionBusiness {
 
 	@Resource(name = "beaconDaoJdbc")
 	private BeaconDao beaconDao;
+
+	@Override
+	public void delete(final Integer promoIdPk) throws NotFoundException,
+			PermissionDeniedException {
+		promotionDao.delete(promoIdPk);
+	}
 
 	@Override
 	public Promotion getPromotion(final Integer promoIdPk) throws NotFoundException {

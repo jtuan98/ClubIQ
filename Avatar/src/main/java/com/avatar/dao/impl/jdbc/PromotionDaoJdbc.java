@@ -13,6 +13,7 @@ import com.avatar.dao.PromotionDao;
 import com.avatar.dao.impl.jdbc.mapper.PromotionMapper;
 import com.avatar.dto.promotion.Promotion;
 import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 
 @Repository
 public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
@@ -40,6 +41,33 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 			+ "ENDING_DATE=? WHERE ID=?";
 
 	private static String GET_PROMOTION_BY_ID = "SELECT * FROM PROMOTIONS WHERE ID = ?";
+
+	private static String DEL_PROMO_ID = "DELETE from PROMOTIONS where ID=?";
+	private static String COUNT_PROMO_ID_HISTORY = "SELECT COUNT(*) from PROMOTION_HISTORY where PROMOTION_ID=?";
+
+	@Override
+	public void delete(final Integer promoIdPk) throws NotFoundException,
+			PermissionDeniedException {
+		// Check if id found
+		getPromoIdPk(promoIdPk);
+		final Integer count = getJdbcTemplate().queryForObject(
+				COUNT_PROMO_ID_HISTORY, Integer.class, promoIdPk);
+		if (count > 0) {
+			throw new PermissionDeniedException("Promotion ID " + promoIdPk + " has references");
+		}
+		getJdbcTemplate().update(DEL_PROMO_ID, promoIdPk);
+	}
+
+	private void getPromoIdPk(final Integer id) throws NotFoundException {
+		// Check if id found
+		try {
+			final Integer promoIdPk = getJdbcTemplate().queryForObject(
+					GET_PROMO_ID_PK, Integer.class, id);
+		} catch (final EmptyResultDataAccessException e) {
+			throw new NotFoundException("Promotion ID " + id + " not found");
+		}
+
+	}
 
 	@Override
 	public Promotion getPromotion(final Integer promoIdPk)
@@ -103,13 +131,8 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 		Assert.notNull(promotion.getId());
 
 		// Check if id found
-		try {
-			final Integer promoIdPk = getJdbcTemplate().queryForObject(
-					GET_PROMO_ID_PK, Integer.class, promotion.getId());
-		} catch (final EmptyResultDataAccessException e) {
-			throw new NotFoundException("Promotion ID " + promotion.getId()
-					+ " not found");
-		}
+		getPromoIdPk(promotion.getId());
+
 		getJdbcTemplate().update(UPD_PROMOTION_BY_PK, promotion.getTitle(),
 				promotion.getDescription(), promotion.getId());
 		if (promotion.getEffectiveDate() != null) {
