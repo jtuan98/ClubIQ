@@ -1,6 +1,7 @@
 package com.avatar.dto.club;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.EmployeeAccountDto;
@@ -8,19 +9,20 @@ import com.avatar.dto.enums.Location;
 
 public class BeaconDto implements Serializable {
 	protected Integer id; // primary key.
-	protected String beaconid;
+	protected String beaconActionId;
 	protected ClubDto club;
 	protected AmenityDto amenity;
 	protected Location location;
 	protected String description;
 	protected AccountDto installerStaff;
+	protected Date installationDate;
 
 	public AmenityDto getAmenity() {
 		return amenity;
 	}
 
-	public String getBeaconid() {
-		return beaconid;
+	public String getBeaconActionId() {
+		return beaconActionId;
 	}
 
 	public ClubDto getClub() {
@@ -33,6 +35,10 @@ public class BeaconDto implements Serializable {
 
 	public Integer getId() {
 		return id;
+	}
+
+	public Date getInstallationDate() {
+		return installationDate;
 	}
 
 	public AccountDto getInstallerStaff() {
@@ -55,8 +61,8 @@ public class BeaconDto implements Serializable {
 		return amenity;
 	}
 
-	public void setBeaconid(final String beaconid) {
-		this.beaconid = beaconid;
+	public void setBeaconActionId(final String beaconid) {
+		beaconActionId = beaconid;
 	}
 
 	public void setClub(final ClubDto club) {
@@ -79,6 +85,10 @@ public class BeaconDto implements Serializable {
 		this.id = id;
 	}
 
+	public void setInstallationDate(final Date installationDate) {
+		this.installationDate = installationDate;
+	}
+
 	public void setInstallerStaff(final AccountDto installerStaff) {
 		this.installerStaff = installerStaff;
 	}
@@ -94,5 +104,4 @@ public class BeaconDto implements Serializable {
 	public void setLocation(final Location location) {
 		this.location = location;
 	}
-
 }

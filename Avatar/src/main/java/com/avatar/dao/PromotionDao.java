@@ -6,6 +6,7 @@ import com.avatar.dto.promotion.Promotion;
 import com.avatar.exception.NotFoundException;
 
 public interface PromotionDao {
+	Promotion getPromotion(Integer promoIdPk) throws NotFoundException;
 
 	List<Promotion> getPromotions(Integer clubIdPk, Integer amenityIdPk);
 

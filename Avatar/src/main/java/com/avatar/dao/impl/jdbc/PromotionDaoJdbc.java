@@ -17,7 +17,7 @@ import com.avatar.exception.NotFoundException;
 @Repository
 public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
-	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID = "SELECT * FROM PROMOTIONS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID = ? AND CURDATE() > EFFECTIVE_DATE AND CURDATE() < ENDING_DATE ";
+	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID = "SELECT * FROM PROMOTIONS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID = ? AND CURDATE() >= EFFECTIVE_DATE AND CURDATE() <= ENDING_DATE ";
 
 	private final PromotionMapper promotionMapper = new PromotionMapper();
 
@@ -38,6 +38,21 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 			+ "EFFECTIVE_DATE=? WHERE ID=?";
 	private static String UPD_PROMOTION_ENDINGDATE_BY_PK = "update PROMOTIONS set "
 			+ "ENDING_DATE=? WHERE ID=?";
+
+	private static String GET_PROMOTION_BY_ID = "SELECT * FROM PROMOTIONS WHERE ID = ?";
+
+	@Override
+	public Promotion getPromotion(final Integer promoIdPk)
+			throws NotFoundException {
+		try {
+			final Promotion retVal = getJdbcTemplate().queryForObject(
+					GET_PROMOTION_BY_ID, promotionMapper, promoIdPk);
+			return retVal;
+		} catch (final EmptyResultDataAccessException e) {
+			throw new NotFoundException("Promotion ID " + promoIdPk
+					+ " not found");
+		}
+	}
 
 	@Override
 	public List<Promotion> getPromotions(final Integer clubIdPk,

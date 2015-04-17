@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 import com.avatar.business.AccountBusiness;
 import com.avatar.business.AuthenticationTokenizerBusiness;
 import com.avatar.business.NotificationBusiness;
+import com.avatar.business.NowBusiness;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
@@ -42,6 +43,9 @@ public abstract class BaseController {
 
 	@Resource(name = "authenticationTokenizer")
 	protected AuthenticationTokenizerBusiness authenticationService;
+
+	@Resource(name = "accountService")
+	protected NowBusiness nowService;
 
 	protected final DateTimeFormatter yyyyMMddDtf = DateTimeFormat.forPattern("yyyyMMdd");
 
@@ -77,11 +81,11 @@ public abstract class BaseController {
 	protected void validateStaffInClub(final AccountDto staff,
 			final String clubId) throws PermissionDeniedException {
 		Assert.notNull(staff);
-		Assert.notNull(staff.getHomeClub());
-		Assert.notNull(staff.getHomeClub().getClubId());
-		Assert.notNull(clubId);
 
 		if (!staff.getPriviledges().contains(Privilege.superUser)) {
+			Assert.notNull(staff.getHomeClub());
+			Assert.notNull(staff.getHomeClub().getClubId());
+			Assert.notNull(clubId);
 			final boolean retVal = clubId.equalsIgnoreCase(staff.getHomeClub()
 					.getClubId());
 			if (!retVal) {

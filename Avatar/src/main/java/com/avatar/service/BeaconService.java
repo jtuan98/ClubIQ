@@ -80,6 +80,14 @@ public class BeaconService implements BeaconBusiness {
 	}
 
 	@Override
+	public List<BeaconDto> getBeacons(final String clubId, final String amenityId)
+			throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		return beaconDao.getBeacons(clubIdPk, amenityIdPk);
+	}
+
+	@Override
 	public List<ImmutablePair<AccountDto, Date>> getUsers(final String amenityId,
 			final Date onDate) {
 		return beaconDao.getUsers(amenityId, onDate);

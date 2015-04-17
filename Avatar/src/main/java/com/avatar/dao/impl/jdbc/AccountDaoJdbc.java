@@ -110,7 +110,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private final ActivationTokenMapper activationTokenMapper = new ActivationTokenMapper();
 
-	private static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ?";
+	private static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
+			+ AccountStatus.Activated.name() + "'";
 
 	private static String INS_AMENITY_EMPLOYEE = "INSERT INTO AMENITY_EMPLOYEE (ID, CLUB_AMENITY_ID, USER_ID, CREATE_DATE) VALUES (?,?,?,NOW())";
 	private static String UPD_AMENITY_EMPLOYEE = "UPDATE AMENITY_EMPLOYEE SET CLUB_AMENITY_ID=?, CREATE_DATE=NOW() WHERE USER_ID=? ";
@@ -522,7 +523,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		final int validate = getJdbcTemplate().queryForObject(
 				VALIDATE_USERID_PASSWD, Integer.class, userIdPk, password);
 		if (validate == 0) {
-			throw new InvalidPasswordException("Incorrect Password");
+			throw new InvalidPasswordException("Incorrect Password or Account Status Not Activated");
 		}
 		return true;
 	}

@@ -19,6 +19,8 @@ public interface BeaconBusiness {
 
 	List<String> getAmenityDeptName(String clubId) throws NotFoundException;
 
+	List<BeaconDto> getBeacons (String clubId, String amenityId) throws NotFoundException;
+
 	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityId, Date onDate)
 			throws NotFoundException;
 

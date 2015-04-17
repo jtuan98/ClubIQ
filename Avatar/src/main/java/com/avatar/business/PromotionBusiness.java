@@ -6,6 +6,7 @@ import com.avatar.dto.promotion.Promotion;
 import com.avatar.exception.NotFoundException;
 
 public interface PromotionBusiness {
+	Promotion getPromotion(Integer promoIdPk) throws NotFoundException;
 
 	List<Promotion> getPromotions(String beaconId) throws NotFoundException;
 

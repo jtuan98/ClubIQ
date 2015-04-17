@@ -23,7 +23,6 @@ import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.enums.Location;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
-import com.avatar.dto.serializer.AccountDtoCheckInDateSerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
@@ -80,19 +79,61 @@ public class BeaconManagerController extends BaseController {
 	private BeaconDto getBeaconInstance(final String clubId,
 			final String amenityId, final String beaconActionId,
 			final String location, final String description,
-			final String installerStaffUserId) throws InvalidParameterException {
+			final String installerStaffUserId, final String installationDate)
+			throws InvalidParameterException {
 		final BeaconDto retVal = new BeaconDto();
-		retVal.setBeaconid(beaconActionId);
+		retVal.setBeaconActionId(beaconActionId);
 		retVal.setAmenityId(amenityId);
 		retVal.setClubId(clubId);
 		retVal.setInstallerStaffId(installerStaffUserId);
 		retVal.setDescription(description);
+		if (StringUtils.isEmpty(installationDate)) {
+			retVal.setInstallationDate(nowService.getNow());
+		} else {
+			retVal.setInstallationDate(new Date(yyyyMMddDtf
+					.parseMillis(installationDate)));
+		}
 		try {
 			retVal.setLocation(Location.valueOf(location));
 		} catch (final Exception e) {
 			throw new InvalidParameterException("Invalid location " + location);
 		}
 		return retVal;
+	}
+
+	@RequestMapping(value = "/GetBeaconList")
+	public ModelAndView getBeaconList(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
+			throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<List<BeaconDto>> apiResponse = null;
+		try {
+			final List<BeaconDto> beacons = beaconService.getBeacons(clubId,
+					amenityId);
+			apiResponse = new WsResponse<List<BeaconDto>>(
+					ResponseStatus.success, "", beacons, "beaconList");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<List<BeaconDto>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
 	@RequestMapping(value = "/SetAmenityDeptName")
@@ -119,7 +160,8 @@ public class BeaconManagerController extends BaseController {
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
 
-		return setAmenityDeptName(authToken, apnsToken, amenityDepartment, clubId);
+		return setAmenityDeptName(authToken, apnsToken, amenityDepartment,
+				clubId);
 	}
 
 	ModelAndView setAmenityDeptName(final String authToken,
@@ -139,7 +181,7 @@ public class BeaconManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = "/SetBeacon")
+	@RequestMapping(value = { "/SetBeacon", "/UpdateBeacon" })
 	public ModelAndView setBeacon(
 			final Principal principal,
 			final HttpServletRequest req,
@@ -149,7 +191,8 @@ public class BeaconManagerController extends BaseController {
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId,
 			@RequestParam(required = true, value = "location") final String location,
 			@RequestParam(required = true, value = "desc") final String description,
-			@RequestParam(required = true, value = "installerStaffUserId") final String installerStaffUserId)
+			@RequestParam(required = true, value = "installerStaffUserId") final String installerStaffUserId,
+			@RequestParam(required = true, value = "installDate") final String installationDate)
 			throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -168,7 +211,8 @@ public class BeaconManagerController extends BaseController {
 		WsResponse<String> apiResponse = null;
 		try {
 			final BeaconDto beacon = getBeaconInstance(clubId, amenityId,
-					beaconActionId, location, description, installerStaffUserId);
+					beaconActionId, location, description,
+					installerStaffUserId, installationDate);
 			beaconService.updateBeacon(beacon);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					null);
@@ -206,11 +250,9 @@ public class BeaconManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment,
-			@RequestParam(required = false, value = "date") final String onDate
-			)
+			@RequestParam(required = false, value = "date") final String onDate)
 			throws Exception {
 		init();
-		jsonView.register(ImmutablePair.class, new AccountDtoCheckInDateSerializer());
 
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -227,8 +269,8 @@ public class BeaconManagerController extends BaseController {
 		}
 		WsResponse<List<ImmutablePair<AccountDto, Date>>> apiResponse = null;
 		try {
-			final List<ImmutablePair<AccountDto, Date>> users = beaconService.getUsers(
-					amenityDepartment, entryDate);
+			final List<ImmutablePair<AccountDto, Date>> users = beaconService
+					.getUsers(amenityDepartment, entryDate);
 			System.out.println(users.getClass());
 			apiResponse = new WsResponse<List<ImmutablePair<AccountDto, Date>>>(
 					ResponseStatus.success, "", users,

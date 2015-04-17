@@ -14,7 +14,9 @@ import org.springframework.util.Assert;
 
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.BeaconDao;
+import com.avatar.dao.ClubDao;
 import com.avatar.dao.impl.jdbc.mapper.AccountDtoCheckInDateMapper;
+import com.avatar.dao.impl.jdbc.mapper.BeaconDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.StringMapper;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
@@ -57,11 +59,18 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	private static final String GET_AMENITY_IDPK_BY_BEACON_ID_PK = "SELECT AMENITY_ID FROM BEACONS WHERE ID = ? ";
 
 	private static String INS_BEACON = "INSERT INTO BEACONS ("
-			+ "ID, BEACONID, CLUB_ID, AMENITY_ID, LOCATION, DESCRIPTION, INSTALLATION_STAFF_ID, CREATE_DATE) "
-			+ "VALUES (?,?,?,?,?,?,?,NOW())";
+			+ "ID, BEACONID, CLUB_ID, AMENITY_ID, LOCATION, DESCRIPTION, INSTALLATION_STAFF_ID, INSTALLATION_DATE, CREATE_DATE) "
+			+ "VALUES (?,?,?,?,?,?,?,?,NOW())";
 
 	private static String UPD_BEACON = "UPDATE BEACONS SET CLUB_ID=?, AMENITY_ID=?, LOCATION=?, DESCRIPTION=?, INSTALLATION_STAFF_ID=? "
 			+ "WHERE ID=?";
+
+	private static final String GET_BEACONS_BYCLUBID_AMENITYID = "SELECT * FROM BEACONS WHERE CLUB_ID = ? and AMENITY_ID = ? ";
+
+	private final BeaconDtoMapper beaconDtoMapper = new BeaconDtoMapper();
+
+	@Resource(name = "clubDaoJdbc")
+	private ClubDao clubDao;
 
 	@Override
 	public void addUserIdToBeaconMapping(final String beaconId,
@@ -127,6 +136,35 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
+	public List<BeaconDto> getBeacons(final Integer clubIdPk,
+			final Integer amenityIdPk) {
+		final List<BeaconDto> beacons = getJdbcTemplate().query(
+				GET_BEACONS_BYCLUBID_AMENITYID, beaconDtoMapper, clubIdPk,
+				amenityIdPk);
+		if (CollectionUtils.isNotEmpty(beacons)) {
+			for (final BeaconDto beacon : beacons) {
+				try {
+					beacon.setClub(clubDao.get(clubIdPk, false));
+				} catch (final NotFoundException e) {
+				}
+				try {
+					beacon.setAmenity(clubDao.getAmenity(amenityIdPk));
+				} catch (final NotFoundException e) {
+				}
+				if ((beacon.getInstallerStaff() != null)
+						&& (beacon.getInstallerStaff().getId() != null)) {
+					try {
+						beacon.setInstallerStaff(accountDao.fetch(beacon
+								.getInstallerStaff().getId()));
+					} catch (final NotFoundException e) {
+					}
+				}
+			}
+		}
+		return beacons;
+	}
+
+	@Override
 	public Integer getClubIdPkByBeaconIdPk(final Integer beaconIdPk)
 			throws NotFoundException {
 		try {
@@ -140,8 +178,8 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
-	public List<ImmutablePair<AccountDto, Date>> getUsers(final String amenityId,
-			final Date onDate) {
+	public List<ImmutablePair<AccountDto, Date>> getUsers(
+			final String amenityId, final Date onDate) {
 		List<ImmutablePair<AccountDto, Date>> users = null;
 		if (onDate == null) {
 			users = getJdbcTemplate().query(SEL_USER + "DATE(NOW())",
@@ -243,7 +281,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	public void updateBeaconInfo(final BeaconDto beacon)
 			throws NotFoundException {
 		Assert.notNull(beacon, "Checking beacon");
-		Assert.notNull(beacon.getBeaconid(), "Checking beaconid");
+		Assert.notNull(beacon.getBeaconActionId(), "Checking beaconid");
 		Assert.notNull(beacon.getLocation(), "Checking beacon location");
 		Assert.notNull(beacon.getClub(), "Checking club");
 		Assert.notNull(beacon.getAmenity(), "Checking amenity");
@@ -255,7 +293,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 		try {
 			final Integer beaconIdPk = getJdbcTemplate().queryForObject(
-					GET_BEACON_ID, Integer.class, beacon.getBeaconid());
+					GET_BEACON_ID, Integer.class, beacon.getBeaconActionId());
 			beacon.setId(beaconIdPk);
 		} catch (final EmptyResultDataAccessException e) {
 		}
@@ -266,12 +304,13 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			beacon.setId(beaconIdPk);
 
 			getJdbcTemplate()
-					.update(INS_BEACON, beaconIdPk, beacon.getBeaconid(),
+					.update(INS_BEACON, beaconIdPk, beacon.getBeaconActionId(),
 							beacon.getClub().getId(),
 							beacon.getAmenity().getId(),
 							beacon.getLocation().name(),
 							beacon.getDescription(),
-							beacon.getInstallerStaff().getId());
+							beacon.getInstallerStaff().getId(),
+							beacon.getInstallationDate());
 		} else {
 			// update
 			getJdbcTemplate().update(UPD_BEACON, beacon.getClub().getId(),

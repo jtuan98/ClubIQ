@@ -182,6 +182,9 @@ public class SurveyManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Check authToken with clubId
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
@@ -251,13 +254,16 @@ public class SurveyManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
+			//Use authToken and check if staff is linked to the clubId and amenityId or not.
+			final Promotion promo = promotionService.getPromotion(promotionId);
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					promo.getClub().getClubId());
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
-		//TODO: Use authToken and check if staff is linked to the clubId and amenityId or not.
 		WsResponse<String> apiResponse = null;
 		try {
 			final Promotion promotion = getPromotionInstance(null, null,

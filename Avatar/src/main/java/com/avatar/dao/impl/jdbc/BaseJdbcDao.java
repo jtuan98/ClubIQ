@@ -57,6 +57,11 @@ public abstract class BaseJdbcDao implements NowDao {
 	}
 
 	protected JdbcTemplate getJdbcTemplate() {
+		final String timeZoneJdbc = jdbcTemplate.queryForObject("SELECT @@session.time_zone", String.class);
+		if (!timezone.equalsIgnoreCase(timeZoneJdbc)) {
+			System.out.println("WARNING: wrong timezone: " + timeZoneJdbc);
+			jdbcTemplate.execute("SET time_zone = '" + timezone + "'");
+		}
 		return jdbcTemplate;
 	}
 
@@ -71,7 +76,6 @@ public abstract class BaseJdbcDao implements NowDao {
 	@Override
 	public Date getNow() {
 		return getJdbcTemplate().queryForObject("SELECT NOW()", Date.class);
-
 	}
 
 	protected void initTemplate(final DataSource ds) {
@@ -110,6 +114,7 @@ public abstract class BaseJdbcDao implements NowDao {
 
 	public void setJdbcTemplate(final JdbcTemplate template) {
 		jdbcTemplate = template;
+		jdbcTemplate.execute("SET time_zone = '" + timezone + "'");
 	}
 
 	protected void setLobHandler(final LobHandler lobHandler) {

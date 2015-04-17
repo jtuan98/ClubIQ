@@ -33,6 +33,11 @@ public class PromotionService implements PromotionBusiness {
 	private BeaconDao beaconDao;
 
 	@Override
+	public Promotion getPromotion(final Integer promoIdPk) throws NotFoundException {
+		return promotionDao.getPromotion(promoIdPk);
+	}
+
+	@Override
 	public List<Promotion> getPromotions(final String beaconId)
 			throws NotFoundException {
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);

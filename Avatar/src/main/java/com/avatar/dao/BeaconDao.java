@@ -21,6 +21,8 @@ public interface BeaconDao {
 
 	Integer getBeaconIdPk(String beaconId) throws NotFoundException;
 
+	List<BeaconDto> getBeacons(Integer clubIdPk, Integer amenityIdPk);
+
 	Integer getClubIdPkByBeaconIdPk(Integer beaconIdPk)
 			throws NotFoundException;
 
