@@ -52,17 +52,21 @@ public class BeaconService implements BeaconBusiness {
 		// Find the staff associated to amenity
 		final List<Integer> amenityEmployeeIdsPk = clubDao
 				.getAmenityEmployees(clubAmenityIdPk);
-
 		// Send alert to staff
 		if (CollectionUtils.isNotEmpty(amenityEmployeeIdsPk)) {
+			System.out.println("DEBUG: amenityEmployeeIdsPk=>" + amenityEmployeeIdsPk.size());
 			for (final Integer employeeIdPk : amenityEmployeeIdsPk) {
 				final AccountDto empoyee = accountDao.fetch(employeeIdPk);
 				try {
+					System.out.println("DEBUG: Sending APNS to empoyee=>" + empoyee.getDeviceId() + " [id="+ empoyee.getId()+"]");
 					apnsNotificationService.sendAlert(empoyee, member);
 				} catch (final NotificationException e) {
+					System.out.println("DEBUG: ERROR in Sending APNS to empoyee=>" + empoyee.getDeviceId() + " [id="+ empoyee.getId()+"]");
 					e.printStackTrace();
 				}
 			}
+		} else {
+			System.out.println("DEBUG: amenityEmployeeIdsPk is EMPTY");
 		}
 	}
 

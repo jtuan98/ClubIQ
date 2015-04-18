@@ -22,7 +22,9 @@ import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import com.avatar.business.NotificationBusiness;
+import com.avatar.business.NowBusiness;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.exception.InvalidDeviceId;
 import com.avatar.exception.NotificationException;
 
@@ -53,6 +55,9 @@ public class ApnsNotificationService implements NotificationBusiness {
 	private final DateTimeFormatter dtf = DateTimeFormat
 			.forPattern("MM/dd/yyyy HH:mm:ss");
 
+	@Resource(name = "accountService")
+	private NowBusiness nowService;
+
 	private PushNotificationPayload buildAlertPayload(
 			final AccountDto memberAccount) throws JSONException {
 		final PushNotificationPayload payload = new PushNotificationPayload();
@@ -64,8 +69,9 @@ public class ApnsNotificationService implements NotificationBusiness {
 		payload.addCustomDictionary("phoneNumber",
 				memberAccount.getMobileNumber());
 		payload.addCustomDictionary("checkIn",
-				dtf.print(System.currentTimeMillis()));
-
+				dtf.print(nowService.getNow().getTime())); // System.currentTimeMillis()));
+		System.out.println("DEBUG: json apns alrt=>"
+				+ payload.getPayload().toString());
 		return payload;
 	}
 
@@ -137,9 +143,12 @@ public class ApnsNotificationService implements NotificationBusiness {
 		if (StringUtils.isNotEmpty(staffAccount.getDeviceId())) {
 			try {
 				final PushNotificationPayload payload = buildAlertPayload(memberAccount);
+
 				/* Prepare a simple payload to push */
 				queueNotificationEmployee.add(payload,
 						staffAccount.getDeviceId());
+				System.out.println("DEBUG: SENT alert to "
+						+ staffAccount.getDeviceId());
 			} catch (final InvalidDeviceTokenFormatException | JSONException e) {
 				final String name = StringUtils
 						.isEmpty(memberAccount.getName()) ? "" : memberAccount
@@ -155,7 +164,8 @@ public class ApnsNotificationService implements NotificationBusiness {
 						staffAccount.isStaff());
 			}
 		} else {
-			System.out.println("INFO: skip Alert... Staff does not have any deviceId");
+			System.out
+					.println("INFO: skip Alert... Staff does not have any deviceId");
 			retVal = false;
 		}
 		return retVal;
@@ -222,18 +232,20 @@ public class ApnsNotificationService implements NotificationBusiness {
 			throws NotificationException {
 		final boolean retVal = true;
 		init();
-		final String msg = String
-				.format(ALERT_JSON, "John Doe", "123-456-1234");
 		try {
+			final AccountDto memberAccount = new EmployeeAccountDto();
+			memberAccount.setName("John Doe");
+			memberAccount.setMobileNumber("123-456-1234");
+
 			/* Prepare a simple payload to push */
-			final PushNotificationPayload payload = PushNotificationPayload
-					.alert(msg);
+			final PushNotificationPayload payload = buildAlertPayload(memberAccount);
+
 			if (staff) {
 				queueNotificationEmployee.add(payload, deviceId);
 			} else {
 				queueNotificationMember.add(payload, deviceId);
 			}
-		} catch (final InvalidDeviceTokenFormatException e) {
+		} catch (final JSONException | InvalidDeviceTokenFormatException e) {
 			throw new NotificationException(
 					"InvalidDeviceTokenFormatException was thrown: "
 							+ e.getMessage());
