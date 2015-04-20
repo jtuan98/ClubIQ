@@ -22,7 +22,7 @@ import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.NotFoundException;
 
 @Service
-public class SurveyService implements SurveyBusiness {
+public class SurveyService extends BaseService implements SurveyBusiness {
 
 	public static void main(final String[] args) {
 		final SurveyService s = new SurveyService();

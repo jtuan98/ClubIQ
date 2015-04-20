@@ -14,16 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.avatar.business.AccountBusiness;
-import com.avatar.business.NowBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.ClubDao;
-import com.avatar.dao.NowDao;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
 import com.avatar.dto.club.AmenityDto;
+import com.avatar.dto.enums.DbTimeZone;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.AccountExistedException;
 import com.avatar.exception.NotFoundException;
@@ -34,7 +33,7 @@ import com.google.common.cache.LoadingCache;
 
 @Service
 @Transactional("transactionManager")
-public class AccountService implements AccountBusiness, NowBusiness {
+public class AccountService extends BaseService implements AccountBusiness {
 	public static void main(final String[] args) {
 		// final AccountService service = new AccountService();
 		// final ActivationToken token = service.generateActivationToken(true);
@@ -76,9 +75,6 @@ public class AccountService implements AccountBusiness, NowBusiness {
 
 	@Resource(name = "clubDaoJdbc")
 	private ClubDao clubDao;
-
-	@Resource(name = "accountDaoJdbc")
-	private NowDao dbNowDao;
 
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
@@ -136,9 +132,10 @@ public class AccountService implements AccountBusiness, NowBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public ActivationToken createAccount(final AccountDto accountInfo)
 			throws NotFoundException, AccountCreationException {
-		final Date now = dbNowDao.getNow();
+		final DbTimeZone timezone = accountInfo.getHomeClub() == null ? accountInfo.getHomeClub().getTimeZone(): null;
+		final Date now = getNow(timezone);
 		final boolean mobile = accountInfo instanceof MemberAccountDto;
-		final ActivationToken activationToken = generateActivationToken(mobile);
+		final ActivationToken activationToken = generateActivationToken(mobile, timezone);
 
 		final String deviceId = accountInfo.getDeviceId();
 
@@ -210,13 +207,13 @@ public class AccountService implements AccountBusiness, NowBusiness {
 		return retVal;
 	}
 
-	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
-	public ActivationToken generateActivationToken(final boolean mobile) {
+	private ActivationToken generateActivationToken(final boolean mobile,
+			final DbTimeZone timezone) {
 		final ActivationToken retVal = mobile ? new MobileActivationPin()
 				: new ActivationToken();
 		retVal.setToken(UUID.randomUUID().toString());
-		final Date now = dbNowDao.getNow();
+		final Date now = getNow(timezone);
 		retVal.setExpirationDate(new Date(now.getTime()
 				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000)));
 		return retVal;
@@ -237,11 +234,6 @@ public class AccountService implements AccountBusiness, NowBusiness {
 		final AccountDto retVal = accountDao.fetch(userId);
 
 		return retVal;
-	}
-
-	@Override
-	public Date getNow() {
-		return dbNowDao.getNow();
 	}
 
 	@Override

@@ -24,7 +24,7 @@ import com.avatar.exception.NotFoundException;
 import com.avatar.exception.NotificationException;
 
 @Service
-public class BeaconService implements BeaconBusiness {
+public class BeaconService extends BaseService implements BeaconBusiness {
 
 	@Resource(name = "beaconDaoJdbc")
 	private BeaconDao beaconDao;
@@ -89,6 +89,23 @@ public class BeaconService implements BeaconBusiness {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
 		return beaconDao.getBeacons(clubIdPk, amenityIdPk);
+	}
+
+	@Override
+	public ClubDto getClub(final String clubId) throws NotFoundException {
+		return clubDao.get(clubId);
+	}
+
+	@Override
+	public List<ClubDto> getClubs(final Integer userIdPk) throws NotFoundException {
+		final List<ClubDto> retVal = clubDao.getClubs(userIdPk);
+		if (CollectionUtils.isNotEmpty(retVal)) {
+			for (final ClubDto club : retVal) {
+				final List<AmenityDto> amenities = clubDao.getAmenities(club.getId());
+				club.setAmenities(amenities);
+			}
+		}
+		return retVal;
 	}
 
 	@Override

@@ -15,13 +15,15 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.util.Assert;
 
-import com.avatar.dao.NowDao;
+import com.avatar.dao.DbDateDao;
 import com.avatar.dao.Sequencer;
 import com.avatar.dao.impl.jdbc.mapper.ImageMapper;
 import com.avatar.dto.ImagePic;
+import com.avatar.dto.enums.DbTimeZone;
 
-public abstract class BaseJdbcDao implements NowDao {
+public abstract class BaseJdbcDao implements DbDateDao {
 
 	protected LobHandler lobHandler = new DefaultLobHandler();
 
@@ -65,6 +67,16 @@ public abstract class BaseJdbcDao implements NowDao {
 		return jdbcTemplate;
 	}
 
+	protected JdbcTemplate getJdbcTemplate(final DbTimeZone tz) {
+		Assert.notNull(tz);
+		final String timeZoneJdbc = jdbcTemplate.queryForObject("SELECT @@session.time_zone", String.class);
+		if (!timezone.equalsIgnoreCase(tz.getDbSetting())) {
+			System.out.println("WARNING: wrong timezone: " + timeZoneJdbc);
+			jdbcTemplate.execute("SET time_zone = '" + tz.name() + "'");
+		}
+		return jdbcTemplate;
+	}
+
 	protected LobHandler getLobHandler() {
 		return lobHandler;
 	}
@@ -76,6 +88,11 @@ public abstract class BaseJdbcDao implements NowDao {
 	@Override
 	public Date getNow() {
 		return getJdbcTemplate().queryForObject("SELECT NOW()", Date.class);
+	}
+
+	@Override
+	public Date getNow(final DbTimeZone tz) {
+		return getJdbcTemplate(tz).queryForObject("SELECT NOW()", Date.class);
 	}
 
 	protected void initTemplate(final DataSource ds) {

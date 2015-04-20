@@ -60,9 +60,6 @@ public class EmailSendService implements NotificationBusiness {
 			+ "<a href=\":THELINK:\" target=\"_top\">Account Activation</a>"
 			+ "</p>" + "</body></html>";
 
-	private final String emailTextPlain = "Please click the link below for account registration:\r\n"
-			+ ":THELINK:";
-
 	private String buildLink(final ActivationToken token) {
 		final String retVal = ec2Host + accountActivationLink
 				+ token.getToken();

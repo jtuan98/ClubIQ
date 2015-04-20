@@ -20,6 +20,7 @@ import com.avatar.business.BeaconBusiness;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
+import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.Location;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
@@ -87,8 +88,16 @@ public class BeaconManagerController extends BaseController {
 		retVal.setClubId(clubId);
 		retVal.setInstallerStaffId(installerStaffUserId);
 		retVal.setDescription(description);
+		ClubDto club;
+		try {
+			club = beaconService.getClub(clubId);
+		} catch (final NotFoundException e1) {
+			throw new InvalidParameterException("ClubId " + clubId
+					+ " does not exist");
+		}
+
 		if (StringUtils.isEmpty(installationDate)) {
-			retVal.setInstallationDate(nowService.getNow());
+			retVal.setInstallationDate(nowService.getNow(club.getTimeZone()));
 		} else {
 			retVal.setInstallationDate(new Date(yyyyMMddDtf
 					.parseMillis(installationDate)));

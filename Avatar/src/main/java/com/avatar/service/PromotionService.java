@@ -20,7 +20,7 @@ import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 
 @Service
-public class PromotionService implements PromotionBusiness {
+public class PromotionService extends BaseService implements PromotionBusiness {
 	@Resource(name = "promotionDaoJdbc")
 	private PromotionDao promotionDao;
 
@@ -41,7 +41,12 @@ public class PromotionService implements PromotionBusiness {
 
 	@Override
 	public Promotion getPromotion(final Integer promoIdPk) throws NotFoundException {
-		return promotionDao.getPromotion(promoIdPk);
+		final Promotion promotion = promotionDao.getPromotion(promoIdPk);
+		final ClubDto club = clubDao.get(promotion.getClub().getId(), false);
+		final AmenityDto amenity = clubDao.getAmenity(promotion.getAmenity().getId());
+		promotion.setClub(club);
+		promotion.setAmenity(amenity);
+		return promotion;
 	}
 
 	@Override

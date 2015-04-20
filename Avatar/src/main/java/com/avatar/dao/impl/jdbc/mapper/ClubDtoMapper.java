@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.enums.DbTimeZone;
 
 public class ClubDtoMapper implements RowMapper<ClubDto> {
 
@@ -25,6 +26,7 @@ public class ClubDtoMapper implements RowMapper<ClubDto> {
 		retVal.setClubType(rs.getString("CLUB_TYPE"));
 		retVal.setWebSite(rs.getString("CLUB_WEBSITE"));
 		retVal.setHzRestriction(rs.getString("HZRESTRICTION"));
+		retVal.setTimeZone(DbTimeZone.convert(rs.getString("TIME_ZONE")));
 		if (rs.getString("IMAGE_ID") != null) {
 			retVal.setImage(new ImagePic(rs.getInt("IMAGE_ID")));
 		}

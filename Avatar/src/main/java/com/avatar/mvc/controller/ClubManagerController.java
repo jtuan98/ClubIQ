@@ -13,8 +13,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.avatar.business.BeaconBusiness;
 import com.avatar.dto.WsResponse;
+import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.enums.DbTimeZone;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.exception.AuthenticationTokenExpiredException;
@@ -66,10 +68,39 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = "/GetClubList")
+	public ModelAndView getClubList(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken)
+			throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		final AccountDto principal = authenticationService.getAccount(authToken);
+		WsResponse<List<ClubDto>> apiResponse = null;
+		try {
+			final List<ClubDto> clubs = beaconService
+					.getClubs(principal.getId());
+			apiResponse = new WsResponse<List<ClubDto>>(
+					ResponseStatus.success, "", clubs, "clubList");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<List<ClubDto>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	private ClubDto getInstance(final String clubId, final String clubName,
 			final String clubAddress, final String clubZip,
 			final String clubState, final String clubPhoneNumber,
-			final String hzRestriction) {
+			final String hzRestriction, final DbTimeZone timezone) {
 		final ClubDto retVal = new ClubDto();
 		retVal.setClubId(clubId);
 		retVal.setClubName(clubName);
@@ -78,6 +109,7 @@ public class ClubManagerController extends BaseController {
 		retVal.setState(clubState);
 		retVal.setPhoneNumber(clubPhoneNumber);
 		retVal.setHzRestriction(hzRestriction);
+		retVal.setTimeZone(timezone);
 		return retVal;
 	}
 
@@ -116,7 +148,9 @@ public class ClubManagerController extends BaseController {
 			@RequestParam(required = false, value = "clubZipCode") final String clubZip,
 			@RequestParam(required = false, value = "clubState") final String clubState,
 			@RequestParam(required = false, value = "clubPhoneNumber") final String clubPhoneNumber,
-			@RequestParam(required = false, value = "hzRestriction") final String hzRestriction)
+			@RequestParam(required = false, value = "hzRestriction") final String hzRestriction,
+			@RequestParam(required = false, value = "timezone", defaultValue="US_PST") final DbTimeZone timezone
+			)
 			throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -133,7 +167,7 @@ public class ClubManagerController extends BaseController {
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
 		final ClubDto clubUpdated = getInstance(clubId, clubName, clubAddress,
-				clubZip, clubState, clubPhoneNumber, hzRestriction);
+				clubZip, clubState, clubPhoneNumber, hzRestriction, timezone);
 
 		WsResponse<String> apiResponse = null;
 		try {

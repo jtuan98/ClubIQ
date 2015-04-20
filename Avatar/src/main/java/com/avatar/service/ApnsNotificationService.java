@@ -22,14 +22,14 @@ import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import com.avatar.business.NotificationBusiness;
-import com.avatar.business.NowBusiness;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.exception.InvalidDeviceId;
 import com.avatar.exception.NotificationException;
 
 @Service
-public class ApnsNotificationService implements NotificationBusiness {
+public class ApnsNotificationService extends BaseService implements
+		NotificationBusiness {
 	@Resource(name = "apnsCertificateP12Staff")
 	private String apnsServerCertificateStaff;
 
@@ -55,9 +55,6 @@ public class ApnsNotificationService implements NotificationBusiness {
 	private final DateTimeFormatter dtf = DateTimeFormat
 			.forPattern("MM/dd/yyyy HH:mm:ss");
 
-	@Resource(name = "accountService")
-	private NowBusiness nowService;
-
 	private PushNotificationPayload buildAlertPayload(
 			final AccountDto memberAccount) throws JSONException {
 		final PushNotificationPayload payload = new PushNotificationPayload();
@@ -68,8 +65,8 @@ public class ApnsNotificationService implements NotificationBusiness {
 
 		payload.addCustomDictionary("phoneNumber",
 				memberAccount.getMobileNumber());
-		payload.addCustomDictionary("checkIn",
-				dtf.print(nowService.getNow().getTime())); // System.currentTimeMillis()));
+		payload.addCustomDictionary("checkIn", dtf.print(getNow(
+				memberAccount.getHomeClub().getTimeZone()).getTime())); // System.currentTimeMillis()));
 		System.out.println("DEBUG: json apns alrt=>"
 				+ payload.getPayload().toString());
 		return payload;

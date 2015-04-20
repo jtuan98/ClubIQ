@@ -1,5 +1,6 @@
 package com.avatar.mvc.controller;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -13,8 +14,8 @@ import org.springframework.util.Assert;
 
 import com.avatar.business.AccountBusiness;
 import com.avatar.business.AuthenticationTokenizerBusiness;
+import com.avatar.business.DbDateBusiness;
 import com.avatar.business.NotificationBusiness;
-import com.avatar.business.NowBusiness;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
@@ -32,6 +33,11 @@ import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
 
 public abstract class BaseController {
+	public static void main(final String[] args) {
+		final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
+				.forPattern("yyyyMMdd HH:mm:ss");
+		System.out.println(new Date(yyyyMMdd_hh24missDtf.parseMillis("20150530 20:00:00")));
+	}
 	@Resource(name = "accountService")
 	protected AccountBusiness accountService;
 
@@ -45,9 +51,13 @@ public abstract class BaseController {
 	protected AuthenticationTokenizerBusiness authenticationService;
 
 	@Resource(name = "accountService")
-	protected NowBusiness nowService;
+	protected DbDateBusiness nowService;
 
-	protected final DateTimeFormatter yyyyMMddDtf = DateTimeFormat.forPattern("yyyyMMdd");
+	protected final DateTimeFormatter yyyyMMddDtf = DateTimeFormat
+			.forPattern("yyyyMMdd");
+
+	protected final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
+			.forPattern("yyyyMMdd HH:mm:ss");
 
 	protected JsonView jsonView = null;
 
@@ -83,9 +93,12 @@ public abstract class BaseController {
 		Assert.notNull(staff);
 
 		if (!staff.getPriviledges().contains(Privilege.superUser)) {
-			Assert.notNull(staff.getHomeClub());
-			Assert.notNull(staff.getHomeClub().getClubId());
 			Assert.notNull(clubId);
+			if ((staff.getHomeClub() == null)
+					|| (staff.getHomeClub().getClubId() == null)) {
+				throw new PermissionDeniedException("Staff "
+						+ staff.getUserId() + " is missing Home Club!");
+			}
 			final boolean retVal = clubId.equalsIgnoreCase(staff.getHomeClub()
 					.getClubId());
 			if (!retVal) {

@@ -1,8 +1,10 @@
 package com.avatar.dto.club;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.avatar.dto.ImagePic;
+import com.avatar.dto.enums.DbTimeZone;
 
 public class ClubDto implements Serializable {
 
@@ -18,6 +20,8 @@ public class ClubDto implements Serializable {
 	protected String clubType;
 	protected String webSite;
 	protected String hzRestriction;
+	protected DbTimeZone timeZone = DbTimeZone.US_PST;
+	protected List<AmenityDto> amenities;
 
 	public ClubDto() {
 	}
@@ -28,6 +32,10 @@ public class ClubDto implements Serializable {
 
 	public String getAddress() {
 		return address;
+	}
+
+	public List<AmenityDto> getAmenities() {
+		return amenities;
 	}
 
 	public String getCity() {
@@ -66,6 +74,10 @@ public class ClubDto implements Serializable {
 		return state;
 	}
 
+	public DbTimeZone getTimeZone() {
+		return timeZone;
+	}
+
 	public String getWebSite() {
 		return webSite;
 	}
@@ -76,6 +88,10 @@ public class ClubDto implements Serializable {
 
 	public void setAddress(final String address) {
 		this.address = address;
+	}
+
+	public void setAmenities(final List<AmenityDto> amenities) {
+		this.amenities = amenities;
 	}
 
 	public void setCity(final String city) {
@@ -112,6 +128,10 @@ public class ClubDto implements Serializable {
 
 	public void setState(final String state) {
 		this.state = state;
+	}
+
+	public void setTimeZone(final DbTimeZone timeZone) {
+		this.timeZone = timeZone;
 	}
 
 	public void setWebSite(final String webSite) {

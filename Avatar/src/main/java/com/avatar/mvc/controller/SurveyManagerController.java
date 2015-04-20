@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,7 +52,8 @@ public class SurveyManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
-			//Use authToken and check if staff is linked to the clubId and amenityId or not.
+			// Use authToken and check if staff is linked to the clubId and
+			// amenityId or not.
 			final Promotion promo = promotionService.getPromotion(promotionId);
 			validateStaffInClub(authenticationService.getAccount(authToken),
 					promo.getClub().getClubId());
@@ -73,7 +75,6 @@ public class SurveyManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
-
 
 	@RequestMapping(value = "/GetPromotions")
 	public ModelAndView fetchPromotions(
@@ -126,7 +127,8 @@ public class SurveyManagerController extends BaseController {
 
 	Promotion getPromotionInstance(final String clubId, final String amenityId,
 			final String promotionTitle, final String promotionDetails,
-			final String effectiveDateYYYYMMDD, final String endingDateYYYYMMDD)
+			final String effectiveDateYYYYMMDDHH24MISS,
+			final String endingDateYYYYMMDDHH24MISS)
 			throws InvalidParameterException {
 		final Promotion promotion = new Promotion();
 		promotion.setAmenity(new AmenityDto());
@@ -135,21 +137,24 @@ public class SurveyManagerController extends BaseController {
 		promotion.getClub().setClubId(clubId);
 		promotion.setTitle(promotionTitle);
 		promotion.setDescription(promotionDetails);
-		try {
-			promotion.setEffectiveDate(new Date(yyyyMMddDtf
-					.parseMillis(effectiveDateYYYYMMDD)));
-		} catch (final IllegalArgumentException e) {
-			throw new InvalidParameterException("Invalid EffectiveDate: "
-					+ effectiveDateYYYYMMDD);
+		if (!StringUtils.isEmpty(effectiveDateYYYYMMDDHH24MISS)) {
+			try {
+				promotion.setEffectiveDate(new Date(yyyyMMdd_hh24missDtf
+						.parseMillis(effectiveDateYYYYMMDDHH24MISS)));
+			} catch (final IllegalArgumentException e) {
+				throw new InvalidParameterException("Invalid EffectiveDate: "
+						+ effectiveDateYYYYMMDDHH24MISS);
+			}
 		}
-		try {
-			promotion.setEndingDate(new Date(yyyyMMddDtf
-					.parseMillis(endingDateYYYYMMDD)));
-		} catch (final IllegalArgumentException e) {
-			throw new InvalidParameterException("Invalid EndingDate: "
-					+ endingDateYYYYMMDD);
+		if (!StringUtils.isEmpty(endingDateYYYYMMDDHH24MISS)) {
+			try {
+				promotion.setEndingDate(new Date(yyyyMMdd_hh24missDtf
+						.parseMillis(endingDateYYYYMMDDHH24MISS)));
+			} catch (final IllegalArgumentException e) {
+				throw new InvalidParameterException("Invalid EndingDate: "
+						+ endingDateYYYYMMDDHH24MISS);
+			}
 		}
-
 		return promotion;
 	}
 
@@ -159,14 +164,13 @@ public class SurveyManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId
-			)
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
 			throws Exception {
 		init();
 		WsResponse<List<Promotion>> apiResponse = null;
 		try {
-			final List<Promotion> promotions = promotionService
-					.getPromotions(clubId, amenityId);
+			final List<Promotion> promotions = promotionService.getPromotions(
+					clubId, amenityId);
 			apiResponse = new WsResponse<List<Promotion>>(
 					ResponseStatus.success, "", promotions, "promotions");
 		} catch (final Exception e) {
@@ -209,8 +213,8 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "amenityId") final String amenityId,
 			@RequestParam(required = true, value = "promotionTitle") final String promotionTitle,
 			@RequestParam(required = true, value = "promotionDetail") final String promotionDetails,
-			@RequestParam(required = true, value = "effectiveDate") final String effectiveDateYYYYMMDD,
-			@RequestParam(required = true, value = "endingDate") final String endingDateYYYYMMDD)
+			@RequestParam(required = true, value = "effectiveDate") final String effectiveDateYYYYMMDDHH24MISS,
+			@RequestParam(required = true, value = "endingDate") final String endingDateYYYYMMDDHH24MISS)
 			throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -225,12 +229,13 @@ public class SurveyManagerController extends BaseController {
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
-		//TODO: Use authToken and check if staff is linked to the clubId and amenityId or not.
+		// TODO: Use authToken and check if staff is linked to the clubId and
+		// amenityId or not.
 		WsResponse<String> apiResponse = null;
 		try {
 			final Promotion promotion = getPromotionInstance(clubId, amenityId,
-					promotionTitle, promotionDetails, effectiveDateYYYYMMDD,
-					endingDateYYYYMMDD);
+					promotionTitle, promotionDetails,
+					effectiveDateYYYYMMDDHH24MISS, endingDateYYYYMMDDHH24MISS);
 
 			promotionService.newPromotion(promotion);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
@@ -281,14 +286,15 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "promotionId") final Integer promotionId,
 			@RequestParam(required = true, value = "promotionTitle") final String promotionTitle,
 			@RequestParam(required = true, value = "promotionDetails") final String promotionDetails,
-			@RequestParam(required = false, value = "effectiveDate") final String effectiveDateYYYYMMDD,
-			@RequestParam(required = false, value = "endingDate") final String endingDateYYYYMMDD)
+			@RequestParam(required = false, value = "effectiveDate") final String effectiveDateYYYYMMDDHH24MISS,
+			@RequestParam(required = false, value = "endingDate") final String endingDateYYYYMMDDHH24MISS)
 			throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
-			//Use authToken and check if staff is linked to the clubId and amenityId or not.
+			// Use authToken and check if staff is linked to the clubId and
+			// amenityId or not.
 			final Promotion promo = promotionService.getPromotion(promotionId);
 			validateStaffInClub(authenticationService.getAccount(authToken),
 					promo.getClub().getClubId());
@@ -301,8 +307,8 @@ public class SurveyManagerController extends BaseController {
 		WsResponse<String> apiResponse = null;
 		try {
 			final Promotion promotion = getPromotionInstance(null, null,
-					promotionTitle, promotionDetails, effectiveDateYYYYMMDD,
-					endingDateYYYYMMDD);
+					promotionTitle, promotionDetails,
+					effectiveDateYYYYMMDDHH24MISS, endingDateYYYYMMDDHH24MISS);
 			promotion.setId(promotionId);
 			promotionService.update(promotion);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",

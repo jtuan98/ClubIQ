@@ -24,8 +24,6 @@ public interface AccountBusiness {
 
 	boolean exists(String userId);
 
-	ActivationToken generateActivationToken(boolean mobile);
-
 	AccountDto get(String userId) throws NotFoundException;
 
 	void updateAccountInfo(String userId, String deviceId, String fullName,

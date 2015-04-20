@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Repository;
@@ -16,6 +17,7 @@ import com.avatar.dao.impl.jdbc.mapper.ClubDtoMapper;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.NotFoundException;
 
 @Repository
@@ -43,10 +45,16 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	private static String SEL_AMENITIES_BY_CLUBID = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CLUB_ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
 
 	private static String UPD_CLUB_INFO = "update CLUBS set NAME=?, ADDRESS=?, ZIPCODE=?,"
-			+ "CITY=?, STATE=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=? "
+			+ "CITY=?, STATE=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=?, TIME_ZONE=? "
 			+ "WHERE ID=? ";
 
 	private static String GET_EMPLOYEES_FOR_AMENITY_PK = "select USER_ID from AMENITY_EMPLOYEE where CLUB_AMENITY_ID = ? ";
+
+	static private String SEL_CLUBS_BY_USER_IDPK = "SELECT CLUBS.* FROM CLUBS, USERS, USER_ROLES where USERS.ID = ? and HOME_CLUB_ID = CLUBS.ID AND USER_ROLES.USER_ID = USERS.ID and ROLE != '"
+			+ Privilege.superUser.name() + "'";
+
+	static private String SEL_SUPER_USER_CLUBS_BY_USER_IDPK = "SELECT CLUBS.* FROM CLUBS where exists (select 1 from USERS, USER_ROLES where USERS.ID = ? AND USER_ROLES.USER_ID = USERS.ID and ROLE = '"
+			+ Privilege.superUser.name() + "')";
 
 	@Override
 	public void addUserToClub(final int clubIdPk, final int userIdPk)
@@ -153,6 +161,30 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
+	public List<ClubDto> getClubs(final Integer userIdPk)
+			throws NotFoundException {
+		List<ClubDto> clubs = getJdbcTemplate().query(SEL_CLUBS_BY_USER_IDPK,
+				clubDtoMapper, userIdPk);
+		if (CollectionUtils.isEmpty(clubs)) {
+			clubs = getJdbcTemplate().query(SEL_SUPER_USER_CLUBS_BY_USER_IDPK,
+					clubDtoMapper, userIdPk);
+		}
+		if (CollectionUtils.isNotEmpty(clubs)) {
+			for (final ClubDto clubDto : clubs) {
+				try {
+					final Integer imageIdPk = getJdbcTemplate().queryForObject(
+							GET_IMAGE_ID, Integer.class, clubDto.getId());
+					final ImagePic image = getImage(imageIdPk);
+					clubDto.setImage(image);
+				} catch (final EmptyResultDataAccessException e1) {
+				}
+			}
+
+		}
+		return clubs;
+	}
+
+	@Override
 	@Resource(name = "avatarDataSource")
 	public void setDataSource(final DataSource ds) {
 		initTemplate(ds);
@@ -166,7 +198,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 				club.getAddress(), club.getZipCode(), club.getCity(),
 				club.getState(), club.getPhoneNumber(),
 				club.getHzRestriction(), club.getClubType(), club.getWebSite(),
-				club.getId());
+				club.getTimeZone().getDbSetting(), club.getId());
 	}
 
 }
