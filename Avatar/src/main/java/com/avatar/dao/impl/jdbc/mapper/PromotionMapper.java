@@ -19,8 +19,8 @@ public class PromotionMapper implements RowMapper<Promotion>{
 		retVal.setClub(new ClubDto(rs.getInt("CLUB_ID")));
 		retVal.setDescription(rs.getString("DETAILS"));
 		retVal.setTitle(rs.getString("TITLE"));
-		retVal.setEffectiveDate(rs.getDate("EFFECTIVE_DATE"));
-		retVal.setEndingDate(rs.getDate("ENDING_DATE"));
+		retVal.setEffectiveDate(rs.getTimestamp("EFFECTIVE_DATE"));
+		retVal.setEndingDate(rs.getTimestamp("ENDING_DATE"));
 
 		return retVal;
 	}

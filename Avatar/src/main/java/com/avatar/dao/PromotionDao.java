@@ -9,9 +9,10 @@ import com.avatar.exception.PermissionDeniedException;
 public interface PromotionDao {
 	void delete(Integer promoIdPk) throws NotFoundException, PermissionDeniedException;
 
-	Promotion getPromotion(Integer promoIdPk) throws NotFoundException;
+	List<Promotion> getAllPromotions(Integer clubIdPk, Integer amenityIdPk);
 
-	List<Promotion> getPromotions(Integer clubIdPk, Integer amenityIdPk);
+	Promotion getPromotion(Integer promoIdPk) throws NotFoundException;
+	List<Promotion> getValidPromotions(Integer clubIdPk, Integer amenityIdPk);
 
 	void newPromotion(Promotion promotion);
 

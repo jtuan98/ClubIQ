@@ -56,7 +56,7 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
 		final Integer amenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
 
-		final List<Promotion> promotions = promotionDao.getPromotions(clubIdPk,
+		final List<Promotion> promotions = promotionDao.getValidPromotions(clubIdPk,
 				amenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
 			final ClubDto club = clubDao.get(clubIdPk, false);
@@ -74,7 +74,7 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 			throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-		final List<Promotion> promotions = promotionDao.getPromotions(clubIdPk,
+		final List<Promotion> promotions = promotionDao.getAllPromotions(clubIdPk,
 				amenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
 			final ClubDto club = clubDao.get(clubIdPk, true);

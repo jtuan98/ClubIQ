@@ -18,7 +18,8 @@ import com.avatar.exception.PermissionDeniedException;
 @Repository
 public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
-	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID = "SELECT * FROM PROMOTIONS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID = ? AND CURDATE() >= EFFECTIVE_DATE AND CURDATE() <= ENDING_DATE ";
+	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID = "SELECT * FROM PROMOTIONS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID = ? ";
+	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID = GET_PROMOTIONS_BY_CLUBID_AMENITYID + " AND CURDATE() >= EFFECTIVE_DATE AND CURDATE() <= ENDING_DATE ";
 
 	private final PromotionMapper promotionMapper = new PromotionMapper();
 
@@ -58,6 +59,15 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 		getJdbcTemplate().update(DEL_PROMO_ID, promoIdPk);
 	}
 
+	@Override
+	public List<Promotion> getAllPromotions(final Integer clubIdPk,
+			final Integer amenityIdPk) {
+		final List<Promotion> retVal = getJdbcTemplate().query(
+				GET_PROMOTIONS_BY_CLUBID_AMENITYID, promotionMapper, clubIdPk,
+				amenityIdPk);
+		return retVal;
+	}
+
 	private void getPromoIdPk(final Integer id) throws NotFoundException {
 		// Check if id found
 		try {
@@ -83,10 +93,10 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 	}
 
 	@Override
-	public List<Promotion> getPromotions(final Integer clubIdPk,
+	public List<Promotion> getValidPromotions(final Integer clubIdPk,
 			final Integer amenityIdPk) {
 		final List<Promotion> retVal = getJdbcTemplate().query(
-				GET_PROMOTIONS_BY_CLUBID_AMENITYID, promotionMapper, clubIdPk,
+				GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID, promotionMapper, clubIdPk,
 				amenityIdPk);
 		return retVal;
 	}

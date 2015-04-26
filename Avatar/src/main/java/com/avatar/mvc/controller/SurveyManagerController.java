@@ -167,6 +167,19 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "amenityId") final String amenityId)
 			throws Exception {
 		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Use authToken and check if staff is linked to the clubId and
+			// amenityId or not.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
 		WsResponse<List<Promotion>> apiResponse = null;
 		try {
 			final List<Promotion> promotions = promotionService.getPromotions(
