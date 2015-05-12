@@ -8,16 +8,21 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 
 public interface BeaconDao {
 
 	void addUserIdToBeaconMapping(String beaconId, String userId)
 			throws NotFoundException;
 
+	void delete(BeaconDto beacon) throws NotFoundException, PermissionDeniedException;
+
 	// Return Amenity Names
 	List<String> getAmenityDeptName(String clubId) throws NotFoundException;
 
 	Integer getAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
+
+	BeaconDto getBeacon(Integer beaconIdPk);
 
 	Integer getBeaconIdPk(String beaconId) throws NotFoundException;
 
@@ -35,4 +40,5 @@ public interface BeaconDao {
 			throws NotFoundException;
 
 	void updateBeaconInfo(BeaconDto beacon) throws NotFoundException;
+
 }

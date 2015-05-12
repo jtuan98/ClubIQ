@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -21,6 +22,7 @@ import com.avatar.dao.impl.jdbc.mapper.StringMapper;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 
 @Repository
 public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
@@ -34,23 +36,16 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	private static final String UPD_CLUB_APNS_TOKEN = "UPDATE CLUB_APNS_TOKEN SET APNS_TOKEN=? WHERE CLUB_AMENITY_ID = ?";
 	private static final String UPD_CLUB_APNS_TOKEN_USING_CLUBID = "UPDATE CLUB_APNS_TOKEN SET APNS_TOKEN=? WHERE CLUB_AMENITY_ID IN(SELECT ID FROM CLUBS WHERE CLUBID=?)";
 
-	@Resource(name = "accountDaoJdbc")
-	AccountDao accountDao;
-
 	private static String GET_CLUB_ID = "SELECT ID FROM CLUBS WHERE CLUBID=?";
 
 	private static String GET_AMENITY_DEPT_NAMES = "SELECT CA.AMENITYID FROM CLUB_AMENITIES CA WHERE CLUB_ID=? ORDER BY 1";
 
 	private static String GET_AMENITY_ID_BY_NAME_CLUBID = "SELECT ID FROM CLUB_AMENITIES WHERE NAME=? AND CLUB_ID=? ";
+
 	private static String CHECK_AMENITY_DEPT_NAME = "SELECT COUNT(*) FROM CLUB_AMENITIES WHERE NAME=? AND CLUB_ID=? ";
 	private static String INS_AMENITY_DEPT_NAME = "INSERT INTO CLUB_AMENITIES (ID, CLUB_ID, NAME, IMAGE_ID, DESCRIPTION, AVAILABLE_DATE_TIME, CREATE_DATE) VALUES (?,?,?,?,?,NOW(), NOW())";
-
 	private static String SEL_USER = "select distinct USERS.*, BU.CREATE_DATE CHECKIN_DATE FROM USERS, BEACONS B, BEACON_USERS BU, CLUB_AMENITIES CA WHERE USER_ID=USERS.ID "
 			+ " AND B.CLUB_ID=CA.CLUB_ID AND CA.AMENITYID=? AND BU.BEACON_ID=B.ID AND CA.ID = B.AMENITY_ID AND DATE(BU.CREATE_DATE) =  ";
-
-	private final AccountDtoCheckInDateMapper accountDtoCheckInDateMapper = new AccountDtoCheckInDateMapper();
-
-	private final StringMapper stringMapper = new StringMapper();
 
 	private static String GET_BEACON_PK = "SELECT ID FROM BEACONS WHERE BEACONID=?";
 
@@ -66,6 +61,17 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			+ "WHERE ID=?";
 
 	private static final String GET_BEACONS_BYCLUBID_AMENITYID = "SELECT * FROM BEACONS WHERE CLUB_ID = ? and AMENITY_ID = ? ";
+
+	private static final String DEL_BEACON = "DELETE FROM BEACONS where ID = ?";
+
+	private static final String GET_BEACON_BY_PKID = "SELECT * FROM BEACONS where ID = ? ";
+
+	@Resource(name = "accountDaoJdbc")
+	AccountDao accountDao;
+
+	private final AccountDtoCheckInDateMapper accountDtoCheckInDateMapper = new AccountDtoCheckInDateMapper();
+
+	private final StringMapper stringMapper = new StringMapper();
 
 	private final BeaconDtoMapper beaconDtoMapper = new BeaconDtoMapper();
 
@@ -96,6 +102,17 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
+	public void delete(final BeaconDto beacon) throws NotFoundException, PermissionDeniedException {
+		Assert.notNull(beacon, "Checking beacon");
+		Assert.notNull(beacon.getId(), "Checking beacon id");
+		try {
+			getJdbcTemplate().update(DEL_BEACON, beacon.getId());
+		} catch (final DataAccessException e) {
+			throw new PermissionDeniedException(e.getMessage());
+		}
+	}
+
+	@Override
 	public List<String> getAmenityDeptName(final String clubId)
 			throws NotFoundException {
 		try {
@@ -121,6 +138,29 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			throw new NotFoundException("BeaconIdPk : " + beaconIdPk
 					+ " not found!");
 		}
+	}
+
+	@Override
+	public BeaconDto getBeacon(final Integer beaconIdPk) {
+		final BeaconDto beacon = getJdbcTemplate().queryForObject(
+				GET_BEACON_BY_PKID, beaconDtoMapper, beaconIdPk);
+		try {
+			beacon.setClub(clubDao.get(beacon.getClub().getId(), false));
+		} catch (final NotFoundException e) {
+		}
+		try {
+			beacon.setAmenity(clubDao.getAmenity(beacon.getAmenity().getId()));
+		} catch (final NotFoundException e) {
+		}
+		if ((beacon.getInstallerStaff() != null)
+				&& (beacon.getInstallerStaff().getId() != null)) {
+			try {
+				beacon.setInstallerStaff(accountDao.fetch(beacon
+						.getInstallerStaff().getId()));
+			} catch (final NotFoundException e) {
+			}
+		}
+		return beacon;
 	}
 
 	@Override
@@ -183,10 +223,11 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 		List<ImmutablePair<AccountDto, Date>> users = null;
 		final String orderBy = " ORDER BY BU.CREATE_DATE DESC ";
 		if (onDate == null) {
-			users = getJdbcTemplate().query(SEL_USER + "DATE(NOW()) " + orderBy,
+			users = getJdbcTemplate().query(
+					SEL_USER + "DATE(NOW()) " + orderBy,
 					accountDtoCheckInDateMapper, amenityId);
 		} else {
-			users = getJdbcTemplate().query(SEL_USER + "DATE(?) "+ orderBy,
+			users = getJdbcTemplate().query(SEL_USER + "DATE(?) " + orderBy,
 					accountDtoCheckInDateMapper, amenityId, onDate);
 		}
 		if (CollectionUtils.isNotEmpty(users)) {
@@ -210,7 +251,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			if (counter == 0) {
 				final Integer amenityIdPk = sequencer.nextVal("ID_SEQ");
 				getJdbcTemplate().update(INS_AMENITY_DEPT_NAME,
-				// ID
+						// ID
 						amenityIdPk,
 						// CLUB_ID
 						clubIdPk,
@@ -222,7 +263,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 						"");
 				final Integer mapAmenityIdPk = sequencer.nextVal("ID_SEQ");
 				getJdbcTemplate().update(INS_CLUB_APNS_TOKEN,
-				// ID,
+						// ID,
 						mapAmenityIdPk,
 						// CLUB_AMENITY_ID,
 						amenityIdPk,
@@ -243,7 +284,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 					// Insert
 					final Integer mapAmenityIdPk = sequencer.nextVal("ID_SEQ");
 					getJdbcTemplate().update(INS_CLUB_APNS_TOKEN,
-					// ID,
+							// ID,
 							mapAmenityIdPk,
 							// CLUB_AMENITY_ID,
 							amenityIdPk,
@@ -304,18 +345,16 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			final int beaconIdPk = sequencer.nextVal("ID_SEQ");
 			beacon.setId(beaconIdPk);
 
-			getJdbcTemplate()
-					.update(INS_BEACON, beaconIdPk, beacon.getBeaconActionId(),
-							beacon.getClub().getId(),
-							beacon.getAmenity().getId(),
-							beacon.getLocation().name(),
-							beacon.getDescription(),
-							beacon.getInstallerStaff().getId(),
-							beacon.getInstallationDate());
+			getJdbcTemplate().update(INS_BEACON, beaconIdPk,
+					beacon.getBeaconActionId(), beacon.getClub().getId(),
+					beacon.getAmenity().getId(), beacon.getLocation(),
+					beacon.getDescription(),
+					beacon.getInstallerStaff().getId(),
+					beacon.getInstallationDate());
 		} else {
 			// update
 			getJdbcTemplate().update(UPD_BEACON, beacon.getClub().getId(),
-					beacon.getAmenity().getId(), beacon.getLocation().name(),
+					beacon.getAmenity().getId(), beacon.getLocation(),
 					beacon.getDescription(),
 					beacon.getInstallerStaff().getId(), beacon.getId());
 		}

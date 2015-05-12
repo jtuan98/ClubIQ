@@ -36,8 +36,10 @@ public abstract class BaseController {
 	public static void main(final String[] args) {
 		final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
 				.forPattern("yyyyMMdd HH:mm:ss");
-		System.out.println(new Date(yyyyMMdd_hh24missDtf.parseMillis("20150530 20:00:00")));
+		System.out.println(new Date(yyyyMMdd_hh24missDtf
+				.parseMillis("20150530 20:00:00")));
 	}
+
 	@Resource(name = "accountService")
 	protected AccountBusiness accountService;
 
@@ -60,6 +62,13 @@ public abstract class BaseController {
 			.forPattern("yyyyMMdd HH:mm:ss");
 
 	protected JsonView jsonView = null;
+
+	protected Set<Privilege> getUserRoles(final String authToken)
+			throws NotFoundException, AuthenticationTokenExpiredException,
+			PermissionDeniedException {
+		final Set<Privilege> roles = authenticationService.getRoles(authToken);
+		return roles;
+	}
 
 	protected void init() {
 		if (jsonView == null) {

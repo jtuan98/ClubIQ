@@ -9,7 +9,6 @@ import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
-import com.avatar.dto.enums.Location;
 
 public class BeaconDtoMapper implements RowMapper<BeaconDto> {
 
@@ -22,8 +21,9 @@ public class BeaconDtoMapper implements RowMapper<BeaconDto> {
 		retVal.setClub(new ClubDto(rs.getInt("CLUB_ID")));
 		retVal.setAmenity(new AmenityDto(rs.getInt("AMENITY_ID")));
 		retVal.setDescription(rs.getString("DESCRIPTION"));
-		retVal.setLocation(Location.valueOf(rs.getString("LOCATION")));
-		retVal.setInstallerStaff(new EmployeeAccountDto(rs.getInt("INSTALLATION_STAFF_ID")));
+		retVal.setLocation(rs.getString("LOCATION"));
+		retVal.setInstallerStaff(new EmployeeAccountDto(rs
+				.getInt("INSTALLATION_STAFF_ID")));
 		retVal.setInstallationDate(rs.getTimestamp("INSTALLATION_DATE"));
 		return retVal;
 	}

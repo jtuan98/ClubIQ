@@ -1,6 +1,7 @@
 package com.avatar.mvc.controller;
 
 import java.security.Principal;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,7 +28,7 @@ public class TokenizerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "userId") final String userId,
 			@RequestParam(required = true, value = "password") final String password)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
@@ -42,13 +43,34 @@ public class TokenizerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = { "/GetUserRoles" })
+	public ModelAndView getUserRoles(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken)
+					throws Exception {
+		init();
+		WsResponse<Set<Privilege>> apiResponse = null;
+		try {
+			final Set<Privilege> roles = authenticationService
+					.getRoles(authToken);
+			apiResponse = new WsResponse<Set<Privilege>>(ResponseStatus.success, "",
+					roles, "roles");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<Set<Privilege>>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+
 	@RequestMapping(value = { "/validate" })
 	public ModelAndView testAuthToken(
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "roles") final Privilege[] roles)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {

@@ -20,9 +20,9 @@
 	<property name="web-inf-lib-directory" value="${build-directory}/WEB-INF/lib" />
 
 	<path id="compile.classpath">
-		<fileset dir="${tomcat.lib.dir}">
+		<!--fileset dir="${tomcat.lib.dir}">
 			<include name="*.jar" />
-		</fileset>
+		</fileset-->
 		<fileset dir="${j2e.lib.dir}">
 			<include name="servlet-api.jar" />
 		</fileset>

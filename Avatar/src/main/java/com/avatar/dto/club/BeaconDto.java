@@ -5,14 +5,13 @@ import java.util.Date;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.EmployeeAccountDto;
-import com.avatar.dto.enums.Location;
 
 public class BeaconDto implements Serializable {
 	protected Integer id; // primary key.
 	protected String beaconActionId;
 	protected ClubDto club;
 	protected AmenityDto amenity;
-	protected Location location;
+	protected String location;
 	protected String description;
 	protected AccountDto installerStaff;
 	protected Date installationDate;
@@ -45,7 +44,7 @@ public class BeaconDto implements Serializable {
 		return installerStaff;
 	}
 
-	public Location getLocation() {
+	public String getLocation() {
 		return location;
 	}
 
@@ -101,7 +100,7 @@ public class BeaconDto implements Serializable {
 		return installerStaff;
 	}
 
-	public void setLocation(final Location location) {
+	public void setLocation(final String location) {
 		this.location = location;
 	}
 }

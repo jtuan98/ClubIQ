@@ -34,6 +34,8 @@ import com.google.common.cache.LoadingCache;
 @Service
 @Transactional("transactionManager")
 public class AccountService extends BaseService implements AccountBusiness {
+	private static long KEY_VALID_FOR_IN_MINUTES = 60 * 7 * 24;
+
 	public static void main(final String[] args) {
 		// final AccountService service = new AccountService();
 		// final ActivationToken token = service.generateActivationToken(true);
@@ -43,8 +45,6 @@ public class AccountService extends BaseService implements AccountBusiness {
 				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000));
 		System.out.println(test);
 	}
-
-	private static long KEY_VALID_FOR_IN_MINUTES = 60 * 7 * 24;
 
 	private final LoadingCache<String, AccountDto> activationCache = CacheBuilder
 			.newBuilder().maximumSize(1000)
@@ -132,7 +132,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public ActivationToken createAccount(final AccountDto accountInfo)
 			throws NotFoundException, AccountCreationException {
-		final DbTimeZone timezone = accountInfo.getHomeClub() == null ? accountInfo.getHomeClub().getTimeZone(): null;
+		final DbTimeZone timezone = accountInfo.getHomeClub() != null ? accountInfo.getHomeClub().getTimeZone(): null;
 		final Date now = getNow(timezone);
 		final boolean mobile = accountInfo instanceof MemberAccountDto;
 		final ActivationToken activationToken = generateActivationToken(mobile, timezone);
@@ -211,7 +211,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	private ActivationToken generateActivationToken(final boolean mobile,
 			final DbTimeZone timezone) {
 		final ActivationToken retVal = mobile ? new MobileActivationPin()
-				: new ActivationToken();
+		: new ActivationToken();
 		retVal.setToken(UUID.randomUUID().toString());
 		final Date now = getNow(timezone);
 		retVal.setExpirationDate(new Date(now.getTime()
@@ -260,7 +260,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public void updateUserTangerineHandSetId(final String userId,
 			final String deviceId, final String tangerineHandSetId)
-			throws NotFoundException {
+					throws NotFoundException {
 		accountDao.updateUserTangerineHandSetId(userId, deviceId,
 				tangerineHandSetId);
 	}

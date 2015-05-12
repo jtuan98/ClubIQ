@@ -21,7 +21,6 @@ import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
-import com.avatar.dto.enums.Location;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.exception.AuthenticationTokenExpiredException;
@@ -35,7 +34,7 @@ import com.google.gson.reflect.TypeToken;
 @RequestMapping(value = "/BeaconMgr")
 public class BeaconManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
-			Privilege.superUser };
+		Privilege.superUser };
 
 	@Resource(name = "beaconService")
 	BeaconBusiness beaconService;
@@ -43,12 +42,65 @@ public class BeaconManagerController extends BaseController {
 	private final Type collectionAccountDtoType = new TypeToken<ArrayList<AccountDto>>() {
 	}.getType();
 
+	@RequestMapping(value = { "/DeleteBeacon" })
+	public ModelAndView deleteBeacon(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		BeaconDto beacon = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beacon = beaconService.getBeacon(beaconActionId);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		System.out.println("Beacon=>" + beacon);
+		if (beacon != null) {
+			try {
+				// Verify using authToken to see if user have the perm to edit club
+				// info.
+				validateStaffInClub(authenticationService.getAccount(authToken),
+						beacon.getClub().getClubId());
+			} catch (NotFoundException | AuthenticationTokenExpiredException
+					| PermissionDeniedException e) {
+				apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+						e.getMessage(), null);
+				return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+			}
+
+			try {
+				System.out.println("Deleting Beacon=>" + beacon);
+				beaconService.deleteBeacon(beacon);
+				apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+						null);
+			} catch (final Exception e) {
+				apiResponse = new WsResponse<String>(ResponseStatus.failure,
+						e.getMessage(), null);
+			}
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	@RequestMapping(value = "/GetAmenityDeptName")
 	public ModelAndView getAmenityDeptName(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -81,7 +133,7 @@ public class BeaconManagerController extends BaseController {
 			final String amenityId, final String beaconActionId,
 			final String location, final String description,
 			final String installerStaffUserId, final String installationDate)
-			throws InvalidParameterException {
+					throws InvalidParameterException {
 		final BeaconDto retVal = new BeaconDto();
 		retVal.setBeaconActionId(beaconActionId);
 		retVal.setAmenityId(amenityId);
@@ -102,11 +154,8 @@ public class BeaconManagerController extends BaseController {
 			retVal.setInstallationDate(new Date(yyyyMMddDtf
 					.parseMillis(installationDate)));
 		}
-		try {
-			retVal.setLocation(Location.valueOf(location));
-		} catch (final Exception e) {
-			throw new InvalidParameterException("Invalid location " + location);
-		}
+
+		retVal.setLocation(location);
 		return retVal;
 	}
 
@@ -116,7 +165,7 @@ public class BeaconManagerController extends BaseController {
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
 			@RequestParam(required = true, value = "amenityId") final String amenityId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -153,7 +202,7 @@ public class BeaconManagerController extends BaseController {
 			@RequestParam(required = true, value = "apnsToken") final String apnsToken,
 			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment,
 			@RequestParam(required = true, value = "clubId") final String clubId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -202,7 +251,7 @@ public class BeaconManagerController extends BaseController {
 			@RequestParam(required = true, value = "desc") final String description,
 			@RequestParam(required = true, value = "installerStaffUserId") final String installerStaffUserId,
 			@RequestParam(required = true, value = "installDate") final String installationDate)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -238,7 +287,7 @@ public class BeaconManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String userId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
@@ -260,7 +309,7 @@ public class BeaconManagerController extends BaseController {
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment,
 			@RequestParam(required = false, value = "date") final String onDate)
-			throws Exception {
+					throws Exception {
 		init();
 
 		WsResponse<String> apiDeniedResponse = null;

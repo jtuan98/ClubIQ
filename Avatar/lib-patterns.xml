@@ -2,7 +2,7 @@
 	<property name="lib.dir" location="../lib" />
 
 	<!-- j2e lib versions -->
-	<property name="tomcat.lib.dir" location="/home/tomcat/lib" />
+	<!--property name="tomcat.lib.dir" location="/home/tomcat/lib" /-->
 	<property name="j2e.lib.dir" location="${lib.dir}/j2e" />
 
 	<!-- joda lib versions -->

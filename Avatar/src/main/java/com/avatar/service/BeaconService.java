@@ -22,6 +22,7 @@ import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.NotificationException;
+import com.avatar.exception.PermissionDeniedException;
 
 @Service
 public class BeaconService extends BaseService implements BeaconBusiness {
@@ -71,6 +72,12 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
+	public void deleteBeacon(final BeaconDto beacon) throws NotFoundException, PermissionDeniedException {
+		Assert.notNull(beacon, "Checking beacon");
+		beaconDao.delete(beacon);
+	}
+
+	@Override
 	public List<AmenityDto> getAmenities(final String clubId)
 			throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
@@ -81,6 +88,12 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public List<String> getAmenityDeptName(final String clubId)
 			throws NotFoundException {
 		return beaconDao.getAmenityDeptName(clubId);
+	}
+
+	@Override
+	public BeaconDto getBeacon(final String beaconActionId) throws NotFoundException {
+		final Integer beaconPkId = beaconDao.getBeaconIdPk(beaconActionId);
+		return beaconDao.getBeacon(beaconPkId);
 	}
 
 	@Override
@@ -187,5 +200,4 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		beaconDao.updateBeaconInfo(beacon);
 		return beacon;
 	}
-
 }

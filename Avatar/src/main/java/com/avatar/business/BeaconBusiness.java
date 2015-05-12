@@ -10,16 +10,22 @@ import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.exception.NotFoundException;
+import com.avatar.exception.PermissionDeniedException;
 
 public interface BeaconBusiness {
 	void addUserIdToBeacon(String beaconId, String userId)
 			throws NotFoundException;
 
+	void deleteBeacon(BeaconDto beacon) throws NotFoundException, PermissionDeniedException;
+
 	List<AmenityDto> getAmenities(String clubId) throws NotFoundException;
 
 	List<String> getAmenityDeptName(String clubId) throws NotFoundException;
 
-	List<BeaconDto> getBeacons (String clubId, String amenityId) throws NotFoundException;
+	BeaconDto getBeacon(String beaconActionId) throws NotFoundException;
+
+	List<BeaconDto> getBeacons(String clubId, String amenityId)
+			throws NotFoundException;
 
 	ClubDto getClub(String clubId) throws NotFoundException;
 
