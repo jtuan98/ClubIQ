@@ -208,7 +208,7 @@ public class RegistrationController extends BaseController {
 		return "User is [" + principal.getName() + "]";
 	}
 
-	//2.1.1
+	//2.1.1 confirmed correct
 	@RequestMapping(value = { "/Registration/VerifyAcctExist",
 			"/open/Registration/VerifyAcctExist" })
 	public ModelAndView verifyAccount(
