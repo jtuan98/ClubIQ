@@ -39,9 +39,16 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 
 	@Resource(name = "accountDaoJdbc")
 	private AccountDao accountDao;
-
 	@Resource(name = "clubDaoJdbc")
 	private ClubDao clubDao;
+
+	@Override
+	public void deleteSurveyAnswers(final String memberId, final Date fromDate, final Date toDate)
+			throws NotFoundException {
+		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
+		surveyDao.delete(memberIdPk, fromDate, toDate);
+	}
+
 
 	private Date getLastMonday(final int pastWeeks) {
 		final DateTime today = DateTime.now();
@@ -61,11 +68,11 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 		final Integer amenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
 		// Get clubIdPk
 		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
+		// Find Last Mon
 		// Get memeberIdPk
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
 		// Get the Amenity type
 		final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
-		// Find Last Mon
 		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
 				amenity.getAmenityType());
 		final Date since = getLastMonday(surveyPks.size());
@@ -94,7 +101,7 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 	private void persistSurveyAnswer(final Integer clubIdPk,
 			final Integer amenityIdPk, final Integer beaconIdPk,
 			final Integer memberIdPk, final SurveyAnswer answer)
-			throws NotFoundException {
+					throws NotFoundException {
 		surveyDao.persistSurveyAnswer(clubIdPk, amenityIdPk, beaconIdPk,
 				memberIdPk, answer);
 		surveyDao.updateAnswer(answer);
@@ -103,7 +110,7 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 	@Override
 	public void persistSurveyAnswer(final String beaconId,
 			final String memberId, final SurveyAnswer answer)
-			throws NotFoundException {
+					throws NotFoundException {
 		Assert.notNull(answer);
 		Assert.notNull(answer.getSurvey());
 		Assert.notNull(answer.getSurvey().getId());

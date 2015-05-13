@@ -1,5 +1,6 @@
 package com.avatar.service;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -34,16 +35,27 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 	private BeaconDao beaconDao;
 
 	@Override
+	public void cleanupPromoBeaconInfo(final String mobileNumber,
+			final Date fromDate, final Date toDate) throws NotFoundException {
+		final Integer userIdPk = accountDao.getUserIdPkByUserId(mobileNumber);
+
+		promotionDao.delete(userIdPk, fromDate, toDate);
+		beaconDao.deleteBeaconInfoByUserId(userIdPk);
+	}
+
+	@Override
 	public void delete(final Integer promoIdPk) throws NotFoundException,
-			PermissionDeniedException {
+	PermissionDeniedException {
 		promotionDao.delete(promoIdPk);
 	}
 
 	@Override
-	public Promotion getPromotion(final Integer promoIdPk) throws NotFoundException {
+	public Promotion getPromotion(final Integer promoIdPk)
+			throws NotFoundException {
 		final Promotion promotion = promotionDao.getPromotion(promoIdPk);
 		final ClubDto club = clubDao.get(promotion.getClub().getId(), false);
-		final AmenityDto amenity = clubDao.getAmenity(promotion.getAmenity().getId());
+		final AmenityDto amenity = clubDao.getAmenity(promotion.getAmenity()
+				.getId());
 		promotion.setClub(club);
 		promotion.setAmenity(amenity);
 		return promotion;
@@ -56,8 +68,8 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
 		final Integer amenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
 
-		final List<Promotion> promotions = promotionDao.getValidPromotions(clubIdPk,
-				amenityIdPk);
+		final List<Promotion> promotions = promotionDao.getValidPromotions(
+				clubIdPk, amenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
 			final ClubDto club = clubDao.get(clubIdPk, false);
 			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
@@ -70,12 +82,12 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 	}
 
 	@Override
-	public List<Promotion> getPromotions(final String clubId, final String amenityId)
-			throws NotFoundException {
+	public List<Promotion> getPromotions(final String clubId,
+			final String amenityId) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-		final List<Promotion> promotions = promotionDao.getAllPromotions(clubIdPk,
-				amenityIdPk);
+		final List<Promotion> promotions = promotionDao.getAllPromotions(
+				clubIdPk, amenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
 			final ClubDto club = clubDao.get(clubIdPk, true);
 			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
@@ -94,7 +106,8 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 		promotionDao.newPromotion(promotion);
 	}
 
-	private void populatePkForClubsAndAmenity(final Promotion promotion) throws NotFoundException {
+	private void populatePkForClubsAndAmenity(final Promotion promotion)
+			throws NotFoundException {
 		Assert.notNull(promotion);
 		Assert.notNull(promotion.getClub());
 		Assert.hasText(promotion.getClub().getClubId());
@@ -111,7 +124,7 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 	@Override
 	public void recordPromotionRead(final Integer promotionIdPk,
 			final String userId, final boolean promoRead)
-			throws NotFoundException {
+					throws NotFoundException {
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
 		promotionDao.recordPromotionRead(promotionIdPk, userIdPk, promoRead);
 	}

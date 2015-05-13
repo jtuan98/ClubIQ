@@ -35,13 +35,20 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 
 	private static String UPD_ANSWERS = "UPDATE SURVEY_ANSWERS SET ANS_PART_A = ?, ANS_PART_B = ?, SURVEY_ANS = 'Y', ANSWERED_ON=NOW() WHERE ID = ?";
 
-	private final SurveyMapper surveyMapper = new SurveyMapper();
-
 	private static String SEL_SURVEY_ANSWER_BY_PK = "SELECT * FROM SURVEY_ANSWERS WHERE ID=?";
+
+	private static String SEL_AMENITY_ID_PK = "select ID from AMENITY_TYPES where NAME=?";
+
+	static private final String DEL_ANSWERS = "DELETE FROM SURVEY_ANSWERS where MEMBER_ID = ? and CREATE_DATE >= ? and CREATE_DATE <= ?";
+
+	private final SurveyMapper surveyMapper = new SurveyMapper();
 
 	private final SurveyAnswerMapper surveyAnswerMapper = new SurveyAnswerMapper();
 
-	private static String SEL_AMENITY_ID_PK = "select ID from AMENITY_TYPES where NAME=?";
+	@Override
+	public void delete(final Integer memberIdPk, final Date fromDate, final Date toDate) {
+		getJdbcTemplate().update(DEL_ANSWERS, memberIdPk, fromDate, toDate);
+	}
 
 	@Override
 	public SurveyAnswer fetchAnswer(final Integer surveyAnswerIdPk)
@@ -80,11 +87,13 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 			amenityTypeIdPk = getJdbcTemplate().queryForObject(
 					SEL_AMENITY_ID_PK, Integer.class, amenityType);
 		} catch (final EmptyResultDataAccessException e) {
-			throw new NotFoundException("AmenityType " + amenityType + " not found!");
+			throw new NotFoundException("AmenityType " + amenityType
+					+ " not found!");
 		}
 
 		final List<Integer> questionIdsPk = getJdbcTemplate().queryForList(
-				SEL_SURVEY_IDS_BY_AMENITY_TYPE_ID, Integer.class, amenityTypeIdPk);
+				SEL_SURVEY_IDS_BY_AMENITY_TYPE_ID, Integer.class,
+				amenityTypeIdPk);
 		return new HashSet<Integer>(questionIdsPk);
 	}
 
@@ -92,7 +101,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	@Override
 	public Set<Integer> getSurveyIdPkHistory(final Integer clubIdPk,
 			final Integer amenityIdPk, final Integer memberId, final Date since)
-			throws NotFoundException {
+					throws NotFoundException {
 		List<Integer> questionIdsPk = null;
 		if (since == null) {
 			questionIdsPk = getJdbcTemplate().queryForList(
@@ -114,7 +123,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	@Override
 	public Set<Integer> getSurveyIdPkNotAnsweredHistory(final Integer clubIdPk,
 			final Integer amenityIdPk, final Integer memberId, final Date since)
-			throws NotFoundException {
+					throws NotFoundException {
 		final List<Integer> answerIdsPk = getJdbcTemplate().queryForList(
 				SEL_SURVEY_ANSIDS_BY_CLUBID_AMNT_ID_MEMID, Integer.class,
 				clubIdPk, amenityIdPk, memberId, since, "N");
@@ -129,7 +138,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	public void persistSurveyAnswer(final Integer clubIdPk,
 			final Integer amenityIdPk, final Integer beaconIdPk,
 			final Integer memberIdPk, final SurveyAnswer surveyAnswer)
-			throws NotFoundException {
+					throws NotFoundException {
 		Assert.notNull(surveyAnswer);
 		if (surveyAnswer.getId() == null) {
 			Assert.notNull(clubIdPk);
@@ -141,7 +150,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 			final int idPk = sequencer.nextVal("ID_SEQ");
 			surveyAnswer.setId(idPk);
 			getJdbcTemplate().update(INS_ANSWERS,
-			// ID
+					// ID
 					idPk,
 					// CLUB_ID
 					clubIdPk,
@@ -169,7 +178,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	public void updateAnswer(final SurveyAnswer surveyAnswer)
 			throws NotFoundException {
 		final int rowUpdated = getJdbcTemplate().update(UPD_ANSWERS,
-		// ANS_PART_A
+				// ANS_PART_A
 				surveyAnswer.getAnswerA(),
 				// ANS_PART_B
 				surveyAnswer.getAnswerB(),

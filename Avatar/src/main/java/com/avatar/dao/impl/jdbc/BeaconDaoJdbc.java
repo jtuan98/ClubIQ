@@ -37,8 +37,8 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	private static final String UPD_CLUB_APNS_TOKEN_USING_CLUBID = "UPDATE CLUB_APNS_TOKEN SET APNS_TOKEN=? WHERE CLUB_AMENITY_ID IN(SELECT ID FROM CLUBS WHERE CLUBID=?)";
 
 	private static String GET_CLUB_ID = "SELECT ID FROM CLUBS WHERE CLUBID=?";
-
 	private static String GET_AMENITY_DEPT_NAMES = "SELECT CA.AMENITYID FROM CLUB_AMENITIES CA WHERE CLUB_ID=? ORDER BY 1";
+
 
 	private static String GET_AMENITY_ID_BY_NAME_CLUBID = "SELECT ID FROM CLUB_AMENITIES WHERE NAME=? AND CLUB_ID=? ";
 
@@ -65,6 +65,8 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	private static final String DEL_BEACON = "DELETE FROM BEACONS where ID = ?";
 
 	private static final String GET_BEACON_BY_PKID = "SELECT * FROM BEACONS where ID = ? ";
+
+	private static final String DEL_BEACON_BY_MEMBERID = "delete from BEACON_USERS where USER_ID=?";
 
 	@Resource(name = "accountDaoJdbc")
 	AccountDao accountDao;
@@ -110,6 +112,12 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 		} catch (final DataAccessException e) {
 			throw new PermissionDeniedException(e.getMessage());
 		}
+	}
+
+	@Override
+	public void deleteBeaconInfoByUserId(final Integer userIdPk) {
+		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk);
+
 	}
 
 	@Override
@@ -318,7 +326,6 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	public void setDataSource(final DataSource ds) {
 		initTemplate(ds);
 	}
-
 	@Override
 	public void updateBeaconInfo(final BeaconDto beacon)
 			throws NotFoundException {

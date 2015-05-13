@@ -32,14 +32,14 @@ import com.avatar.exception.PermissionDeniedException;
 @RequestMapping(value = "/SurveyMgr")
 public class SurveyManagerController extends BaseController {
 
+	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
+		Privilege.superUser };
+
 	@Resource(name = "surveyService")
 	private SurveyBusiness surveyService;
 
 	@Resource(name = "promotionService")
 	private PromotionBusiness promotionService;
-
-	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
-			Privilege.superUser };
 
 	@RequestMapping(value = "/DeletePromotion")
 	public ModelAndView deletePromotion(
@@ -47,7 +47,7 @@ public class SurveyManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "promotionId") final Integer promotionId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -76,13 +76,50 @@ public class SurveyManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = "/DeleteSurveyPromoBeaconInfo")
+	public ModelAndView deleteSurveyPromoBeaconInfo(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber,
+			@RequestParam(required = true, value = "fromDate") final String fromDateStr,
+			@RequestParam(required = true, value = "toDate") final String toDateStr)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateSuperUserRole(authToken);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<List<Promotion>> apiResponse = null;
+		try {
+			final Date fromDate = new Date(yyyyMMddDtf.parseMillis(fromDateStr));
+			final Date toDate = new Date(yyyyMMddDtf.parseMillis(toDateStr));
+
+			promotionService.cleanupPromoBeaconInfo(mobileNumber, fromDate,
+					toDate);
+			surveyService.deleteSurveyAnswers(mobileNumber, fromDate, toDate);
+			apiResponse = new WsResponse<List<Promotion>>(
+					ResponseStatus.success, "", null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<List<Promotion>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	@RequestMapping(value = "/GetPromotions")
 	public ModelAndView fetchPromotions(
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String memberId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<List<Promotion>> apiResponse = null;
 		try {
@@ -104,7 +141,7 @@ public class SurveyManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String memberId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<Survey> apiResponse = null;
 		try {
@@ -129,7 +166,7 @@ public class SurveyManagerController extends BaseController {
 			final String promotionTitle, final String promotionDetails,
 			final String effectiveDateYYYYMMDDHH24MISS,
 			final String endingDateYYYYMMDDHH24MISS)
-			throws InvalidParameterException {
+					throws InvalidParameterException {
 		final Promotion promotion = new Promotion();
 		promotion.setAmenity(new AmenityDto());
 		promotion.getAmenity().setAmenityId(amenityId);
@@ -165,7 +202,7 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
 			@RequestParam(required = true, value = "amenityId") final String amenityId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -201,7 +238,7 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "mobileNumber") final String memberId,
 			@RequestParam(required = true, value = "promotionId") final Integer promotionIdPk,
 			@RequestParam(required = true, value = "promotionRead", defaultValue = "N") final String promotionRead)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
@@ -228,7 +265,7 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "promotionDetail") final String promotionDetails,
 			@RequestParam(required = true, value = "effectiveDate") final String effectiveDateYYYYMMDDHH24MISS,
 			@RequestParam(required = true, value = "endingDate") final String endingDateYYYYMMDDHH24MISS)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -270,7 +307,7 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "surveyQuestionId") final int surveyQuestionId,
 			@RequestParam(required = true, value = "answerA") final int answerA,
 			@RequestParam(required = true, value = "answerB") final int answerB)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		final SurveyAnswer surveyAnswer = new SurveyAnswer();
@@ -301,7 +338,7 @@ public class SurveyManagerController extends BaseController {
 			@RequestParam(required = true, value = "promotionDetails") final String promotionDetails,
 			@RequestParam(required = false, value = "effectiveDate") final String effectiveDateYYYYMMDDHH24MISS,
 			@RequestParam(required = false, value = "endingDate") final String endingDateYYYYMMDDHH24MISS)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {

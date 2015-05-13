@@ -9,6 +9,8 @@ import com.avatar.exception.NotFoundException;
 
 public interface SurveyDao {
 
+	void delete(Integer memberIdPk, Date fromDate, Date toDate);
+
 	SurveyAnswer fetchAnswer(Integer surveyAnswerIdPk) throws NotFoundException;
 
 	Survey getSurvey(Integer surveyId) throws NotFoundException;
@@ -22,11 +24,11 @@ public interface SurveyDao {
 
 	Set<Integer> getSurveyIdPkNotAnsweredHistory(final Integer clubIdPk,
 			final Integer amenityIdPk, final Integer memberId, final Date since)
-			throws NotFoundException;
+					throws NotFoundException;
 
 	void persistSurveyAnswer(Integer clubIdPk, Integer amenityIdPk,
 			final Integer beaconIdPk, Integer memberId, SurveyAnswer answer)
-			throws NotFoundException;
+					throws NotFoundException;
 
 	void updateAnswer(SurveyAnswer answer) throws NotFoundException;
 

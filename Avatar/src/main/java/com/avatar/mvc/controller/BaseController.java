@@ -33,6 +33,8 @@ import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
 
 public abstract class BaseController {
+	private static final Privilege[] superUser = new Privilege[] { Privilege.superUser };
+
 	public static void main(final String[] args) {
 		final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
 				.forPattern("yyyyMMdd HH:mm:ss");
@@ -117,6 +119,12 @@ public abstract class BaseController {
 		}
 	}
 
+	protected void validateSuperUserRole(final String authToken)
+			throws NotFoundException, AuthenticationTokenExpiredException,
+			PermissionDeniedException {
+		validateUserRoles(authToken, superUser);
+	}
+
 	protected void validateUserRoles(final String authToken,
 			final Privilege[] requiredRoles) throws NotFoundException,
 			AuthenticationTokenExpiredException, PermissionDeniedException {
@@ -127,6 +135,7 @@ public abstract class BaseController {
 			msg += privilege.name() + " ";
 			if (roles.contains(privilege)) {
 				retVal = true;
+
 				break;
 			}
 		}

@@ -1,5 +1,6 @@
 package com.avatar.dao.impl.jdbc;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -19,9 +20,8 @@ import com.avatar.exception.PermissionDeniedException;
 public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
 	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID = "SELECT * FROM PROMOTIONS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID = ? ";
-	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID = GET_PROMOTIONS_BY_CLUBID_AMENITYID + " AND CURDATE() >= EFFECTIVE_DATE AND CURDATE() <= ENDING_DATE ";
-
-	private final PromotionMapper promotionMapper = new PromotionMapper();
+	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID = GET_PROMOTIONS_BY_CLUBID_AMENITYID
+			+ " AND CURDATE() >= EFFECTIVE_DATE AND CURDATE() <= ENDING_DATE ";
 
 	private static String INS_PROMO_HISTORY = "INSERT INTO PROMOTION_HISTORY ("
 			+ "      ID,PROMOTION_ID,CLUB_ID,CLUB_AMENITY_ID,USER_ID,PROMO_READ,CREATE_DATE) "
@@ -36,27 +36,39 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
 	private static String UPD_PROMOTION_BY_PK = "update PROMOTIONS set "
 			+ "TITLE=?, DETAILS=? WHERE ID=?";
+
 	private static String UPD_PROMOTION_EFFECTIVE_DATE_BY_PK = "update PROMOTIONS set "
 			+ "EFFECTIVE_DATE=? WHERE ID=?";
 	private static String UPD_PROMOTION_ENDINGDATE_BY_PK = "update PROMOTIONS set "
 			+ "ENDING_DATE=? WHERE ID=?";
-
 	private static String GET_PROMOTION_BY_ID = "SELECT * FROM PROMOTIONS WHERE ID = ?";
 
 	private static String DEL_PROMO_ID = "DELETE from PROMOTIONS where ID=?";
+
 	private static String COUNT_PROMO_ID_HISTORY = "SELECT COUNT(*) from PROMOTION_HISTORY where PROMOTION_ID=?";
+	private static final String DEL_PROMOTION_BYUSERID = "delete from PROMOTION_HISTORY where USER_ID = ? and CREATE_DATE >= ? AND CREATE_DATE <= ? ";
+
+	private final PromotionMapper promotionMapper = new PromotionMapper();
 
 	@Override
 	public void delete(final Integer promoIdPk) throws NotFoundException,
-			PermissionDeniedException {
+	PermissionDeniedException {
 		// Check if id found
 		getPromoIdPk(promoIdPk);
 		final Integer count = getJdbcTemplate().queryForObject(
 				COUNT_PROMO_ID_HISTORY, Integer.class, promoIdPk);
 		if (count > 0) {
-			throw new PermissionDeniedException("Promotion ID " + promoIdPk + " has references");
+			throw new PermissionDeniedException("Promotion ID " + promoIdPk
+					+ " has references");
 		}
 		getJdbcTemplate().update(DEL_PROMO_ID, promoIdPk);
+	}
+
+	@Override
+	public void delete(final Integer userIdPk, final Date fromDate,
+			final Date toDate) {
+		getJdbcTemplate().update(DEL_PROMOTION_BYUSERID, userIdPk, fromDate,
+				toDate);
 	}
 
 	@Override
@@ -96,8 +108,8 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 	public List<Promotion> getValidPromotions(final Integer clubIdPk,
 			final Integer amenityIdPk) {
 		final List<Promotion> retVal = getJdbcTemplate().query(
-				GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID, promotionMapper, clubIdPk,
-				amenityIdPk);
+				GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID, promotionMapper,
+				clubIdPk, amenityIdPk);
 		return retVal;
 	}
 
@@ -119,7 +131,7 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 	@Override
 	public void recordPromotionRead(final Integer promotionIdPk,
 			final Integer userIdPk, final boolean promoRead)
-			throws NotFoundException {
+					throws NotFoundException {
 		final int idPk = sequencer.nextVal("ID_SEQ");
 		final int recInserted = getJdbcTemplate().update(INS_PROMO_HISTORY,
 				idPk, userIdPk, promoRead ? "Y" : "N", promotionIdPk);

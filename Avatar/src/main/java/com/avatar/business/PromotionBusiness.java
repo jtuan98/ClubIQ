@@ -1,5 +1,6 @@
 package com.avatar.business;
 
+import java.util.Date;
 import java.util.List;
 
 import com.avatar.dto.promotion.Promotion;
@@ -7,8 +8,11 @@ import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 
 public interface PromotionBusiness {
+	void cleanupPromoBeaconInfo(String mobileNumber, Date fromDate, Date toDate)
+			throws NotFoundException;
+
 	void delete(Integer promoIdPk) throws NotFoundException,
-			PermissionDeniedException;
+	PermissionDeniedException;
 
 	Promotion getPromotion(Integer promoIdPk) throws NotFoundException;
 
