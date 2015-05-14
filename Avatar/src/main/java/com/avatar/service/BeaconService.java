@@ -200,4 +200,9 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		beaconDao.updateBeaconInfo(beacon);
 		return beacon;
 	}
+
+	@Override
+	public boolean verifyClubPin(final String clubPin) {
+		return clubDao.verifyClubPin(clubPin);
+	}
 }

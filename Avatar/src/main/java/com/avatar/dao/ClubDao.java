@@ -30,4 +30,6 @@ public interface ClubDao {
 	List<ClubDto> getClubs(Integer userIdPk) throws NotFoundException;
 
 	void update(ClubDto club) throws NotFoundException;
+
+	boolean verifyClubPin(String clubPin);
 }

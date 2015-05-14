@@ -25,22 +25,15 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private static String INS_USER_TO_CLUB_PK = "INSERT INTO USER_CLUBS (ID, USER_ID, CLUB_ID) VALUES (?,?,?)";
 
-	@Resource(name = "accountDaoJdbc")
-	private AccountDao accountDao;
-
 	private static String GET_CLUB_FROM_PK = "SELECT * FROM CLUBS WHERE ID = ?";
+
 	private static String GET_CLUB_FROM_CLUBID = "SELECT * FROM CLUBS WHERE CLUBID = ?";
-
-	private final ClubDtoMapper clubDtoMapper = new ClubDtoMapper();
-
 	private static String GET_IMAGE_ID = "SELECT IMAGE_ID FROM CLUBS WHERE ID=?";
+
 	private static String GET_CLUBIDPK = "SELECT ID FROM CLUBS WHERE CLUBID=?";
 
 	private static String SEL_AMENITY_PK_BY_AMENITYID = "SELECT ID FROM CLUB_AMENITIES WHERE AMENITYID = ? ";
-
 	private static String SEL_AMENITY_BY_PK = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
-
-	private final AmenityMapper amenityMapper = new AmenityMapper();
 
 	private static String SEL_AMENITIES_BY_CLUBID = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CLUB_ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
 
@@ -55,6 +48,15 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	static private String SEL_SUPER_USER_CLUBS_BY_USER_IDPK = "SELECT CLUBS.* FROM CLUBS where exists (select 1 from USERS, USER_ROLES where USERS.ID = ? AND USER_ROLES.USER_ID = USERS.ID and ROLE = '"
 			+ Privilege.superUser.name() + "')";
+
+	private static String COUNT_CLUB_PIN = "select count(*) from CLUBS where club_pin = ? ";
+
+	@Resource(name = "accountDaoJdbc")
+	private AccountDao accountDao;
+
+	private final ClubDtoMapper clubDtoMapper = new ClubDtoMapper();
+
+	private final AmenityMapper amenityMapper = new AmenityMapper();
 
 	@Override
 	public void addUserToClub(final int clubIdPk, final int userIdPk)
@@ -199,6 +201,13 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 				club.getState(), club.getPhoneNumber(),
 				club.getHzRestriction(), club.getClubType(), club.getWebSite(),
 				club.getTimeZone().getDbSetting(), club.getId());
+	}
+
+	@Override
+	public boolean verifyClubPin(final String clubPin) {
+		final Integer counter = getJdbcTemplate().queryForObject(
+				COUNT_CLUB_PIN, Integer.class, clubPin);
+		return counter > 0;
 	}
 
 }

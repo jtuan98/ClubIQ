@@ -27,7 +27,7 @@ import com.avatar.exception.PermissionDeniedException;
 @RequestMapping(value = "/ClubMgr")
 public class ClubManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.clubAdmin,
-			Privilege.staff, Privilege.superUser };
+		Privilege.staff, Privilege.superUser };
 
 	@Resource(name = "beaconManagerController")
 	BeaconManagerController beaconManager;
@@ -35,13 +35,32 @@ public class ClubManagerController extends BaseController {
 	@Resource(name = "beaconService")
 	private BeaconBusiness beaconService;
 
+	@RequestMapping(value = "/ClubPinVerification")
+	public ModelAndView clubPinVerify(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "clubPin") final String clubPin)
+					throws Exception {
+		init();
+		WsResponse<String> apiResponse = null;
+		try {
+			final boolean verified = beaconService.verifyClubPin(clubPin);
+			apiResponse = new WsResponse<String>(
+					verified ? ResponseStatus.success : ResponseStatus.failure,
+							verified ? "" : "club pin not found.", null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	@RequestMapping(value = "/GetAmenityList")
 	public ModelAndView getAmenities(
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -72,7 +91,7 @@ public class ClubManagerController extends BaseController {
 	public ModelAndView getClubList(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -83,16 +102,17 @@ public class ClubManagerController extends BaseController {
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
-		final AccountDto principal = authenticationService.getAccount(authToken);
+		final AccountDto principal = authenticationService
+				.getAccount(authToken);
 		WsResponse<List<ClubDto>> apiResponse = null;
 		try {
-			final List<ClubDto> clubs = beaconService
-					.getClubs(principal.getId());
-			apiResponse = new WsResponse<List<ClubDto>>(
-					ResponseStatus.success, "", clubs, "clubList");
+			final List<ClubDto> clubs = beaconService.getClubs(principal
+					.getId());
+			apiResponse = new WsResponse<List<ClubDto>>(ResponseStatus.success,
+					"", clubs, "clubList");
 		} catch (final Exception e) {
-			apiResponse = new WsResponse<List<ClubDto>>(
-					ResponseStatus.failure, e.getMessage(), null);
+			apiResponse = new WsResponse<List<ClubDto>>(ResponseStatus.failure,
+					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
@@ -121,12 +141,13 @@ public class ClubManagerController extends BaseController {
 			@RequestParam(required = false, value = "userId") final String userId,
 			@RequestParam(required = true, value = "apnsToken") final String apnsToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
-			validateStaffInClub(authenticationService.getAccount(authToken), clubId);
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
@@ -149,9 +170,8 @@ public class ClubManagerController extends BaseController {
 			@RequestParam(required = false, value = "clubState") final String clubState,
 			@RequestParam(required = false, value = "clubPhoneNumber") final String clubPhoneNumber,
 			@RequestParam(required = false, value = "hzRestriction") final String hzRestriction,
-			@RequestParam(required = false, value = "timezone", defaultValue="US_PST") final DbTimeZone timezone
-			)
-			throws Exception {
+			@RequestParam(required = false, value = "timezone", defaultValue = "US_PST") final DbTimeZone timezone)
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {

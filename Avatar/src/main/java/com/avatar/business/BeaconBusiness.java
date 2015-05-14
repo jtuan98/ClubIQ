@@ -40,4 +40,6 @@ public interface BeaconBusiness {
 	void update(ClubDto club) throws NotFoundException;
 
 	BeaconDto updateBeacon(BeaconDto beacon) throws NotFoundException;
+
+	boolean verifyClubPin(String clubPin);
 }
