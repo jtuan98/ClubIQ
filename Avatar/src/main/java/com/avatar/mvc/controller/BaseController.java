@@ -40,6 +40,11 @@ public abstract class BaseController {
 				.forPattern("yyyyMMdd HH:mm:ss");
 		System.out.println(new Date(yyyyMMdd_hh24missDtf
 				.parseMillis("20150530 20:00:00")));
+		final DateTimeFormatter yyyyMMddDtf = DateTimeFormat
+				.forPattern("yyyyMMdd");
+
+		final Date fromDate = new Date(yyyyMMddDtf.parseMillis("20150517"));
+		System.out.println("fromdate="+fromDate);
 	}
 
 	@Resource(name = "accountService")

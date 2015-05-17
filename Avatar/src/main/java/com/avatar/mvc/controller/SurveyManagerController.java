@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +32,6 @@ import com.avatar.exception.PermissionDeniedException;
 @Controller
 @RequestMapping(value = "/SurveyMgr")
 public class SurveyManagerController extends BaseController {
-
 	private static Privilege[] REQUIRED_ROLE = { Privilege.staff,
 		Privilege.superUser };
 
@@ -98,8 +98,8 @@ public class SurveyManagerController extends BaseController {
 		WsResponse<List<Promotion>> apiResponse = null;
 		try {
 			final Date fromDate = new Date(yyyyMMddDtf.parseMillis(fromDateStr));
-			final Date toDate = new Date(yyyyMMddDtf.parseMillis(toDateStr));
-
+			Date toDate = new Date(yyyyMMddDtf.parseMillis(toDateStr));
+			toDate = DateUtils.addDays(toDate, 1);
 			promotionService.cleanupPromoBeaconInfo(mobileNumber, fromDate,
 					toDate);
 			surveyService.deleteSurveyAnswers(mobileNumber, fromDate, toDate);

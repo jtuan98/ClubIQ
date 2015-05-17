@@ -66,7 +66,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static final String GET_BEACON_BY_PKID = "SELECT * FROM BEACONS where ID = ? ";
 
-	private static final String DEL_BEACON_BY_MEMBERID = "delete from BEACON_USERS where USER_ID=?";
+	private static final String DEL_BEACON_BY_MEMBERID = "delete from BEACON_USERS where USER_ID=? and CREATE_DATE >=? and CREATE_DATE < ? ";
 
 	@Resource(name = "accountDaoJdbc")
 	AccountDao accountDao;
@@ -115,8 +115,8 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
-	public void deleteBeaconInfoByUserId(final Integer userIdPk) {
-		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk);
+	public void deleteBeaconInfoByUserId(final Integer userIdPk, final Date fromDate, final Date toDate) {
+		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk, fromDate, toDate);
 
 	}
 

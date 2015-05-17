@@ -29,14 +29,14 @@ public class RegistrationController extends BaseController {
 	@RequestMapping(value = { "/Registration/ActivateAccount",
 			"/Registration/ActivateAccountMember",
 			"/Registration/ActivateAccountMobile" // ActivateAccountMobile will
-													// be deprecated soon
+			// be deprecated soon
 	})
 	public ModelAndView activateAccount(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "activationToken") final String activationToken,
 			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber,
 			@RequestParam(required = true, value = "deviceId") final String deviceId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		String msg = "";
@@ -57,13 +57,13 @@ public class RegistrationController extends BaseController {
 
 	@RequestMapping(value = { "/Registration/Employee/ActivateAccount",
 			"/Registration/NonMobile/ActivateAccount" // NonMobile will be
-														// deprecated, use
-														// Employee
+			// deprecated, use
+			// Employee
 	})
 	public ModelAndView activateEmployeeAccount(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "activationToken") final String activationToken)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		String msg = "";
@@ -82,7 +82,7 @@ public class RegistrationController extends BaseController {
 	}
 
 	@RequestMapping(value = { "/Registration/Employee/CreateAccount",
-			"/Registration/NonMobile/CreateAccount" })
+	"/Registration/NonMobile/CreateAccount" })
 	public ModelAndView createAccountEmployee(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "email") final String email,
@@ -93,7 +93,7 @@ public class RegistrationController extends BaseController {
 			@RequestParam(required = false, value = "pictureBase64") final String pictureBase64Encoded,
 			@RequestParam(required = false, value = "address") final String address,
 			@RequestParam(required = true, value = "privilege", defaultValue = "user") final String privilege)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<ActivationToken> apiResponse = null;
 		try {
@@ -121,14 +121,14 @@ public class RegistrationController extends BaseController {
 	@RequestMapping(value = { "/Registration/CreateAccountMobile",
 			"/Registration/CreateAccountMember", "/Registration/CreateAccount",
 			"/open/Registration/CreateAccountMobile",
-			"/open/Registration/CreateAccount" })
+	"/open/Registration/CreateAccount" })
 	public ModelAndView createAccountMobile(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber,
 			@RequestParam(required = false, value = "tangerineHandsetId") final String tangerineHandsetId,
 			@RequestParam(required = true, value = "deviceId") final String deviceId,
 			@RequestParam(required = true, value = "homeClubId") final String homeClubId)
-			throws Exception {
+					throws Exception {
 		init();
 		System.out.println("In................createAccountMobile");
 		WsResponse<ActivationToken> apiResponse = null;
@@ -210,11 +210,11 @@ public class RegistrationController extends BaseController {
 
 	//2.1.1 confirmed correct
 	@RequestMapping(value = { "/Registration/VerifyAcctExist",
-			"/open/Registration/VerifyAcctExist" })
+	"/open/Registration/VerifyAcctExist" })
 	public ModelAndView verifyAccount(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String userid)
-			throws Exception {
+					throws Exception {
 		init();
 		final String msg = "";
 		final boolean exists = accountService.exists(userid);

@@ -104,7 +104,11 @@ public abstract class BaseJdbcDao implements DbDateDao {
 		namedParam = new NamedParameterJdbcTemplate(ds);
 		jdbcTemplate = new JdbcTemplate(ds);
 		System.out.println("Setting time zone to " + timezone);
+		try {
 		jdbcTemplate.execute("SET time_zone = '" + timezone + "'");
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected Integer persistImage(final ImagePic picture) {

@@ -40,7 +40,7 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(mobileNumber);
 
 		promotionDao.delete(userIdPk, fromDate, toDate);
-		beaconDao.deleteBeaconInfoByUserId(userIdPk);
+		beaconDao.deleteBeaconInfoByUserId(userIdPk, fromDate, toDate);
 	}
 
 	@Override

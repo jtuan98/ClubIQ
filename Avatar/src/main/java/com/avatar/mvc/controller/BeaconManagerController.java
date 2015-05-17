@@ -4,7 +4,9 @@ import java.lang.reflect.Type;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.avatar.business.BeaconBusiness;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.Privilege;
@@ -41,6 +44,7 @@ public class BeaconManagerController extends BaseController {
 
 	private final Type collectionAccountDtoType = new TypeToken<ArrayList<AccountDto>>() {
 	}.getType();
+
 
 	@RequestMapping(value = { "/DeleteBeacon" })
 	public ModelAndView deleteBeacon(
@@ -124,6 +128,56 @@ public class BeaconManagerController extends BaseController {
 					"", amenityNames, "amenityDeptList");
 		} catch (final Exception e) {
 			apiResponse = new WsResponse<List<String>>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = "/BeaconDetectionWithAmenity")
+	public ModelAndView getAmenityInfo(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		BeaconDto beacon = null;
+		try {
+			beacon = beaconService.getBeacon(beaconActionId);
+		} catch (final Exception e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		System.out.println("Beacon=>" + beacon);
+		try {
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					beacon.getClub().getClubId());
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<Map<String, String>> apiResponse = null;
+		try {
+			final AmenityDto amenity = beacon.getAmenity();
+			final Map<String, String> result = new HashMap<String, String>();
+			result.put("amenityId", amenity.getAmenityId());
+			result.put("amenityType", amenity.getAmenityType());
+			apiResponse = new WsResponse<Map<String, String>>(ResponseStatus.success,
+					"", result);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<Map<String, String>>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));

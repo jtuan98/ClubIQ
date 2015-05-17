@@ -46,7 +46,7 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 	private static String DEL_PROMO_ID = "DELETE from PROMOTIONS where ID=?";
 
 	private static String COUNT_PROMO_ID_HISTORY = "SELECT COUNT(*) from PROMOTION_HISTORY where PROMOTION_ID=?";
-	private static final String DEL_PROMOTION_BYUSERID = "delete from PROMOTION_HISTORY where USER_ID = ? and CREATE_DATE >= ? AND CREATE_DATE <= ? ";
+	private static final String DEL_PROMOTION_BYUSERID = "delete from PROMOTION_HISTORY where USER_ID = ? and CREATE_DATE >= ? AND CREATE_DATE < ? ";
 
 	private final PromotionMapper promotionMapper = new PromotionMapper();
 

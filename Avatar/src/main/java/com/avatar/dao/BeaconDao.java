@@ -17,7 +17,7 @@ public interface BeaconDao {
 
 	void delete(BeaconDto beacon) throws NotFoundException, PermissionDeniedException;
 
-	void deleteBeaconInfoByUserId(Integer userIdPk);
+	void deleteBeaconInfoByUserId(Integer userIdPk, Date fromDate, Date toDate);
 
 	// Return Amenity Names
 	List<String> getAmenityDeptName(String clubId) throws NotFoundException;

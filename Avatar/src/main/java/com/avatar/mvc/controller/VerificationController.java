@@ -25,13 +25,13 @@ public class VerificationController extends BaseController {
 			@RequestParam(required = true, value = "deviceId") final String deviceId,
 			@RequestParam(required = false, value = "staff", defaultValue = "true") final boolean staff,
 			@RequestParam(required = true, value = "msg") final String msg)
-			throws Exception {
+					throws Exception {
 		init();
 		String msgRetVal = "";
 		try {
 			if (!alert) {
 				mobileNotificationService
-						.sendNotification(deviceId, msg, staff);
+				.sendNotification(deviceId, msg, staff);
 			} else {
 				mobileNotificationService.testAlert(deviceId, staff);
 			}
@@ -46,7 +46,7 @@ public class VerificationController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "email") final String email,
 			@RequestParam(required = true, value = "msg") final String msg)
-			throws Exception {
+					throws Exception {
 		init();
 		String msgRetVal = "";
 		try {
@@ -63,7 +63,7 @@ public class VerificationController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "timezone") final DbTimeZone timezone,
 			@RequestParam(required = false, value = "help") final boolean help)
-			throws Exception {
+					throws Exception {
 		init();
 		String msgRetVal = "";
 		if (help) {

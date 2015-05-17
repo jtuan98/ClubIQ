@@ -22,7 +22,7 @@ import com.avatar.exception.PermissionDeniedException;
 @RequestMapping(value = { "/AcctMgr", "/AccountMgr" })
 public class AccountManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.clubAdmin,
-			Privilege.staff, Privilege.superUser };
+		Privilege.staff, Privilege.superUser };
 
 	@RequestMapping(value = { "/AddClubAmenityToAccount" })
 	public ModelAndView addClubAmenityToAccount(
@@ -31,7 +31,7 @@ public class AccountManagerController extends BaseController {
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "userId") final String userId,
 			@RequestParam(required = true, value = "clubAmenityId") final String clubAmenityId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
 		try {
@@ -60,7 +60,7 @@ public class AccountManagerController extends BaseController {
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<AccountDto> apiResponse = null;
 		try {
@@ -79,7 +79,7 @@ public class AccountManagerController extends BaseController {
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "deviceId") final String deviceId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<AccountDto> apiResponse = null;
 		final String userId = principal.getName();
@@ -95,7 +95,7 @@ public class AccountManagerController extends BaseController {
 	}
 
 	@RequestMapping(value = { "/Mobile/SetAccountInfo", // This will be
-														// deprecated
+			// deprecated
 			"/Member/SetAccountInfo", "/SetAccountInfo" })
 	public ModelAndView updateAccount(
 			final Principal principal,
@@ -105,7 +105,7 @@ public class AccountManagerController extends BaseController {
 			@RequestParam(required = false, value = "realname") final String realName,
 			@RequestParam(required = false, value = "email") final String email,
 			@RequestParam(required = false, value = "pictureBase64") final String pictureBase64)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
@@ -131,7 +131,7 @@ public class AccountManagerController extends BaseController {
 
 	// Update the email is not allowed since email is the USERID
 	@RequestMapping(value = { "/Employee/SetAccountInfo",
-			"/SetEmployeeAccountInfo" })
+	"/SetEmployeeAccountInfo" })
 	public ModelAndView updateAccountEmployee(
 			final Principal principal,
 			final HttpServletRequest req,
@@ -139,7 +139,7 @@ public class AccountManagerController extends BaseController {
 			@RequestParam(required = false, value = "deviceId") final String deviceId,
 			@RequestParam(required = false, value = "realname") final String realName,
 			@RequestParam(required = false, value = "pictureBase64") final String pictureBase64)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
@@ -169,7 +169,7 @@ public class AccountManagerController extends BaseController {
 			@RequestParam(required = true, value = "mobileNumber") final String userId,
 			@RequestParam(required = true, value = "deviceId") final String deviceId,
 			@RequestParam(required = true, value = "tangerineHandsetId") final String tangerineHandsetId)
-			throws Exception {
+					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
