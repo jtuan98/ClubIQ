@@ -43,12 +43,11 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 	private ClubDao clubDao;
 
 	@Override
-	public void deleteSurveyAnswers(final String memberId, final Date fromDate, final Date toDate)
-			throws NotFoundException {
+	public void deleteSurveyAnswers(final String memberId, final Date fromDate,
+			final Date toDate) throws NotFoundException {
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
 		surveyDao.delete(memberIdPk, fromDate, toDate);
 	}
-
 
 	private Date getLastMonday(final int pastWeeks) {
 		final DateTime today = DateTime.now();
@@ -73,8 +72,8 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
 		// Get the Amenity type
 		final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
-		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(
-				amenity.getAmenityType());
+		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(amenity
+				.getAmenityType());
 		final Date since = getLastMonday(surveyPks.size());
 		final Date lastMondayDate = getLastMonday(1);
 		final Set<Integer> surveyIdsSincePastMon = surveyDao
@@ -82,6 +81,9 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 						lastMondayDate);
 		// If member HAS NOT done any survey in the past week.
 		if (CollectionUtils.isEmpty(surveyIdsSincePastMon)) {
+			System.out
+			.println("member HAS NOT done any survey in the past week.["
+					+ lastMondayDate + "]");
 			final Set<Integer> surveyIdsSinceBeginning = surveyDao
 					.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
 							since);
@@ -89,11 +91,21 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 				surveyPks.remove(surveyIdPk);
 			}
 			if (CollectionUtils.isNotEmpty(surveyPks)) {
+				System.out.println("surveyPks is not empty");
 				retVal = surveyDao.getSurvey(surveyPks.iterator().next());
 			} else if (CollectionUtils.isNotEmpty(surveyIdsSinceBeginning)) {
-				//recycle
-				retVal = surveyDao.getSurvey(surveyIdsSinceBeginning.iterator().next());
+				// recycle
+				System.out.println("Recycling: surveyIdsSinceBeginning");
+				retVal = surveyDao.getSurvey(surveyIdsSinceBeginning.iterator()
+						.next());
+			} else if (CollectionUtils.isNotEmpty(surveyPks)) {
+				// recycle
+				System.out.println("Recycling: surveyPks");
+				retVal = surveyDao.getSurvey(surveyPks.iterator().next());
 			}
+		} else {
+			System.out.println("member HAS done a survey in the past week.["
+					+ lastMondayDate + "]");
 		}
 		return retVal;
 	}
