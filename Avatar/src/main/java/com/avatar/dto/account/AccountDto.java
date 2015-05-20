@@ -39,6 +39,8 @@ public abstract class AccountDto implements Serializable {
 
 	protected String tangerineHandsetId;
 
+	protected boolean training = false;
+
 	public AccountDto add(final Privilege priviledge) {
 		if (priviledge != null) {
 			if (priviledges == null) {
@@ -109,6 +111,10 @@ public abstract class AccountDto implements Serializable {
 		return (this instanceof EmployeeAccountDto);
 	}
 
+	public boolean isTraining() {
+		return training;
+	}
+
 	public void setAddress(final String address) {
 		this.address = address;
 	}
@@ -159,6 +165,10 @@ public abstract class AccountDto implements Serializable {
 
 	public void setToken(final ActivationToken token) {
 		this.token = token;
+	}
+
+	public void setTraining(final boolean training) {
+		this.training = training;
 	}
 
 	public void setUserId(final String userId) {
