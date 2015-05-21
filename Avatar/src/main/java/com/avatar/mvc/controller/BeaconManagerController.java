@@ -45,7 +45,6 @@ public class BeaconManagerController extends BaseController {
 	private final Type collectionAccountDtoType = new TypeToken<ArrayList<AccountDto>>() {
 	}.getType();
 
-
 	@RequestMapping(value = { "/DeleteBeacon" })
 	public ModelAndView deleteBeacon(
 			final Principal principal,
@@ -75,22 +74,24 @@ public class BeaconManagerController extends BaseController {
 		System.out.println("Beacon=>" + beacon);
 		if (beacon != null) {
 			try {
-				// Verify using authToken to see if user have the perm to edit club
+				// Verify using authToken to see if user have the perm to edit
+				// club
 				// info.
-				validateStaffInClub(authenticationService.getAccount(authToken),
-						beacon.getClub().getClubId());
+				validateStaffInClub(
+						authenticationService.getAccount(authToken), beacon
+						.getClub().getClubId());
 			} catch (NotFoundException | AuthenticationTokenExpiredException
 					| PermissionDeniedException e) {
-				apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-						e.getMessage(), null);
+				apiDeniedResponse = new WsResponse<String>(
+						ResponseStatus.denied, e.getMessage(), null);
 				return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 			}
 
 			try {
 				System.out.println("Deleting Beacon=>" + beacon);
 				beaconService.deleteBeacon(beacon);
-				apiResponse = new WsResponse<String>(ResponseStatus.success, "",
-						null);
+				apiResponse = new WsResponse<String>(ResponseStatus.success,
+						"", null);
 			} catch (final Exception e) {
 				apiResponse = new WsResponse<String>(ResponseStatus.failure,
 						e.getMessage(), null);
@@ -136,49 +137,23 @@ public class BeaconManagerController extends BaseController {
 	@RequestMapping(value = "/BeaconDetectionWithAmenity")
 	public ModelAndView getAmenityInfo(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
 					throws Exception {
 		init();
-		WsResponse<String> apiDeniedResponse = null;
-		try {
-			validateUserRoles(authToken, REQUIRED_ROLE);
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
 		BeaconDto beacon = null;
-		try {
-			beacon = beaconService.getBeacon(beaconActionId);
-		} catch (final Exception e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.failure,
-					e.getMessage(), null);
-		}
-		System.out.println("Beacon=>" + beacon);
-		try {
-			// Verify using authToken to see if user have the perm to edit club
-			// info.
-			validateStaffInClub(authenticationService.getAccount(authToken),
-					beacon.getClub().getClubId());
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
 		WsResponse<Map<String, String>> apiResponse = null;
 		try {
+			beacon = beaconService.getBeacon(beaconActionId);
+			System.out.println("Beacon=>" + beacon);
 			final AmenityDto amenity = beacon.getAmenity();
 			final Map<String, String> result = new HashMap<String, String>();
 			result.put("amenityId", amenity.getAmenityId());
 			result.put("amenityType", amenity.getAmenityType());
-			apiResponse = new WsResponse<Map<String, String>>(ResponseStatus.success,
-					"", result);
+			apiResponse = new WsResponse<Map<String, String>>(
+					ResponseStatus.success, "", result);
 		} catch (final Exception e) {
-			apiResponse = new WsResponse<Map<String, String>>(ResponseStatus.failure,
-					e.getMessage(), null);
+			apiResponse = new WsResponse<Map<String, String>>(
+					ResponseStatus.failure, e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
