@@ -1,6 +1,5 @@
 package com.avatar.service;
 
-import java.security.InvalidParameterException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +24,7 @@ import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.enums.DbTimeZone;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.AccountExistedException;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -52,7 +52,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 			.build(new CacheLoader<String, AccountDto>() {
 				@Override
 				public AccountDto load(final String activationTokenParam)
-						throws NotFoundException {
+						throws NotFoundException, InvalidParameterException {
 					final String[] activationToken = activationTokenParam
 							.split("_");
 					String token, userId, deviceId;
@@ -80,17 +80,24 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public boolean activateAccount(final String activationToken)
 			throws InvalidParameterException {
+		if (StringUtils.isEmpty(activationToken)) {
+			throw new InvalidParameterException(
+					"Activation Token cannot be null");
+		}
 		boolean retVal = false;
 		try {
 			final AccountDto activationAccount = activationCache
 					.get(activationToken);
 			Validate.notNull(activationAccount);
+			if (!(activationAccount instanceof EmployeeAccountDto)) {
+				throw new InvalidParameterException(
+						"Activation Token is not for EmployeeAccountDto");
+			}
 			// Update database as activated!
 			accountDao.activate(activationAccount.getUserId(), activationToken);
 			retVal = true;
 		} catch (InvalidCacheLoadException | ExecutionException
 				| NotFoundException e) {
-			e.printStackTrace();
 			throw new InvalidParameterException(
 					"Activation Token Not Found!  May have expired.["
 							+ activationToken + "]");
@@ -100,13 +107,26 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	public boolean activateMobileAccount(final String mobileNumber,
-			final String deviceId, final String activationToken) {
+			final String deviceId, final String activationToken)
+					throws InvalidParameterException {
 		boolean retVal = false;
+		if (StringUtils.isEmpty(mobileNumber)) {
+			throw new InvalidParameterException(
+					"mobileNumber cannot be null");
+		}
+		if (StringUtils.isEmpty(activationToken)) {
+			throw new InvalidParameterException(
+					"Activation Token cannot be null");
+		}
 		try {
 			final AccountDto activationAccount = activationCache
 					.get(generateKey(true, mobileNumber, deviceId,
 							activationToken));
 			Validate.notNull(activationAccount);
+			if (!(activationAccount instanceof MemberAccountDto)) {
+				throw new InvalidParameterException(
+						"Activation Token is not for MemberAccountDto");
+			}
 			// Update database as activated!
 			accountDao.activate(activationAccount.getUserId(), activationToken);
 			retVal = true;
@@ -121,7 +141,14 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	public void addAmenityToUser(final String userId, final String clubAmenityId)
-			throws NotFoundException {
+			throws NotFoundException, InvalidParameterException {
+		if (StringUtils.isEmpty(userId)){
+			throw new InvalidParameterException("UserId cannot be null");
+		}
+		if (StringUtils.isEmpty(clubAmenityId)){
+			throw new InvalidParameterException("ClubAmenityId cannot be null");
+		}
+
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
 		final Integer clubAmenityIdPk = clubDao
 				.getClubAmenityIdPk(clubAmenityId);
@@ -131,61 +158,66 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public ActivationToken createAccount(final AccountDto accountInfo)
-			throws NotFoundException, AccountCreationException {
-		final DbTimeZone timezone = accountInfo.getHomeClub() != null ? accountInfo.getHomeClub().getTimeZone(): null;
-		final Date now = getNow(timezone);
-		final boolean mobile = accountInfo instanceof MemberAccountDto;
-		final ActivationToken activationToken = generateActivationToken(mobile, timezone);
+			throws NotFoundException, AccountCreationException, InvalidParameterException {
+		if (accountInfo == null) {
+			throw new InvalidParameterException("AccountInfo cannot be null");
+		}
+		final DbTimeZone timezone = accountInfo.getHomeClub() != null ? accountInfo
+				.getHomeClub().getTimeZone() : null;
+				final Date now = getNow(timezone);
+				final boolean mobile = accountInfo instanceof MemberAccountDto;
+				final ActivationToken activationToken = generateActivationToken(mobile,
+						timezone);
 
-		final String deviceId = accountInfo.getDeviceId();
+				final String deviceId = accountInfo.getDeviceId();
 
-		// Check if account already exists...
-		try {
-			final AccountDto checkAcct = accountDao.fetch(accountInfo
-					.getUserId());
-			// if Found
-			switch (checkAcct.getStatus()) {
-			case Activated:
-				throw new AccountExistedException("Account "
-						+ accountInfo.getUserId() + " is already active!");
-			case Cancelled:
-			case Terminated:
-				throw new AccountCreationException("Account "
-						+ accountInfo.getUserId()
-						+ " is already cancelled or terminated!");
-			case New:
-			case TokenSent:
-				if ((checkAcct.getToken() != null)
-						&& checkAcct.getToken().getExpirationDate().before(now)) {
-					// New token, token expire
-					checkAcct.getToken().setToken(activationToken.getToken());
-					checkAcct.getToken().setExpirationDate(
-							activationToken.getExpirationDate());
-					accountDao.updateNewToken(checkAcct.getToken());
+				// Check if account already exists...
+				try {
+					final AccountDto checkAcct = accountDao.fetch(accountInfo
+							.getUserId());
+					// if Found
+					switch (checkAcct.getStatus()) {
+					case Activated:
+						throw new AccountExistedException("Account "
+								+ accountInfo.getUserId() + " is already active!");
+					case Cancelled:
+					case Terminated:
+						throw new AccountCreationException("Account "
+								+ accountInfo.getUserId()
+								+ " is already cancelled or terminated!");
+					case New:
+					case TokenSent:
+						if ((checkAcct.getToken() != null)
+								&& checkAcct.getToken().getExpirationDate().before(now)) {
+							// New token, token expire
+							checkAcct.getToken().setToken(activationToken.getToken());
+							checkAcct.getToken().setExpirationDate(
+									activationToken.getExpirationDate());
+							accountDao.updateNewToken(checkAcct.getToken());
+						}
+						return checkAcct.getToken();
+					}
+				} catch (final NotFoundException | InvalidParameterException e) {
 				}
-				return checkAcct.getToken();
-			}
-		} catch (final NotFoundException e) {
-		}
 
-		// Verify amenity id
-		if (!mobile) {
-			final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) accountInfo;
-			if (employeeAccountInfo.getAmenity() != null) {
-				final Integer amenityIdPk = clubDao
-						.getClubAmenityIdPk(employeeAccountInfo.getAmenity()
-								.getAmenityId());
-				final AmenityDto amenityFromDb = clubDao
-						.getAmenity(amenityIdPk);
-				employeeAccountInfo.getAmenity().makeCopy(amenityFromDb);
-			}
-		}
-		// Persist account info
-		accountDao.newAccount(accountInfo, activationToken);
-		activationCache.put(
-				generateKey(true, accountInfo.getUserId(), deviceId,
-						activationToken.getToken()), accountInfo);
-		return activationToken;
+				// Verify amenity id
+				if (!mobile) {
+					final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) accountInfo;
+					if (employeeAccountInfo.getAmenity() != null) {
+						final Integer amenityIdPk = clubDao
+								.getClubAmenityIdPk(employeeAccountInfo.getAmenity()
+										.getAmenityId());
+						final AmenityDto amenityFromDb = clubDao
+								.getAmenity(amenityIdPk);
+						employeeAccountInfo.getAmenity().makeCopy(amenityFromDb);
+					}
+				}
+				// Persist account info
+				accountDao.newAccount(accountInfo, activationToken);
+				activationCache.put(
+						generateKey(true, accountInfo.getUserId(), deviceId,
+								activationToken.getToken()), accountInfo);
+				return activationToken;
 	}
 
 	@Override
@@ -230,7 +262,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public AccountDto get(final String userId) throws NotFoundException {
+	public AccountDto get(final String userId) throws NotFoundException,
+	InvalidParameterException {
 		final AccountDto retVal = accountDao.fetch(userId);
 
 		return retVal;

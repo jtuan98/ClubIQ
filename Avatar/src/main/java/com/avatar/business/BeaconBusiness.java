@@ -9,12 +9,13 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 
 public interface BeaconBusiness {
 	void addUserIdToBeacon(String beaconId, String userId)
-			throws NotFoundException;
+			throws NotFoundException, InvalidParameterException;
 
 	void deleteBeacon(BeaconDto beacon) throws NotFoundException, PermissionDeniedException;
 

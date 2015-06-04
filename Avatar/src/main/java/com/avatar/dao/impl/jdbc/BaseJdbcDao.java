@@ -20,6 +20,7 @@ import org.springframework.util.Assert;
 import com.avatar.dao.DbDateDao;
 import com.avatar.dao.Sequencer;
 import com.avatar.dao.impl.jdbc.mapper.ImageMapper;
+import com.avatar.dao.impl.jdbc.sql.BaseDaoSql;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.enums.DbTimeZone;
 
@@ -28,18 +29,11 @@ public abstract class BaseJdbcDao implements DbDateDao {
 	protected LobHandler lobHandler = new DefaultLobHandler();
 
 	private NamedParameterJdbcTemplate namedParam;
+
 	private JdbcTemplate jdbcTemplate;
 
 	@Resource(name = "avatarSequencer")
 	protected Sequencer sequencer;
-
-	private static String INS_IMAGES = "INSERT INTO IMAGES (ID, "
-			+ "IMAGE_ID, IMAGE_BINARY, CREATE_DATE) VALUES (?, ?, ?, NOW())";
-
-	private static String UPD_IMAGES = "UPDATE IMAGES set "
-			+ "IMAGE_ID=?, IMAGE_BINARY=?, CREATE_DATE=NOW() WHERE ID=?";
-
-	private static final String SEL_IMAGE_BY_ID = "SELECT * FROM IMAGES where ID = ? ";
 
 	private final ImageMapper imageMapper = new ImageMapper(lobHandler);
 
@@ -50,8 +44,8 @@ public abstract class BaseJdbcDao implements DbDateDao {
 		ImagePic image = null;
 		if (imageIdPk != null) {
 			try {
-				image = getJdbcTemplate().queryForObject(SEL_IMAGE_BY_ID,
-						imageMapper, imageIdPk);
+				image = getJdbcTemplate().queryForObject(
+						BaseDaoSql.SEL_IMAGE_BY_ID, imageMapper, imageIdPk);
 			} catch (final EmptyResultDataAccessException e1) {
 			}
 		}
@@ -59,7 +53,8 @@ public abstract class BaseJdbcDao implements DbDateDao {
 	}
 
 	protected JdbcTemplate getJdbcTemplate() {
-		final String timeZoneJdbc = jdbcTemplate.queryForObject("SELECT @@session.time_zone", String.class);
+		final String timeZoneJdbc = jdbcTemplate.queryForObject(
+				BaseDaoSql.GET_SESSION_TIMEZONE, String.class);
 		if (!timezone.equalsIgnoreCase(timeZoneJdbc)) {
 			System.out.println("WARNING: wrong timezone: " + timeZoneJdbc);
 			jdbcTemplate.execute("SET time_zone = '" + timezone + "'");
@@ -69,7 +64,8 @@ public abstract class BaseJdbcDao implements DbDateDao {
 
 	protected JdbcTemplate getJdbcTemplate(final DbTimeZone tz) {
 		Assert.notNull(tz);
-		final String timeZoneJdbc = jdbcTemplate.queryForObject("SELECT @@session.time_zone", String.class);
+		final String timeZoneJdbc = jdbcTemplate.queryForObject(
+				BaseDaoSql.GET_SESSION_TIMEZONE, String.class);
 		if (!timezone.equalsIgnoreCase(tz.getDbSetting())) {
 			System.out.println("WARNING: wrong timezone: " + timeZoneJdbc);
 			jdbcTemplate.execute("SET time_zone = '" + tz.name() + "'");
@@ -87,12 +83,12 @@ public abstract class BaseJdbcDao implements DbDateDao {
 
 	@Override
 	public Date getNow() {
-		return getJdbcTemplate().queryForObject("SELECT NOW()", Date.class);
+		return getJdbcTemplate().queryForObject(BaseDaoSql.NOW, Date.class);
 	}
 
 	@Override
 	public Date getNow(final DbTimeZone tz) {
-		return getJdbcTemplate(tz).queryForObject("SELECT NOW()", Date.class);
+		return getJdbcTemplate(tz).queryForObject(BaseDaoSql.NOW, Date.class);
 	}
 
 	protected void initTemplate(final DataSource ds) {
@@ -105,7 +101,7 @@ public abstract class BaseJdbcDao implements DbDateDao {
 		jdbcTemplate = new JdbcTemplate(ds);
 		System.out.println("Setting time zone to " + timezone);
 		try {
-		jdbcTemplate.execute("SET time_zone = '" + timezone + "'");
+			jdbcTemplate.execute("SET time_zone = '" + timezone + "'");
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
@@ -118,7 +114,7 @@ public abstract class BaseJdbcDao implements DbDateDao {
 		final Integer idImage = hasImage ? sequencer.nextVal("ID_SEQ") : null;
 		System.out.println("persistImage:  hasImage =>" + hasImage);
 		if (hasImage) {
-			getJdbcTemplate().update(INS_IMAGES, new Object[] {
+			getJdbcTemplate().update(BaseDaoSql.INS_IMAGES, new Object[] {
 					// ID
 					idImage,
 					// IMAGE_ID,
@@ -147,22 +143,22 @@ public abstract class BaseJdbcDao implements DbDateDao {
 		final String imageHash = DigestUtils.md5Hex(picture);
 		if (imageIdPk != null) {
 			// Update
-			getJdbcTemplate().update(
+			getJdbcTemplate().update(BaseDaoSql.
 					UPD_IMAGES,
 					new Object[] {
-							// IMAGE_ID,
-							imageHash,
-							// IMAGE_BINARY,
-							new SqlLobValue(picture),
-							// ID
-							imageIdPk },
+					// IMAGE_ID,
+					imageHash,
+					// IMAGE_BINARY,
+					new SqlLobValue(picture),
+					// ID
+					imageIdPk },
 					new int[] { Types.VARCHAR, Types.BLOB, Types.DATE,
-							Types.INTEGER });
+					Types.INTEGER });
 		} else {
 			// insert
 			final int idImage = sequencer.nextVal("ID_SEQ");
 			retVal = idImage;
-			getJdbcTemplate().update(INS_IMAGES, new Object[] {
+			getJdbcTemplate().update(BaseDaoSql.INS_IMAGES, new Object[] {
 					// ID
 					idImage,
 					// IMAGE_ID,

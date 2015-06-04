@@ -15,6 +15,7 @@ import com.avatar.dto.AuthenticationTokenPrincipal;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.AuthenticationTokenExpiredException;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 import com.google.common.cache.CacheBuilder;
@@ -52,7 +53,7 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 
 	@Override
 	public AccountDto getAccount(final String token) throws NotFoundException,
-			AuthenticationTokenExpiredException {
+	AuthenticationTokenExpiredException {
 		AccountDto retVal = null;
 		try {
 			retVal = accountCache.get(token);
@@ -81,7 +82,7 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 	@Override
 	public AuthenticationTokenPrincipal getToken(final String userId,
 			final String password) throws InvalidPasswordException,
-			NotFoundException {
+			NotFoundException, InvalidParameterException {
 		AuthenticationTokenPrincipal retVal = null;
 		final boolean validated = accountDao.validateUserIdPasswd(userId,
 				password);

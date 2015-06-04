@@ -20,6 +20,7 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.NotificationException;
 import com.avatar.exception.PermissionDeniedException;
@@ -41,7 +42,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 
 	@Override
 	public void addUserIdToBeacon(final String beaconId, final String userId)
-			throws NotFoundException {
+			throws NotFoundException, InvalidParameterException {
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
 		beaconDao.addUserIdToBeaconMapping(beaconId, userId);
 

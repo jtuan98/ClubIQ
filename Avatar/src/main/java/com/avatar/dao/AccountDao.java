@@ -5,6 +5,7 @@ import java.util.List;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.enums.Privilege;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 
@@ -13,16 +14,16 @@ public interface AccountDao {
 			throws NotFoundException;
 
 	void addAmenityToUser(Integer userIdPk, Integer clubAmenityIdPk)
-			throws NotFoundException;
+			throws NotFoundException, InvalidParameterException;
 
 	void deactivate(String userId) throws NotFoundException;
 
-	AccountDto fetch(Integer userIdPk) throws NotFoundException;
+	AccountDto fetch(Integer userIdPk) throws NotFoundException, InvalidParameterException;
 
-	AccountDto fetch(String userId) throws NotFoundException;
+	AccountDto fetch(String userId) throws NotFoundException, InvalidParameterException;
 
 	AccountDto fetchByToken(final String token, final String userId,
-			final String deviceId) throws NotFoundException;
+			final String deviceId) throws NotFoundException, InvalidParameterException;
 
 	List<Privilege> fetchRoles(final Integer userIdPk) throws NotFoundException;
 

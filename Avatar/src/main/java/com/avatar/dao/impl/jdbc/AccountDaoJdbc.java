@@ -20,6 +20,7 @@ import com.avatar.dao.ClubDao;
 import com.avatar.dao.impl.jdbc.mapper.AccountDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.ActivationTokenMapper;
 import com.avatar.dao.impl.jdbc.mapper.RolesMapper;
+import com.avatar.dao.impl.jdbc.sql.AccountDaoSql;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
@@ -28,103 +29,26 @@ import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 
 @Repository
 public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
-	private static String INS_ACCOUNT = "INSERT INTO USERS (ID, "
-			+ "USERID, MOBILE_IND, MOBILE_NUMBER, HOME_CLUB_ID, "
-			+ "EMAIL, PASSWORD, REALNAME, ADDRESS, IMAGE_ID, STATUS, "
-			+ "CREATE_DATE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-
-	private static String INS_TOKEN = "INSERT INTO USER_ACTIVATION_TOKEN (ID, "
-			+ "USER_ID, TOKEN, MOBILE_PIN_FLAG, VALID_TILL, "
-			+ "CREATE_DATE) VALUES (?, ?, ?, ?, ?, NOW())";
-
-	private static String UPD_TOKEN = "UPDATE USER_ACTIVATION_TOKEN SET TOKEN=?, VALID_TILL=?, CREATE_DATE=NOW() "
-			+ " WHERE ID = ?";
-
-	private static String INS_DEVICES = "INSERT INTO USER_DEVICES (ID, "
-			+ "USER_ID, DEVICE_ID, TANGERINE_HANDSET_ID, "
-			+ "CREATE_DATE) VALUES (?, ?, ?, ?, NOW())";
-
-	private static String INS_ROLES = "INSERT INTO USER_ROLES (ID, "
-			+ "USER_ID, ROLE, CREATE_DATE) VALUES (?, ?, ?, NOW())";
-
-	private static String UPD_ACCOUNT_ACTIVATION = "update USERS set STATUS='"
-			+ AccountStatus.Activated.name()
-			+ "' WHERE ID = (SELECT USER_ID FROM USER_ACTIVATION_TOKEN WHERE TOKEN=? AND USER_ID = USERS.ID) AND USERID=? "
-			+ "AND STATUS in ('" + AccountStatus.TokenSent.name() + "', '"
-			+ AccountStatus.Activated.name() + "', '"
-			+ AccountStatus.New.name() + "')";
-
-	private static String UPD_ACCOUNT_STATUS_NOTIFIED = "update USERS set STATUS='"
-			+ AccountStatus.TokenSent.name()
-			+ "' WHERE USERID = ? AND STATUS in ('"
-			+ AccountStatus.New.name()
-			+ "', '" + AccountStatus.TokenSent.name() + "')";
-
-	private static String UPD_USER_DEVICEID = "update USER_DEVICES set DEVICE_ID=? "
-			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?)";
-
-	private static String UPD_USER_TANGERINE_HANDSET_ID = "update USER_DEVICES set TANGERINE_HANDSET_ID=?, DEVICE_ID = ? "
-			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?) ";
-
-	private static final String GET_USER_ID_PK = "select ID from USERS where USERID=?";
-
-	private static final String GET_IMAGE_ID_BYUSERID = "select IMAGE_ID from USERS where USERID=?";
-	private static final String GET_IMAGE_ID = "select IMAGE_ID from USERS where ID=?";
-	private static final String GET_HOME_CLUB_ID = "select HOME_CLUB_ID from USERS where ID=?";
-
-	private static final String UPD_USER_EMAIL = "UPDATE USERS set EMAIL=? where USERID=?";
-
-	private static final String UPD_USER_FULLNAME = "UPDATE USERS set REALNAME=? WHERE USERID=?";
-
-	private static final String SEL_USER = "select * from USERS where USERID = ? ";
-
-	private static final String SEL_USER_BY_PK = "select * from USERS where ID = ? ";
-
 	private final AccountDtoMapper accountDtoMapper = new AccountDtoMapper();
-
-	private static final String SEL_ROLES_BY_USER_ID = "SELECT ROLE from USER_ROLES where USER_ID = ? ";
-
 	private final RolesMapper rolesMapper = new RolesMapper();
-
-	private static final String SEL_DEVICE_TANGERINE_HANDSET_ID_BY_USER_ID = "SELECT DEVICE_ID, TANGERINE_HANDSET_ID FROM USER_DEVICES WHERE USER_ID = ? ";
-
-	// SELECT TOKEN FROM USER_DEVICES UD, USER_ACTIVATION_TOKEN UAT, USERS U
-	// WHERE VALID_TILL > NOW() AND UAT.USER_ID = U.ID AND UD.USER_ID = U.ID AND
-	// USERID = '1234' AND DEVICE_ID = 'deviceId1234'
-	private static final String SEL_USERIDPK_BY_USER_ID_DEVICE_ID_TOKEN = "SELECT U.ID FROM USER_DEVICES UD, USER_ACTIVATION_TOKEN UAT, USERS U WHERE VALID_TILL > NOW() AND UAT.USER_ID = U.ID AND UD.USER_ID = U.ID AND USERID = ? AND DEVICE_ID = ? AND UAT.TOKEN=?";
-	private static final String SEL_USERIDPK_BY_TOKEN = "SELECT USER_ID FROM USER_ACTIVATION_TOKEN UAT WHERE VALID_TILL > NOW() AND UAT.TOKEN=?";
-	private static final String SEL_TOKEN_BY_USERIDPK = "SELECT * FROM USER_ACTIVATION_TOKEN UAT WHERE UAT.USER_ID=?";
-
-	private static String UPD_USER_IMAGE_ID_LINK = "UPDATE USERS SET IMAGE_ID = ? WHERE USERID = ?";
-
-	private static final String GET_USER_ID_BY_DEVICE_ID = "SELECT USERID FROM USERS U, USER_DEVICES UD WHERE USER_ID = U.ID and DEVICE_ID = ? ";
 
 	@Resource(name = "clubDaoJdbc")
 	private ClubDao clubDao;
 
 	private final ActivationTokenMapper activationTokenMapper = new ActivationTokenMapper();
 
-	private static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
-			+ AccountStatus.Activated.name() + "'";
-
-	private static String INS_AMENITY_EMPLOYEE = "INSERT INTO AMENITY_EMPLOYEE (ID, CLUB_AMENITY_ID, USER_ID, CREATE_DATE) VALUES (?,?,?,NOW())";
-	private static String UPD_AMENITY_EMPLOYEE = "UPDATE AMENITY_EMPLOYEE SET CLUB_AMENITY_ID=?, CREATE_DATE=NOW() WHERE USER_ID=? ";
-
-	private static String SEL_AMENITY_ID_BY_USERID = "select distinct CLUB_AMENITY_ID from AMENITY_EMPLOYEE where USER_ID = ? ";
-
-	private static String SEL_AMENITY_USER_EXISTS = "select count(*) from AMENITY_EMPLOYEE where CLUB_AMENITY_ID = ? and USER_ID = ? ";
-
 	@Override
 	public void activate(final String userId, final String activationToken)
 			throws NotFoundException {
-		final int updated = getJdbcTemplate().update(UPD_ACCOUNT_ACTIVATION,
-				activationToken, userId);
+		final int updated = getJdbcTemplate().update(
+				AccountDaoSql.UPD_ACCOUNT_ACTIVATION, activationToken, userId);
 		if (updated == 0) {
 			throw new NotFoundException();
 		}
@@ -132,19 +56,22 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	@Override
 	public void addAmenityToUser(final Integer userIdPk,
-			final Integer clubAmenityIdPk) throws NotFoundException {
+			final Integer clubAmenityIdPk) throws InvalidParameterException {
+		if (userIdPk == null || clubAmenityIdPk == null) {
+			throw new InvalidParameterException("Keys cannot be null");
+		}
 		addLinkAmenityUserId(clubAmenityIdPk, userIdPk);
 	}
 
 	private void addLinkAmenityUserId(final Integer amenityIdPk,
 			final Integer userIdPk) {
 
-		final int updated = getJdbcTemplate().update(UPD_AMENITY_EMPLOYEE,
-				amenityIdPk, userIdPk);
+		final int updated = getJdbcTemplate().update(
+				AccountDaoSql.UPD_AMENITY_EMPLOYEE, amenityIdPk, userIdPk);
 		if (updated == 0) {
 			final int idAmenityEmployee = sequencer.nextVal("ID_SEQ");
-			getJdbcTemplate().update(INS_AMENITY_EMPLOYEE, idAmenityEmployee,
-					amenityIdPk, userIdPk);
+			getJdbcTemplate().update(AccountDaoSql.INS_AMENITY_EMPLOYEE,
+					idAmenityEmployee, amenityIdPk, userIdPk);
 		}
 	}
 
@@ -155,30 +82,33 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	}
 
 	@Override
-	public AccountDto fetch(final Integer userIdPk) throws NotFoundException {
-		return fetch(SEL_USER_BY_PK, userIdPk);
+	public AccountDto fetch(final Integer userIdPk) throws NotFoundException, InvalidParameterException {
+		return fetch(AccountDaoSql.SEL_USER_BY_PK, userIdPk);
 	}
 
 	@Override
-	public AccountDto fetch(final String userId) throws NotFoundException {
-		return fetch(SEL_USER, userId);
+	public AccountDto fetch(final String userId) throws NotFoundException, InvalidParameterException {
+		return fetch(AccountDaoSql.SEL_USER, userId);
 	}
 
 	private AccountDto fetch(final String sql, final Object paramUserId)
-			throws NotFoundException {
+			throws NotFoundException, InvalidParameterException {
 		AccountDto account = null;
 
 		if (paramUserId != null) {
 			try {
 				account = getJdbcTemplate().queryForObject(sql,
 						accountDtoMapper, paramUserId);
+				if (account == null) {
+					throw new NotFoundException(paramUserId + " not found!");
+				}
 				populateAccountInfo(account, true);
 				final List<Privilege> roles = fetchRoles(account.getId());
 				account.setPriviledges(new HashSet<Privilege>(roles));
 				try {
 					final Map<String, Object> result = getJdbcTemplate()
 							.queryForMap(
-									SEL_DEVICE_TANGERINE_HANDSET_ID_BY_USER_ID,
+									AccountDaoSql.SEL_DEVICE_TANGERINE_HANDSET_ID_BY_USER_ID,
 									account.getId());
 					if (MapUtils.isNotEmpty(result)) {
 						account.setDeviceId((String) result.get("DEVICE_ID"));
@@ -191,7 +121,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				if (account instanceof EmployeeAccountDto) {
 					try {
 						final Integer amenityIdPk = getJdbcTemplate()
-								.queryForObject(SEL_AMENITY_ID_BY_USERID,
+								.queryForObject(
+										AccountDaoSql.SEL_AMENITY_ID_BY_USERID,
 										Integer.class, account.getId());
 						final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
 						employeeAccount.setAmenity(clubDao
@@ -209,23 +140,26 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			} catch (final EmptyResultDataAccessException e) {
 				throw new NotFoundException();
 			}
+		} else {
+			throw new InvalidParameterException("Param cannot be null");
 		}
 		return account;
 	}
 
 	@Override
 	public AccountDto fetchByToken(final String token, final String userId,
-			final String deviceId) throws NotFoundException {
+			final String deviceId) throws NotFoundException, InvalidParameterException {
 		Integer userIdPk = null;
 		try {
 			if (StringUtils.isNotEmpty(userId)) {
 				// Mobile
 				userIdPk = getJdbcTemplate().queryForObject(
-						SEL_USERIDPK_BY_USER_ID_DEVICE_ID_TOKEN, Integer.class,
-						userId, deviceId, token);
+						AccountDaoSql.SEL_USERIDPK_BY_USER_ID_DEVICE_ID_TOKEN,
+						Integer.class, userId, deviceId, token);
 			} else {
 				userIdPk = getJdbcTemplate().queryForObject(
-						SEL_USERIDPK_BY_TOKEN, Integer.class, token);
+						AccountDaoSql.SEL_USERIDPK_BY_TOKEN, Integer.class,
+						token);
 			}
 		} catch (final EmptyResultDataAccessException e) {
 			throw new NotFoundException();
@@ -236,8 +170,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public List<Privilege> fetchRoles(final Integer userIdPk)
 			throws NotFoundException {
-		return getJdbcTemplate().query(SEL_ROLES_BY_USER_ID, rolesMapper,
-				userIdPk);
+		return getJdbcTemplate().query(AccountDaoSql.SEL_ROLES_BY_USER_ID,
+				rolesMapper, userIdPk);
 	}
 
 	@Override
@@ -250,7 +184,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	public String getUserIdByDeviceId(final String deviceId)
 			throws NotFoundException {
 		final String userId = getJdbcTemplate().queryForObject(
-				GET_USER_ID_BY_DEVICE_ID, String.class, deviceId);
+				AccountDaoSql.GET_USER_ID_BY_DEVICE_ID, String.class, deviceId);
 		return userId;
 	}
 
@@ -259,7 +193,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			throws NotFoundException {
 		try {
 			final Integer userIdPk = getJdbcTemplate().queryForObject(
-					GET_USER_ID_PK, Integer.class, userId);
+					AccountDaoSql.GET_USER_ID_PK, Integer.class, userId);
 			return userIdPk;
 		} catch (final EmptyResultDataAccessException e) {
 			throw new NotFoundException("Account " + userId + " not found!");
@@ -270,7 +204,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	public void markStatusAsNotified(final String userId)
 			throws NotFoundException {
 		final int updated = getJdbcTemplate().update(
-				UPD_ACCOUNT_STATUS_NOTIFIED, userId);
+				AccountDaoSql.UPD_ACCOUNT_STATUS_NOTIFIED, userId);
 		if (updated == 0) {
 			throw new NotFoundException();
 		}
@@ -303,8 +237,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			clubIdPk = clubDao.getClubIdPk(account.getHomeClub().getClubId());
 		}
 
-		getJdbcTemplate().update(INS_ACCOUNT,
-		// ID
+		getJdbcTemplate().update(AccountDaoSql.INS_ACCOUNT,
+				// ID
 				account.getId(),
 				// USERID
 				account.getUserId(),
@@ -336,8 +270,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 						account.getId());
 			}
 		}
-		getJdbcTemplate().update(INS_TOKEN,
-		// ID
+		getJdbcTemplate().update(AccountDaoSql.INS_TOKEN,
+				// ID
 				idToken,
 				// "USER_ID,
 				account.getId(),
@@ -352,8 +286,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		if (CollectionUtils.isNotEmpty(account.getPriviledges())) {
 			for (final Privilege role : account.getPriviledges()) {
 				final int idRole = sequencer.nextVal("ID_SEQ");
-				getJdbcTemplate().update(INS_ROLES,
-				// ID
+				getJdbcTemplate().update(AccountDaoSql.INS_ROLES,
+						// ID
 						idRole,
 						// "USER_ID,
 						account.getId(),
@@ -365,8 +299,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		if (mobile) {
 			final MemberAccountDto accountMobile = (MemberAccountDto) account;
 			final int idDevice = sequencer.nextVal("ID_SEQ");
-			getJdbcTemplate().update(INS_DEVICES,
-			// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
+			getJdbcTemplate().update(AccountDaoSql.INS_DEVICES,
+					// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
 					idDevice,
 					// USER_ID,
 					account.getId(),
@@ -385,7 +319,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		if (includePicture) {
 			try {
 				final Integer imageIdPk = getJdbcTemplate().queryForObject(
-						GET_IMAGE_ID, Integer.class, account.getId());
+						AccountDaoSql.GET_IMAGE_ID, Integer.class,
+						account.getId());
 				final ImagePic image = getImage(imageIdPk);
 				account.setPicture(image);
 			} catch (final EmptyResultDataAccessException e1) {
@@ -394,7 +329,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		// Fetch homeClubID
 		try {
 			final Integer homeClubIdPk = getJdbcTemplate().queryForObject(
-					GET_HOME_CLUB_ID, Integer.class, account.getId());
+					AccountDaoSql.GET_HOME_CLUB_ID, Integer.class,
+					account.getId());
 
 			final ClubDto homeClub = clubDao.get(homeClubIdPk, includePicture);
 			account.setHomeClub(homeClub);
@@ -407,8 +343,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			// Get the account token
 			try {
 				final ActivationToken token = getJdbcTemplate().queryForObject(
-						SEL_TOKEN_BY_USERIDPK, activationTokenMapper,
-						account.getId());
+						AccountDaoSql.SEL_TOKEN_BY_USERIDPK,
+						activationTokenMapper, account.getId());
 				account.setToken(token);
 			} catch (final EmptyResultDataAccessException e) {
 				// NP.
@@ -425,8 +361,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public void updateAccountInfoEmail(final String userId, final String email)
 			throws NotFoundException {
-		final int updated = getJdbcTemplate().update(UPD_USER_EMAIL, email,
-				userId);
+		final int updated = getJdbcTemplate().update(
+				AccountDaoSql.UPD_USER_EMAIL, email, userId);
 		if (updated == 0) {
 			throw new NotFoundException();
 		}
@@ -435,8 +371,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public void updateAccountInfoName(final String userId, final String fullName)
 			throws NotFoundException {
-		final int updated = getJdbcTemplate().update(UPD_USER_FULLNAME,
-				fullName, userId);
+		final int updated = getJdbcTemplate().update(
+				AccountDaoSql.UPD_USER_FULLNAME, fullName, userId);
 		if (updated == 0) {
 			throw new NotFoundException();
 		}
@@ -448,11 +384,11 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		final byte[] picture = Base64.decodeBase64(pictureBase64);
 		try {
 			final Integer imageIdPk = getJdbcTemplate().queryForObject(
-					GET_IMAGE_ID_BYUSERID, Integer.class, userId);
+					AccountDaoSql.GET_IMAGE_ID_BYUSERID, Integer.class, userId);
 			final Integer updateImageIdPk = updateImage(imageIdPk, picture);
 			if (updateImageIdPk != imageIdPk) {
 				// Update user image_id link
-				getJdbcTemplate().update(UPD_USER_IMAGE_ID_LINK,
+				getJdbcTemplate().update(AccountDaoSql.UPD_USER_IMAGE_ID_LINK,
 						updateImageIdPk, userId);
 			}
 		} catch (final EmptyResultDataAccessException e) {
@@ -460,16 +396,17 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			final ImagePic pic = new ImagePic(pictureBase64);
 			final Integer idImagePk = persistImage(pic);
 			System.out
-					.println("updateAccountInfoPicture: Not found!, so insert one in. idImagePk="
-							+ idImagePk);
-			getJdbcTemplate().update(UPD_USER_IMAGE_ID_LINK, idImagePk, userId);
+			.println("updateAccountInfoPicture: Not found!, so insert one in. idImagePk="
+					+ idImagePk);
+			getJdbcTemplate().update(AccountDaoSql.UPD_USER_IMAGE_ID_LINK,
+					idImagePk, userId);
 		}
 	}
 
 	@Override
 	public void updateNewToken(final ActivationToken token)
 			throws NotFoundException {
-		getJdbcTemplate().update(UPD_TOKEN, token.getToken(),
+		getJdbcTemplate().update(AccountDaoSql.UPD_TOKEN, token.getToken(),
 				token.getExpirationDate(), token.getId());
 	}
 
@@ -477,12 +414,12 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	public void updateUserDeviceId(final String userId, final String deviceId)
 			throws NotFoundException {
 		final int userIdPk = getUserIdPkByUserId(userId);
-		final int updated = getJdbcTemplate().update(UPD_USER_DEVICEID,
-				deviceId, userId);
+		final int updated = getJdbcTemplate().update(
+				AccountDaoSql.UPD_USER_DEVICEID, deviceId, userId);
 		if (updated == 0) {
 			final int idDevice = sequencer.nextVal("ID_SEQ");
-			getJdbcTemplate().update(INS_DEVICES,
-			// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
+			getJdbcTemplate().update(AccountDaoSql.INS_DEVICES,
+					// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
 					idDevice,
 					// USER_ID,
 					userIdPk,
@@ -496,15 +433,15 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Override
 	public void updateUserTangerineHandSetId(final String userId,
 			final String deviceId, final String tangerineHandSetId)
-			throws NotFoundException {
+					throws NotFoundException {
 		final int userIdPk = getUserIdPkByUserId(userId);
 		final int updated = getJdbcTemplate().update(
-				UPD_USER_TANGERINE_HANDSET_ID, tangerineHandSetId, deviceId,
-				userId);
+				AccountDaoSql.UPD_USER_TANGERINE_HANDSET_ID,
+				tangerineHandSetId, deviceId, userId);
 		if (updated == 0) {
 			final int idDevice = sequencer.nextVal("ID_SEQ");
-			getJdbcTemplate().update(INS_DEVICES,
-			// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
+			getJdbcTemplate().update(AccountDaoSql.INS_DEVICES,
+					// IDcom.avatar.dao.impl.jdbc.AccountDaoJdbc.updateUserTangerineHandSetId
 					idDevice,
 					// USER_ID,
 					userIdPk,
@@ -521,9 +458,11 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			InvalidPasswordException {
 		final Integer userIdPk = getUserIdPkByUserId(userId);
 		final int validate = getJdbcTemplate().queryForObject(
-				VALIDATE_USERID_PASSWD, Integer.class, userIdPk, password);
+				AccountDaoSql.VALIDATE_USERID_PASSWD, Integer.class, userIdPk,
+				password);
 		if (validate == 0) {
-			throw new InvalidPasswordException("Incorrect Password or Account Status Not Activated");
+			throw new InvalidPasswordException(
+					"Incorrect Password or Account Status Not Activated");
 		}
 		return true;
 	}

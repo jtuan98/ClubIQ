@@ -21,6 +21,7 @@ import com.avatar.dao.impl.jdbc.mapper.BeaconDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.StringMapper;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 
@@ -38,7 +39,6 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static String GET_CLUB_ID = "SELECT ID FROM CLUBS WHERE CLUBID=?";
 	private static String GET_AMENITY_DEPT_NAMES = "SELECT CA.AMENITYID FROM CLUB_AMENITIES CA WHERE CLUB_ID=? ORDER BY 1";
-
 
 	private static String GET_AMENITY_ID_BY_NAME_CLUBID = "SELECT ID FROM CLUB_AMENITIES WHERE NAME=? AND CLUB_ID=? ";
 
@@ -104,7 +104,8 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
-	public void delete(final BeaconDto beacon) throws NotFoundException, PermissionDeniedException {
+	public void delete(final BeaconDto beacon) throws NotFoundException,
+	PermissionDeniedException {
 		Assert.notNull(beacon, "Checking beacon");
 		Assert.notNull(beacon.getId(), "Checking beacon id");
 		try {
@@ -115,8 +116,10 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
-	public void deleteBeaconInfoByUserId(final Integer userIdPk, final Date fromDate, final Date toDate) {
-		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk, fromDate, toDate);
+	public void deleteBeaconInfoByUserId(final Integer userIdPk,
+			final Date fromDate, final Date toDate) {
+		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk, fromDate,
+				toDate);
 
 	}
 
@@ -165,7 +168,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			try {
 				beacon.setInstallerStaff(accountDao.fetch(beacon
 						.getInstallerStaff().getId()));
-			} catch (final NotFoundException e) {
+			} catch (final NotFoundException | InvalidParameterException e) {
 			}
 		}
 		return beacon;
@@ -204,7 +207,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 					try {
 						beacon.setInstallerStaff(accountDao.fetch(beacon
 								.getInstallerStaff().getId()));
-					} catch (final NotFoundException e) {
+					} catch (final NotFoundException | InvalidParameterException e) {
 					}
 				}
 			}
@@ -326,6 +329,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	public void setDataSource(final DataSource ds) {
 		initTemplate(ds);
 	}
+
 	@Override
 	public void updateBeaconInfo(final BeaconDto beacon)
 			throws NotFoundException {
