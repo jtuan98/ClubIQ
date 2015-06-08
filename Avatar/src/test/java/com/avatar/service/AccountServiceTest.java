@@ -5,7 +5,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,9 +17,9 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.avatar.dao.DbDateDao;
 import com.avatar.dto.AccountDtoBuilder;
 import com.avatar.dto.ClubDtoBuilder;
 import com.avatar.dto.account.AccountDto;
@@ -35,12 +34,9 @@ import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 
 public class AccountServiceTest extends BaseServiceTest {
-	// Case 2: employee account already exists...
 	static int KEY_VALID_FOR_IN_MINUTES = 1;
 
 	private AccountService service;
-
-	private AccountDtoBuilder builder;
 
 	private AccountDto createAccount(final boolean employeeAccount,
 			final AccountStatus status, final String deviceId,
@@ -62,14 +58,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		token.setExpirationDate(new Date(System.currentTimeMillis()
 				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000 * (expiredToken ? -1
 						: 1))));
-		AmenityDto amenity = null;
-		if (amenityId != null) {
-			amenity = new AmenityDto(1);
-			amenity.setAmenityId(amenityId);
-			amenity.setAmenityType("type");
-			amenity.setDescription("Test");
-			amenity.setHoursOfOperation("1");
-		}
+		final AmenityDto amenity = getAmenityInstance(1, amenityId);
 		final AccountDtoBuilder builder = new AccountDtoBuilder(employeeAccount);
 		builder.withId(1).withStatus(status).withToken(token)
 		.withDeviceId(deviceId).withHomeClub(club)
@@ -84,9 +73,8 @@ public class AccountServiceTest extends BaseServiceTest {
 		service = new AccountService();
 		ReflectionTestUtils.setField(service, "clubDao", clubDao);
 		ReflectionTestUtils.setField(service, "accountDao", accountDao);
-		final DbDateDao dbDateDao = mock(DbDateDao.class);
 		ReflectionTestUtils.setField(service, "dbDateDao", dbDateDao);
-		given(dbDateDao.getNow()).willReturn(new Date());
+		super.setup();
 	}
 
 	private void setupActivateAccountTest(final String activationToken,
@@ -153,7 +141,8 @@ public class AccountServiceTest extends BaseServiceTest {
 			} else if (employeeAccountInfo.getAmenity() != null) {
 				final String amenityId = employeeAccountInfo.getAmenity()
 						.getAmenityId();
-				final Integer amenityPkId = employeeAccountInfo.getAmenity().getId();
+				final Integer amenityPkId = employeeAccountInfo.getAmenity()
+						.getId();
 				given(clubDao.getClubAmenityIdPk(amenityId)).willReturn(
 						amenityPkId);
 				final AmenityDto amenity = employeeAccountInfo.getAmenity();
@@ -693,6 +682,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		verify(clubDao, times(1)).getAmenity(
 				eq(((EmployeeAccountDto) account).getAmenity().getId()));
 	}
+
 	// Case 3c: employee account with no amenity
 	@Test
 	public void test021CreateAccount_03_employeeAccountInfoNotExisted_noAmenity()
@@ -711,44 +701,259 @@ public class AccountServiceTest extends BaseServiceTest {
 	}
 
 	// Case 4: member account already exists...
-	// Case 4a: member account exists with Activated status
-	// Case 4b: member account exists with Terminated status
-	// Case 4c: member account exists with Cancelled status
-	// Case 4d: member account exists with New status
-	// Case 4e: member account exists with TokenSent status
-	// Case 5: member account does not exists...
+	@Test(expected = InvalidParameterException.class)
+	public void test022CreateAccount_01_employeeAccountInfoExisted_NullStatus()
+			throws NotFoundException, InvalidParameterException,
+			AccountCreationException {
+		final boolean employeeAccount = true;
 
+		final boolean expiredToken = false;
+		final boolean accountExists = true;
+		final AccountDto account = createAccount(employeeAccount, null,
+				"device", Privilege.user, expiredToken, "userid", null);
+
+		setupCreateAccountTest(account, accountExists, false);
+		final ActivationToken returnedToken = service.createAccount(account);
+	}
+
+	// Case 4a: member account exists with Activated status
+	@Test(expected = AccountCreationException.class)
+	public void test022CreateAccount_02_employeeAccountInfoExisted_Activated()
+			throws NotFoundException, InvalidParameterException,
+			AccountCreationException {
+		final boolean employeeAccount = true;
+		final AccountStatus status = AccountStatus.Activated;
+		final boolean expiredToken = false;
+		final boolean accountExists = true;
+		final AccountDto account = createAccount(employeeAccount, status,
+				"device", Privilege.user, expiredToken, "userid", null);
+
+		setupCreateAccountTest(account, accountExists, false);
+		final ActivationToken returnedToken = service.createAccount(account);
+	}
+
+	// Case 4b: member account exists with Terminated status
+	@Test(expected = AccountCreationException.class)
+	public void test022CreateAccount_03_employeeAccountInfoExisted_Terminated()
+			throws NotFoundException, InvalidParameterException,
+			AccountCreationException {
+		final boolean employeeAccount = true;
+		final AccountStatus status = AccountStatus.Terminated;
+		final boolean expiredToken = false;
+		final boolean accountExists = true;
+		final AccountDto account = createAccount(employeeAccount, status,
+				"device", Privilege.user, expiredToken, "userid", null);
+
+		setupCreateAccountTest(account, accountExists, false);
+		final ActivationToken returnedToken = service.createAccount(account);
+	}
+
+	// Case 4c: member account exists with Cancelled status
+	@Test(expected = AccountCreationException.class)
+	public void test022CreateAccount_04_employeeAccountInfoExisted_Cancelled()
+			throws NotFoundException, InvalidParameterException,
+			AccountCreationException {
+		final boolean employeeAccount = true;
+		final AccountStatus status = AccountStatus.Cancelled;
+		final boolean expiredToken = false;
+		final boolean accountExists = true;
+		final AccountDto account = createAccount(employeeAccount, status,
+				"device", Privilege.user, expiredToken, "userid", null);
+
+		setupCreateAccountTest(account, accountExists, false);
+		final ActivationToken returnedToken = service.createAccount(account);
+	}
+
+	// Case 4d: member account exists with New status
+	@Test
+	public void test022CreateAccount_05_employeeAccountInfoExisted_New()
+			throws NotFoundException, InvalidParameterException,
+			AccountCreationException {
+		final boolean employeeAccount = true;
+		final AccountStatus status = AccountStatus.New;
+		final boolean expiredToken = false;
+		final boolean accountExists = true;
+		final AccountDto account = createAccount(employeeAccount, status,
+				"device", Privilege.user, expiredToken, "userid", null);
+
+		setupCreateAccountTest(account, accountExists, false);
+		final ActivationToken returnedToken = service.createAccount(account);
+		verify(accountDao, never()).newAccount(eq(account), eq(returnedToken));
+	}
+
+	// Case 4e: member account exists with TokenSent status
+	@Test
+	public void test022CreateAccount_06_employeeAccountInfoExisted_TokenSent()
+			throws NotFoundException, InvalidParameterException,
+			AccountCreationException {
+		final boolean employeeAccount = true;
+		final AccountStatus status = AccountStatus.TokenSent;
+		final boolean expiredToken = false;
+		final boolean accountExists = true;
+		final AccountDto account = createAccount(employeeAccount, status,
+				"device", Privilege.user, expiredToken, "userid", null);
+
+		setupCreateAccountTest(account, accountExists, false);
+		final ActivationToken returnedToken = service.createAccount(account);
+		verify(accountDao, never()).newAccount(eq(account), eq(returnedToken));
+	}
+
+	// Mobile Account
 	// ***** deactivateAccount
 	// case 1: uerId is null
-	// case 2: non existent userId
-	// case 3: valid userId
+	@Test(expected = NotFoundException.class)
+	public void test023DeactivateAccount_01_employeeAccount_throwingNotFound()
+			throws NotFoundException {
+		final String userId = "userid";
+		Mockito.doThrow(NotFoundException.class).when(accountDao)
+		.deactivate(userId);
+		service.deactivateAccount(userId);
+	}
+
+	// case 2: valid userId
+	@Test
+	public void test023DeactivateAccount_02_employeeAccount_good()
+			throws NotFoundException {
+		final String userId = "userid";
+		service.deactivateAccount(userId);
+		verify(accountDao, times(1)).deactivate(eq(userId));
+	}
 
 	// ***** exists
 	// case 1: userId null
+	@Test(expected = InvalidParameterException.class)
+	public void test025Exists_01_null() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = null;
+		final boolean retVal = service.exists(userId);
+	}
+
+	@Test
+	public void test025Exists_02_daoThrowException() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = "123";
+		given(accountDao.getUserIdPkByUserId(userId))
+		.willThrow(Exception.class);
+		final boolean retVal = service.exists(userId);
+		Assert.assertEquals("Checking return value: ", false, retVal);
+	}
+
 	// case 2: non existent userId
+	@Test
+	public void test025Exists_03_NotFoundException() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = "123";
+		given(accountDao.getUserIdPkByUserId(userId)).willThrow(
+				NotFoundException.class);
+		final boolean retVal = service.exists(userId);
+		Assert.assertEquals("Checking return value: ", false, retVal);
+	}
+
 	// case 3: valid userId employee account
-	// case 4: valid userId member account
+	@Test
+	public void test025Exists_04_valid() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = "123";
+		given(accountDao.getUserIdPkByUserId(userId)).willReturn(1);
+		final boolean retVal = service.exists(userId);
+		Assert.assertEquals("Checking return value: ", true, retVal);
+	}
 
 	// ***** get
 	// case 1: userId is null
-	// case 2: userId of a mobile account
-	// case 3: userId of an employee account
+	@Test(expected = InvalidParameterException.class)
+	public void test026Get_01_null() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = null;
+		final AccountDto retVal = service.get(userId);
+	}
+
+	// case 2: userId of a non existent account
+	@Test(expected = NotFoundException.class)
+	public void test026Get_02_NotFound() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = "123";
+		given(accountDao.fetch(userId)).willThrow(NotFoundException.class);
+		final AccountDto retVal = service.get(userId);
+	}
+
+	// case 3: userId of a valid account
+	@Test
+	public void test026Get_03_valid() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = "123";
+		given(accountDao.fetch(userId)).willReturn(new EmployeeAccountDto());
+		final AccountDto retVal = service.get(userId);
+		verify(accountDao, times(1)).fetch(eq(userId));
+	}
 
 	// ***** updateAccountInfo
 	// case 1: userId is null
+	@Test(expected = InvalidParameterException.class)
+	public void test027UpdateAccountInfo_01_null() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = null;
+		final String deviceId = "device";
+		final String fullName = "name";
+		final String email = "email";
+		final String pictureBase64 = "data";
+		service.updateAccountInfo(userId, deviceId, fullName, email,
+				pictureBase64);
+	}
+
 	// case 2: non existent userId
-	// case 3: userId valid employee, update full name
-	// case 4: userId valid employee, update email
-	// case 5: userId valid employee, update base64
-	// case 6: userId valid employee, update deviceId
-	// case 7: userId valid member, update full name
-	// case 8: userId valid member, update email
-	// case 9: userId valid member, update base64
-	// case 10: userId valid member, update deviceId
+	@Test(expected = NotFoundException.class)
+	public void test027UpdateAccountInfo_02_DeviceId_NotFound()
+			throws NotFoundException, InvalidParameterException {
+		final String userId = "123";
+		final String deviceId = "device";
+		final String fullName = "name";
+		final String email = "email";
+		final String pictureBase64 = "data";
+		Mockito.doThrow(NotFoundException.class).when(accountDao)
+		.updateUserDeviceId(userId, deviceId);
+		service.updateAccountInfo(userId, deviceId, fullName, email,
+				pictureBase64);
+	}
+
+	@Test
+	public void test027UpdateAccountInfo_03() throws NotFoundException,
+	InvalidParameterException {
+		final String userId = "123";
+		final String deviceId = "device";
+		final String fullName = "name";
+		final String email = "email";
+		final String pictureBase64 = "data";
+		service.updateAccountInfo(userId, deviceId, fullName, email,
+				pictureBase64);
+		verify(accountDao, times(1)).updateUserDeviceId(userId, deviceId);
+		verify(accountDao, times(1)).updateAccountInfoName(userId, fullName);
+		verify(accountDao, times(1)).updateAccountInfoEmail(userId, email);
+		verify(accountDao, times(1)).updateAccountInfoPicture(userId,
+				pictureBase64);
+	}
 
 	// ***** updateUserTangerineHandSetId
 	// case 1: userId is null
-	// case 2: deviceId is null
-	// case 3: tangerineHandsetId is null
+	@Test(expected = InvalidParameterException.class)
+	public void test028UpdateUserTangerineHandsetId_01_nullUserId()
+			throws NotFoundException, InvalidParameterException {
+		final String userId = null;
+		final String deviceId = "device";
+		final String tangerineHandSetId = "tangerineHandSetId";
+		service.updateUserTangerineHandSetId(userId, deviceId,
+				tangerineHandSetId);
+	}
 
+	// case 2: NotFoundException
+	@Test(expected = NotFoundException.class)
+	public void test028UpdateUserTangerineHandsetId_02_NotFoundException()
+			throws NotFoundException, InvalidParameterException {
+		final String userId = "userId";
+		final String deviceId = "device";
+		final String tangerineHandSetId = "tangerineHandSetId";
+		Mockito.doThrow(NotFoundException.class).when(accountDao).updateUserTangerineHandSetId(userId, deviceId, tangerineHandSetId);
+		service.updateUserTangerineHandSetId(userId, deviceId,
+				tangerineHandSetId);
+	}
 }

@@ -20,7 +20,7 @@ public interface SurveyDao {
 			throws NotFoundException;
 
 	Set<Integer> getSurveyIdPkHistory(Integer clubIdPk, Integer amenityIdPk,
-			Integer memberId, Date since) throws NotFoundException;
+			Integer memberId, Date since) ;
 
 	Set<Integer> getSurveyIdPkNotAnsweredHistory(final Integer clubIdPk,
 			final Integer amenityIdPk, final Integer memberId, final Date since)

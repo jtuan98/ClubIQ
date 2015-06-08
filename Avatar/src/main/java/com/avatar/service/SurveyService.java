@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import com.avatar.dao.SurveyDao;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.survey.Survey;
 import com.avatar.dto.survey.SurveyAnswer;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 
 @Service
@@ -44,13 +46,22 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 
 	@Override
 	public void deleteSurveyAnswers(final String memberId, final Date fromDate,
-			final Date toDate) throws NotFoundException {
+			final Date toDate) throws NotFoundException, InvalidParameterException {
+		if (StringUtils.isEmpty(memberId)) {
+			throw new InvalidParameterException("memberId cannot be null");
+		}
+		if (fromDate == null) {
+			throw new InvalidParameterException("fromDate cannot be null");
+		}
+		if (toDate == null) {
+			throw new InvalidParameterException("toDate cannot be null");
+		}
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
 		surveyDao.delete(memberIdPk, fromDate, toDate);
 	}
 
 	private Date getLastMonday(final int pastWeeks) {
-		final DateTime today = DateTime.now();
+		final DateTime today = new DateTime().toDateMidnight().toDateTime();
 		final DateTime sameDayPastWeek = today.minusWeeks(pastWeeks);
 		final DateTime mondayPastWeek = sameDayPastWeek
 				.withDayOfWeek(DateTimeConstants.MONDAY);
@@ -59,7 +70,10 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 
 	@Override
 	public Survey getNextSurvey(final String beaconId, final String memberId)
-			throws NotFoundException {
+			throws NotFoundException, InvalidParameterException {
+		if (StringUtils.isEmpty(memberId) || StringUtils.isEmpty(beaconId)) {
+			throw new InvalidParameterException("Params cannot be null");
+		}
 		Survey retVal = null;
 		// Get beaconIdPk
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);

@@ -46,7 +46,8 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	private final SurveyAnswerMapper surveyAnswerMapper = new SurveyAnswerMapper();
 
 	@Override
-	public void delete(final Integer memberIdPk, final Date fromDate, final Date toDate) {
+	public void delete(final Integer memberIdPk, final Date fromDate,
+			final Date toDate) {
 		getJdbcTemplate().update(DEL_ANSWERS, memberIdPk, fromDate, toDate);
 	}
 
@@ -100,8 +101,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	// Returns key is survey id pk
 	@Override
 	public Set<Integer> getSurveyIdPkHistory(final Integer clubIdPk,
-			final Integer amenityIdPk, final Integer memberId, final Date since)
-					throws NotFoundException {
+			final Integer amenityIdPk, final Integer memberId, final Date since) {
 		List<Integer> questionIdsPk = null;
 		if (since == null) {
 			questionIdsPk = getJdbcTemplate().queryForList(

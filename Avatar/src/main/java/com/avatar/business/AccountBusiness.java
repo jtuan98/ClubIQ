@@ -22,14 +22,14 @@ public interface AccountBusiness {
 
 	boolean deactivateAccount(String userId) throws NotFoundException;
 
-	boolean exists(String userId);
+	boolean exists(String userId) throws InvalidParameterException;
 
 	AccountDto get(String userId) throws NotFoundException, InvalidParameterException;
 
 	void updateAccountInfo(String userId, String deviceId, String fullName,
-			String email, String pictureBase64) throws NotFoundException;
+			String email, String pictureBase64) throws NotFoundException, InvalidParameterException;
 
 	// SNS token is different than the activation Token.
 	void updateUserTangerineHandSetId(String userId, String deviceId,
-			String tangerineHandSetId) throws NotFoundException;
+			String tangerineHandSetId) throws NotFoundException, InvalidParameterException;
 }

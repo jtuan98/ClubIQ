@@ -111,8 +111,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 					throws InvalidParameterException {
 		boolean retVal = false;
 		if (StringUtils.isEmpty(mobileNumber)) {
-			throw new InvalidParameterException(
-					"mobileNumber cannot be null");
+			throw new InvalidParameterException("mobileNumber cannot be null");
 		}
 		if (StringUtils.isEmpty(activationToken)) {
 			throw new InvalidParameterException(
@@ -142,10 +141,10 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public void addAmenityToUser(final String userId, final String clubAmenityId)
 			throws NotFoundException, InvalidParameterException {
-		if (StringUtils.isEmpty(userId)){
+		if (StringUtils.isEmpty(userId)) {
 			throw new InvalidParameterException("UserId cannot be null");
 		}
-		if (StringUtils.isEmpty(clubAmenityId)){
+		if (StringUtils.isEmpty(clubAmenityId)) {
 			throw new InvalidParameterException("ClubAmenityId cannot be null");
 		}
 
@@ -158,9 +157,14 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public ActivationToken createAccount(final AccountDto accountInfo)
-			throws NotFoundException, AccountCreationException, InvalidParameterException {
+			throws NotFoundException, AccountCreationException,
+			InvalidParameterException {
 		if (accountInfo == null) {
 			throw new InvalidParameterException("AccountInfo cannot be null");
+		}
+		if (accountInfo.getStatus() == null) {
+			throw new InvalidParameterException(
+					"AccountInfo Status cannot be null");
 		}
 		final DbTimeZone timezone = accountInfo.getHomeClub() != null ? accountInfo
 				.getHomeClub().getTimeZone() : null;
@@ -229,12 +233,15 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public boolean exists(final String userId) {
+	public boolean exists(final String userId) throws InvalidParameterException {
+		if (StringUtils.isEmpty(userId)) {
+			throw new InvalidParameterException("UserId cannot be null");
+		}
 		boolean retVal = false;
 		try {
 			accountDao.getUserIdPkByUserId(userId);
 			retVal = true;
-		} catch (final NotFoundException e) {
+		} catch (final Exception e) {
 		}
 		return retVal;
 	}
@@ -264,6 +271,9 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public AccountDto get(final String userId) throws NotFoundException,
 	InvalidParameterException {
+		if (StringUtils.isEmpty(userId)) {
+			throw new InvalidParameterException("UserId cannot be null");
+		}
 		final AccountDto retVal = accountDao.fetch(userId);
 
 		return retVal;
@@ -273,8 +283,11 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public void updateAccountInfo(final String userId, final String deviceId,
 			final String fullName, final String email,
-			final String pictureBase64) throws NotFoundException {
-		Validate.isTrue(StringUtils.isNotEmpty(userId));
+			final String pictureBase64) throws NotFoundException,
+			InvalidParameterException {
+		if (StringUtils.isEmpty(userId)) {
+			throw new InvalidParameterException("UserId cannot be null");
+		}
 		if (StringUtils.isNoneEmpty(deviceId)) {
 			accountDao.updateUserDeviceId(userId, deviceId);
 		}
@@ -293,7 +306,10 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public void updateUserTangerineHandSetId(final String userId,
 			final String deviceId, final String tangerineHandSetId)
-					throws NotFoundException {
+					throws NotFoundException, InvalidParameterException {
+		if (StringUtils.isEmpty(userId)) {
+			throw new InvalidParameterException("UserId cannot be null");
+		}
 		accountDao.updateUserTangerineHandSetId(userId, deviceId,
 				tangerineHandSetId);
 	}
