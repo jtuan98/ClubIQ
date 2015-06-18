@@ -26,6 +26,12 @@
 		<fileset dir="${j2e.lib.dir}">
 			<include name="servlet-api.jar" />
 		</fileset>
+		<fileset dir="${junit.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${mockito.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
 		<fileset dir="${apns.lib.dir}">
 			<include name="JavaPNS*.jar" />
 		</fileset>
@@ -54,6 +60,7 @@
 			<include name="spring-jdbc-*.jar" />
 			<include name="spring-tx-*.jar" />
 			<include name="spring-web*-*.jar" />
+			<include name="spring-test*-*.jar" />
 		</fileset>
 		<fileset dir="${gson.lib.dir}">
 			<include name="gson-*.jar" />

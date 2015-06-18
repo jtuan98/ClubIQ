@@ -152,8 +152,7 @@ public abstract class BaseJdbcDao implements DbDateDao {
 					new SqlLobValue(picture),
 					// ID
 					imageIdPk },
-					new int[] { Types.VARCHAR, Types.BLOB, Types.DATE,
-					Types.INTEGER });
+					new int[] { Types.VARCHAR, Types.BLOB, Types.INTEGER });
 		} else {
 			// insert
 			final int idImage = sequencer.nextVal("ID_SEQ");

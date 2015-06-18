@@ -19,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.survey.Survey;
+import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 
@@ -26,10 +27,6 @@ public class SurveyServiceTest extends BaseServiceTest {
 
 	private SurveyService service;
 
-	// Case 3c: recycling message tests, surveyIdsSinceBeginning returns empty
-	// Case 4: had survey since last Mon...
-	// Case 5: no surveys, getSurveyConfiguration return empty Set
-	// ********** Case 3: surveys, getSurveyConfiguration return non empty Set
 	final Set<Integer> surveyIdsSinceBeginning = new HashSet<Integer>();
 
 	private Date getLastMonday(final int pastWeeks) {
@@ -313,5 +310,148 @@ public class SurveyServiceTest extends BaseServiceTest {
 		Assert.assertNotNull("Survey should be null", survey);
 		Assert.assertEquals("Survey id be the first", new Integer(0),
 				survey.getId());
+	}
+
+	// persistSurveyAnswer
+	@Test(expected = InvalidParameterException.class)
+	public void test005PersistSurveyAnswer_01a_nullParams_all()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = null;
+		final String beaconId = null;
+		final SurveyAnswer answer = null;
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void test005PersistSurveyAnswer_01b_nullParams_beaconId()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = null;
+		final SurveyAnswer answer = new SurveyAnswer();
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void test005PersistSurveyAnswer_01c_nullParams_memberId()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = null;
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void test005PersistSurveyAnswer_01d_nullParams_answer()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = null;
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void test005PersistSurveyAnswer_01d_nullParams_answer_survey_id()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		answer.setSurvey(new Survey());
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void test005PersistSurveyAnswer_01e_nullParams_answer_survey()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void test005PersistSurveyAnswer_02a_NotFound_survey()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		answer.setSurvey(new Survey());
+		answer.getSurvey().setId(1);
+		given(surveyDao.getSurvey(eq(1))).willThrow(NotFoundException.class);
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void test005PersistSurveyAnswer_02b_NotFound_beaconId()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		answer.setSurvey(new Survey());
+		answer.getSurvey().setId(1);
+		given(beaconDao.getBeaconIdPk(beaconId)).willThrow(
+				NotFoundException.class);
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void test005PersistSurveyAnswer_02c_NotFound_amenityId()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		answer.setSurvey(new Survey());
+		answer.getSurvey().setId(1);
+		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
+		given(beaconDao.getAmenityIdPk(1)).willThrow(NotFoundException.class);
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void test005PersistSurveyAnswer_02d_NotFound_clubId()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		answer.setSurvey(new Survey());
+		answer.getSurvey().setId(1);
+		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
+		given(beaconDao.getAmenityIdPk(1)).willReturn(1);
+		given(beaconDao.getClubIdPkByBeaconIdPk(1)).willThrow(
+				NotFoundException.class);
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void test005PersistSurveyAnswer_02e_NotFound_memberId()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		answer.setSurvey(new Survey());
+		answer.getSurvey().setId(1);
+		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
+		given(beaconDao.getAmenityIdPk(1)).willReturn(1);
+		given(beaconDao.getClubIdPkByBeaconIdPk(1)).willReturn(1);
+		given(accountDao.getUserIdPkByUserId(memberId)).willThrow(
+				NotFoundException.class);
+
+		service.persistSurveyAnswer(beaconId, memberId, answer);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void test005PersistSurveyAnswer_02f_NotFound_updateAnswer()
+			throws NotFoundException, InvalidParameterException {
+		final String memberId = "123";
+		final String beaconId = "123";
+		final SurveyAnswer answer = new SurveyAnswer();
+		answer.setSurvey(new Survey());
+		answer.getSurvey().setId(1);
+		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
+		given(beaconDao.getAmenityIdPk(1)).willReturn(1);
+		given(beaconDao.getClubIdPkByBeaconIdPk(1)).willReturn(1);
+		given(accountDao.getUserIdPkByUserId(memberId)).willReturn(1);
+		Mockito.doThrow(NotFoundException.class).when(surveyDao).updateAnswer(answer);
+
+		service.persistSurveyAnswer(beaconId, memberId, answer);
 	}
 }

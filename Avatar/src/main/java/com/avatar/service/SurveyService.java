@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import com.avatar.business.SurveyBusiness;
 import com.avatar.dao.AccountDao;
@@ -136,10 +135,16 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 	@Override
 	public void persistSurveyAnswer(final String beaconId,
 			final String memberId, final SurveyAnswer answer)
-					throws NotFoundException {
-		Assert.notNull(answer);
-		Assert.notNull(answer.getSurvey());
-		Assert.notNull(answer.getSurvey().getId());
+					throws NotFoundException, InvalidParameterException {
+		if (answer == null || answer.getSurvey() == null || answer.getSurvey().getId()==null) {
+			throw new InvalidParameterException("answer cannot be null");
+		}
+		if (StringUtils.isEmpty(beaconId)) {
+			throw new InvalidParameterException("beaconId cannot be null");
+		}
+		if (StringUtils.isEmpty(memberId)) {
+			throw new InvalidParameterException("memberId cannot be null");
+		}
 		// Verify Question Id
 		surveyDao.getSurvey(answer.getSurvey().getId());
 		// Get beaconIdPk

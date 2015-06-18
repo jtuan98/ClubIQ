@@ -162,9 +162,6 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 					beaconIdPk,
 					// SURVEY_ID
 					surveyAnswer.getSurvey().getId());
-		} else {
-			// Update
-			updateAnswer(surveyAnswer);
 		}
 	}
 

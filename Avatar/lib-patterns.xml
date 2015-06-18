@@ -5,6 +5,10 @@
 	<!--property name="tomcat.lib.dir" location="/home/tomcat/lib" /-->
 	<property name="j2e.lib.dir" location="${lib.dir}/j2e" />
 
+	<!-- Mockito and junit-->
+	<property name="junit.lib.dir" location="${lib.dir}/junit/4.12" />
+	<property name="mockito.lib.dir" location="${lib.dir}/mockito/1.9.5" />
+
 	<!-- joda lib versions -->
 	<property name="joda.lib.dir" location="${lib.dir}/joda/2.4" />
 
@@ -92,4 +96,7 @@
 		<include name="joda-time-*.jar" />
 	</patternset>
 
+	<patternset id="all.lib.pattern">
+		<include name="*.jar" />
+	</patternset>
 </project>

@@ -15,5 +15,5 @@ public interface SurveyBusiness {
 			throws NotFoundException, InvalidParameterException;
 
 	void persistSurveyAnswer(String beaconId, String memberId, SurveyAnswer answer)
-			throws NotFoundException;
+			throws NotFoundException, InvalidParameterException;
 }
