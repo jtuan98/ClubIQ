@@ -53,7 +53,7 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 
 	@Override
 	public AccountDto getAccount(final String token) throws NotFoundException,
-	AuthenticationTokenExpiredException {
+			AuthenticationTokenExpiredException {
 		AccountDto retVal = null;
 		try {
 			retVal = accountCache.get(token);
@@ -82,7 +82,8 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 	@Override
 	public AuthenticationTokenPrincipal getToken(final String userId,
 			final String password) throws InvalidPasswordException,
-			NotFoundException, InvalidParameterException {
+			NotFoundException, InvalidParameterException 
+	{
 		AuthenticationTokenPrincipal retVal = null;
 		final boolean validated = accountDao.validateUserIdPasswd(userId,
 				password);
