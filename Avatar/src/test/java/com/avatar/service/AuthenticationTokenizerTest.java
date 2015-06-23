@@ -183,9 +183,9 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 		given(service.getToken(userId, password)).willReturn(token);
 
 		// call
-		final AuthenticationTokenPrincipal returnedRole = service.getToken(userId, password);
+		final AuthenticationTokenPrincipal returnedToken = service.getToken(userId, password);
 
 		// verify
-		Assert.assertEquals("Checking token", token.getClass(), returnedRole);
+		Assert.assertEquals("Checking token", token, returnedToken);
 	}
 }
