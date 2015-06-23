@@ -176,9 +176,9 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 		final String userId = "user";
 		final String password = "password";
 		final LoadingCache<String, AuthenticationTokenPrincipal> tokenCacheMock = mock(LoadingCache.class);
-		ReflectionTestUtils.setField(service, "accountCache", tokenCacheMock);
-		final AuthenticationTokenPrincipal token = new AuthenticationTokenPrincipal(true).withId(1)
-				.getBuiltInstance();
+		ReflectionTestUtils.setField(service, "tokencache", tokenCacheMock);
+
+		final AuthenticationTokenPrincipal token = new AuthenticationTokenPrincipal(new HashSet<Privilege>());
 
 		given(service.getToken(userId, password)).willReturn(token);
 
