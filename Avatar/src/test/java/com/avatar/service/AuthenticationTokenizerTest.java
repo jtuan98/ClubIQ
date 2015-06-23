@@ -3,6 +3,7 @@ package com.avatar.service;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -36,17 +37,17 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 	// token is null
 	@Test(expected = InvalidParameterException.class)
 	public void test001GetAccount_NullParam() throws NotFoundException,
-			AuthenticationTokenExpiredException {
-		String token = null;
+	AuthenticationTokenExpiredException {
+		final String token = null;
 		service.getAccount(token);
 	}
 
 	// token is invalid
 	@Test(expected = AuthenticationTokenExpiredException.class)
 	public void test002GetAccount_001InvalidToken() throws NotFoundException,
-			AuthenticationTokenExpiredException, ExecutionException {
-		String token = "123";
-		LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
+	AuthenticationTokenExpiredException, ExecutionException {
+		final String token = "123";
+		final LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
 		ReflectionTestUtils.setField(service, "accountCache", accountCacheMock);
 		given(accountCacheMock.get(token)).willThrow(
 				InvalidCacheLoadException.class);
@@ -55,9 +56,9 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 
 	@Test(expected = AuthenticationTokenExpiredException.class)
 	public void test002GetAccount_002InvalidToken() throws NotFoundException,
-			AuthenticationTokenExpiredException, ExecutionException {
-		String token = "123";
-		LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
+	AuthenticationTokenExpiredException, ExecutionException {
+		final String token = "123";
+		final LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
 		ReflectionTestUtils.setField(service, "accountCache", accountCacheMock);
 		given(accountCacheMock.get(token)).willThrow(ExecutionException.class);
 		service.getAccount(token);
@@ -66,17 +67,17 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 	// token is valid
 	@Test
 	public void test003GetAccount_001ValidToken() throws NotFoundException,
-			AuthenticationTokenExpiredException, ExecutionException {
+	AuthenticationTokenExpiredException, ExecutionException {
 		// Set up
-		String token = "123";
-		LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
+		final String token = "123";
+		final LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
 		ReflectionTestUtils.setField(service, "accountCache", accountCacheMock);
-		AccountDto account = new AccountDtoBuilder(true).withId(1)
+		final AccountDto account = new AccountDtoBuilder(true).withId(1)
 				.getBuiltInstance();
 		given(accountCacheMock.get(token)).willReturn(account);
 
 		// Call
-		AccountDto returnedAccount = service.getAccount(token);
+		final AccountDto returnedAccount = service.getAccount(token);
 
 		// Verify
 		Assert.assertEquals("Check account id", account.getId(),
@@ -87,17 +88,17 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 	// token is null
 	@Test(expected = InvalidParameterException.class)
 	public void test004GetRoles_NullParam() throws NotFoundException,
-			AuthenticationTokenExpiredException {
-		String token = null;
+	AuthenticationTokenExpiredException {
+		final String token = null;
 		service.getRoles(token);
 	}
 
 	// token is invalid
 	@Test(expected = AuthenticationTokenExpiredException.class)
 	public void test005GetRoles_001InvalidToken() throws NotFoundException,
-			AuthenticationTokenExpiredException, ExecutionException {
-		String token = "123";
-		LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
+	AuthenticationTokenExpiredException, ExecutionException {
+		final String token = "123";
+		final LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
 		ReflectionTestUtils.setField(service, "accountCache", accountCacheMock);
 		given(accountCacheMock.get(token)).willThrow(
 				InvalidCacheLoadException.class);
@@ -106,9 +107,9 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 
 	@Test(expected = ExecutionException.class)
 	public void test005GetRoles_002InvalidToken() throws NotFoundException,
-			AuthenticationTokenExpiredException, ExecutionException {
-		String token = "123";
-		LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
+	AuthenticationTokenExpiredException, ExecutionException {
+		final String token = "123";
+		final LoadingCache<String, AccountDto> accountCacheMock = mock(LoadingCache.class);
 		ReflectionTestUtils.setField(service, "accountCache", accountCacheMock);
 		given(accountCacheMock.get(token)).willThrow(ExecutionException.class);
 		service.getRoles(token);
@@ -117,73 +118,73 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 	// token is valid
 	@Test
 	public void test006GetRoles_ValidToken() throws NotFoundException,
-			AuthenticationTokenExpiredException, ExecutionException {
+	AuthenticationTokenExpiredException, ExecutionException {
 		// set up
-		String token = "123";
-		LoadingCache<String, Set<Privilege>> tokenCacheMock = mock(LoadingCache.class);
-		ReflectionTestUtils.setField(service, "accountCache", tokenCacheMock);
-		Set<Privilege> roles = new AuthenticationTokenPrinciple(true).withId(1)
-				.getBuiltInstance();
-
-		given(service.getRoles(token)).willReturn(roles);
+		final String token = "123";
+		final LoadingCache<String, AuthenticationTokenPrincipal> tokenCacheMock = mock(LoadingCache.class);
+		ReflectionTestUtils.setField(service, "tokenCache", tokenCacheMock);
+		final Set<Privilege> roles = new HashSet<Privilege>();
+		roles.add(Privilege.avatarStaff);
+		final AuthenticationTokenPrincipal tokenPrincipal = new AuthenticationTokenPrincipal(roles);
+		given(tokenCacheMock.get(token)).willReturn(tokenPrincipal);
 
 		// call
-		Set<Privilege> returnedRole = service.getRoles(token);
+		final Set<Privilege> returnedRole = service.getRoles(token);
 
 		// verify
-		Assert.assertEquals("Checking Roles", roles.getClass(), returnedRole);
+		Assert.assertEquals("Checking Roles", roles, returnedRole);
 	}
 
 	// ----------------GetToken---------------------------
 	// userId and password are null
 	@Test(expected = InvalidParameterException.class)
 	public void test007GetToken_001NullParam() throws NotFoundException,
-			AuthenticationTokenExpiredException, InvalidPasswordException,
-			InvalidParameterException {
-		String userId = null;
-		String password = null;
+	AuthenticationTokenExpiredException, InvalidPasswordException,
+	InvalidParameterException {
+		final String userId = null;
+		final String password = null;
 		service.getToken(userId, password);
 	}
 
 	// userId is null but password is acceptable
 	@Test(expected = InvalidParameterException.class)
 	public void test007GetToken_002NullParam() throws NotFoundException,
-			AuthenticationTokenExpiredException, InvalidPasswordException,
-			InvalidParameterException {
-		String userId = null;
-		String password = "password";
+	AuthenticationTokenExpiredException, InvalidPasswordException,
+	InvalidParameterException {
+		final String userId = null;
+		final String password = "password";
 		service.getToken(userId, password);
 	}
 
 	// userId is acceptable but password is null
 	@Test(expected = InvalidParameterException.class)
 	public void test007GetToken_003NullParam() throws NotFoundException,
-			AuthenticationTokenExpiredException, InvalidPasswordException,
-			InvalidParameterException {
-		String userId = "user";
-		String password = null;
+	AuthenticationTokenExpiredException, InvalidPasswordException,
+	InvalidParameterException {
+		final String userId = "user";
+		final String password = null;
 		service.getToken(userId, password);
 	}
-	
+
 	// userId and password are acceptable
 	@Test
 	public void test008GetToken_Valid() throws NotFoundException,
 	AuthenticationTokenExpiredException, InvalidPasswordException,
 	InvalidParameterException {
-		
+
 		// set up
-		String userId = "user";
-		String password = "password";
-		LoadingCache<String, AuthenticationTokenPrincipal> tokenCacheMock = mock(LoadingCache.class);
+		final String userId = "user";
+		final String password = "password";
+		final LoadingCache<String, AuthenticationTokenPrincipal> tokenCacheMock = mock(LoadingCache.class);
 		ReflectionTestUtils.setField(service, "accountCache", tokenCacheMock);
-		AuthenticationTokenPrincipal token = new AuthenticationTokenPrinciple(true).withId(1)
+		final AuthenticationTokenPrincipal token = new AuthenticationTokenPrincipal(true).withId(1)
 				.getBuiltInstance();
-		
+
 		given(service.getToken(userId, password)).willReturn(token);
-		
+
 		// call
-		AuthenticationTokenPrincipal returnedRole = service.getToken(userId, password);
-		
+		final AuthenticationTokenPrincipal returnedRole = service.getToken(userId, password);
+
 		// verify
 		Assert.assertEquals("Checking token", token.getClass(), returnedRole);
 	}
