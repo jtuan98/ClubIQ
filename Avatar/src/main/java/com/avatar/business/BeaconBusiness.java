@@ -8,7 +8,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
+import com.avatar.dto.club.BlackoutDate;
+import com.avatar.dto.club.BlackoutTime;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.enums.ClubListingSortBy;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
@@ -28,9 +31,19 @@ public interface BeaconBusiness {
 	List<BeaconDto> getBeacons(String clubId, String amenityId)
 			throws NotFoundException;
 
+	List<BlackoutDate> getBlackoutDates(String clubId, String amenityId,
+			String month) throws NotFoundException;
+
+	List<BlackoutTime> getBlackoutTimes(String clubId, String amenityId,
+			String requestedDateMMDD);
+
 	ClubDto getClub(String clubId) throws NotFoundException;
 
+	ClubDto getClubByKeycode(String clubKeycode)throws NotFoundException;
+
 	List<ClubDto> getClubs(Integer userIdPk) throws NotFoundException;
+
+	List<ClubDto> getClubs(String state, ClubListingSortBy clubname);
 
 	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityId, Date onDate)
 			throws NotFoundException;

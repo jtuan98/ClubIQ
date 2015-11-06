@@ -1,7 +1,10 @@
 package com.avatar.business;
 
+import java.util.Date;
+
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
+import com.avatar.dto.club.CheckInfo;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
@@ -16,6 +19,8 @@ public interface AccountBusiness {
 	void addAmenityToUser(String userId, String amenityId)
 			throws NotFoundException, InvalidParameterException;
 
+	void cancelMembership(String userId, Date currentDate)  throws NotFoundException;
+
 	// Returns a activationToken and expiration date.
 	ActivationToken createAccount(AccountDto accountInfo)
 			throws NotFoundException, AccountCreationException, InvalidParameterException;
@@ -26,8 +31,16 @@ public interface AccountBusiness {
 
 	AccountDto get(String userId) throws NotFoundException, InvalidParameterException;
 
+	CheckInfo getCheckInfo(String userId, String availId);
+
+	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException;
+
 	void updateAccountInfo(String userId, String deviceId, String fullName,
 			String email, String pictureBase64) throws NotFoundException, InvalidParameterException;
+
+	//Returns availId
+	String updateCheckInfo(String userId, String requestedClubId,
+			String amenityId, int numOfPerson, String requestedDateTime);
 
 	// SNS token is different than the activation Token.
 	void updateUserTangerineHandSetId(String userId, String deviceId,

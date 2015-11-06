@@ -21,6 +21,9 @@ public class ClubDto implements Serializable {
 	protected String webSite;
 	protected String hzRestriction;
 	protected DbTimeZone timeZone = DbTimeZone.US_PST;
+	protected String xcoord;
+	protected String ycoord;
+
 	protected List<AmenityDto> amenities;
 
 	public ClubDto() {
@@ -82,6 +85,14 @@ public class ClubDto implements Serializable {
 		return webSite;
 	}
 
+	public String getXcoord() {
+		return xcoord;
+	}
+
+	public String getYcoord() {
+		return ycoord;
+	}
+
 	public String getZipCode() {
 		return zipCode;
 	}
@@ -136,6 +147,14 @@ public class ClubDto implements Serializable {
 
 	public void setWebSite(final String webSite) {
 		this.webSite = webSite;
+	}
+
+	public void setXcoord(final String xcoord) {
+		this.xcoord = xcoord;
+	}
+
+	public void setYcoord(final String ycoord) {
+		this.ycoord = ycoord;
 	}
 
 	public void setZipCode(final String zipCode) {

@@ -17,6 +17,7 @@ public class AmenityMapper implements RowMapper<AmenityDto>{
 		retVal.setHoursOfOperation(rs.getString("HOURS_OPERATION_NOTE"));
 		retVal.setAmenityId(rs.getString("AMENITYID"));
 		retVal.setAmenityType(rs.getString("AT.NAME"));
+		retVal.setName(rs.getString("AMENITY_NAME"));
 		//TODO: Get the image
 		return retVal;
 	}

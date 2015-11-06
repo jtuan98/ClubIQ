@@ -21,6 +21,7 @@ import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
 import com.avatar.dto.club.AmenityDto;
+import com.avatar.dto.club.CheckInfo;
 import com.avatar.dto.enums.DbTimeZone;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.AccountExistedException;
@@ -155,6 +156,12 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
+	public void cancelMembership(final String userId, final Date currentDate)
+			throws NotFoundException {
+		// TODO Phase 2
+	}
+
+	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public ActivationToken createAccount(final AccountDto accountInfo)
 			throws NotFoundException, AccountCreationException,
@@ -279,6 +286,27 @@ public class AccountService extends BaseService implements AccountBusiness {
 		return retVal;
 	}
 
+	// Phase2 TODO
+	@Override
+	public CheckInfo getCheckInfo(final String userId, final String availId) {
+		final CheckInfo retVal = new CheckInfo();
+		retVal.setAvailId(availId);
+		retVal.setAmenityId("myBar1");
+		retVal.setAmenityName("My Bar One");
+		retVal.setPersonNumber(5);
+		retVal.setRequestedClubId("Gentlemens club");
+		retVal.setRequestedDateTime("201512251700");
+
+		return retVal;
+	}
+
+	@Override
+	public void setLinkNumber(final String userId, final String linkNumber, final Date currentDate)
+			throws NotFoundException {
+		// TODO Phase 2
+
+	}
+
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public void updateAccountInfo(final String userId, final String deviceId,
@@ -300,6 +328,15 @@ public class AccountService extends BaseService implements AccountBusiness {
 		if (StringUtils.isNoneEmpty(pictureBase64)) {
 			accountDao.updateAccountInfoPicture(userId, pictureBase64);
 		}
+	}
+
+	// Phase 2
+	@Override
+	public String updateCheckInfo(final String userId,
+			final String requestedClubId, final String amenityId,
+			final int numOfPerson, final String requestedDateTime) {
+		// TODO Phase2
+		return UUID.randomUUID().toString();
 	}
 
 	@Override

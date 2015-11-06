@@ -78,16 +78,21 @@ public abstract class BaseController {
 	}
 
 	protected void init() {
-		if (jsonView == null) {
-			jsonView = new JsonView();
-			jsonView.register(WsResponse.class, new WsResponseSerializer());
-			jsonView.register(ImagePic.class, new ImagePicSerializer());
-			jsonView.register(ImmutablePair.class, new PairSerializer());
-			jsonView.register(SurveyAnswer.class, new SurveyAnswerSerializer());
-			jsonView.register(Promotion.class, new PromotionSerializer());
-		}
+		jsonView = init(jsonView);
 	}
 
+	protected JsonView init(final JsonView myView) {
+		JsonView retVal = myView;
+		if (myView == null) {
+			retVal = new JsonView();
+			retVal.register(WsResponse.class, new WsResponseSerializer());
+			retVal.register(ImagePic.class, new ImagePicSerializer());
+			retVal.register(ImmutablePair.class, new PairSerializer());
+			retVal.register(SurveyAnswer.class, new SurveyAnswerSerializer());
+			retVal.register(Promotion.class, new PromotionSerializer());
+		}
+		return retVal;
+	}
 	protected Map<String, Object> toModel(final Object data) {
 		final Map<String, Object> retVal = new HashMap<>();
 		retVal.put(JsonView.DATA, data);

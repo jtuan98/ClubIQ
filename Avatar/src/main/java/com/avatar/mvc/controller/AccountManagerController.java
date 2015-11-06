@@ -1,6 +1,9 @@
 package com.avatar.mvc.controller;
 
 import java.security.Principal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -12,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.club.CheckInfo;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.exception.AuthenticationTokenExpiredException;
@@ -23,6 +27,10 @@ import com.avatar.exception.PermissionDeniedException;
 public class AccountManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.clubAdmin,
 		Privilege.staff, Privilege.superUser };
+
+	private static final String YYYYMMDDHH24MISS = "yyyyMMddHHmmss";
+
+	private final DateFormat df = new SimpleDateFormat(YYYYMMDDHH24MISS);
 
 	@RequestMapping(value = { "/AddClubAmenityToAccount" })
 	public ModelAndView addClubAmenityToAccount(
@@ -55,6 +63,37 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = { "/Mobile/cancelMembership", "/Mobile/CancelMembership" })
+	public ModelAndView cancelMembership(
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "currentDate") final String currentDateyyyymmddhh24miss)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<CheckInfo> apiResponse = null;
+		final AccountDto account = authenticationService.getAccount(authToken);
+		final String userId = account.getUserId();
+		try {
+			final Date currentDate = df.parse(currentDateyyyymmddhh24miss);
+			accountService.cancelMembership(userId, currentDate);
+			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	@RequestMapping(value = { "/GetAcctInfo", "/GetAccountInfo" })
 	public ModelAndView getAcctInfo(
 			final Principal principal,
@@ -69,6 +108,37 @@ public class AccountManagerController extends BaseController {
 					"", account);
 		} catch (final Exception e) {
 			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = { "/Mobile/getAvailInfo", "/Mobile/GetAvailInfo" })
+	public ModelAndView getCheckInfoByAvailId(
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "availId") final String availId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<CheckInfo> apiResponse = null;
+		final AccountDto account = authenticationService.getAccount(authToken);
+		final String userId = account.getUserId();
+		try {
+			final CheckInfo checkInfo = accountService.getCheckInfo(userId,
+					availId);
+			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",
+					checkInfo);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
@@ -89,6 +159,73 @@ public class AccountManagerController extends BaseController {
 					"", account);
 		} catch (final Exception e) {
 			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = { "/Mobile/setCheckInfo", "/Mobile/SetCheckInfo" })
+	public ModelAndView setCheckInfo(
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "requestedClubId") final String requestedClubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "numOfPerson", defaultValue = "1") final int numOfPerson,
+			@RequestParam(required = true, value = "requestedDateTime") final String requestedDateTimeyyyymmddhh24mi)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<String> apiResponse = null;
+		final AccountDto account = authenticationService.getAccount(authToken);
+		final String userId = account.getUserId();
+		try {
+			final String availId = accountService.updateCheckInfo(userId,
+					requestedClubId, amenityId, numOfPerson,
+					requestedDateTimeyyyymmddhh24mi);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					availId, "availId");
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = { "/Mobile/setLinkPhone", "/Mobile/SetLinkPhone" })
+	public ModelAndView setLinkPhone(
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "linkNumber") final String linkNumber,
+			@RequestParam(required = true, value = "currentDate") final String currentDateyyyymmddhh24miss)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<CheckInfo> apiResponse = null;
+		final AccountDto account = authenticationService.getAccount(authToken);
+		final String userId = account.getUserId();
+		try {
+			final Date currentDate = df.parse(currentDateyyyymmddhh24miss);
+			accountService.setLinkNumber(userId, linkNumber, currentDate);
+			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
@@ -184,5 +321,4 @@ public class AccountManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
-
 }

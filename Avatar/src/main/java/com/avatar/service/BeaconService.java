@@ -1,7 +1,10 @@
 package com.avatar.service;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.annotation.Resource;
 
@@ -19,7 +22,10 @@ import com.avatar.dao.ClubDao;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
+import com.avatar.dto.club.BlackoutDate;
+import com.avatar.dto.club.BlackoutTime;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.enums.ClubListingSortBy;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.NotificationException;
@@ -56,14 +62,21 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 				.getAmenityEmployees(clubAmenityIdPk);
 		// Send alert to staff
 		if (CollectionUtils.isNotEmpty(amenityEmployeeIdsPk)) {
-			System.out.println("DEBUG: amenityEmployeeIdsPk=>" + amenityEmployeeIdsPk.size());
+			System.out.println("DEBUG: amenityEmployeeIdsPk=>"
+					+ amenityEmployeeIdsPk.size());
 			for (final Integer employeeIdPk : amenityEmployeeIdsPk) {
 				final AccountDto empoyee = accountDao.fetch(employeeIdPk);
 				try {
-					System.out.println("DEBUG: Sending APNS to empoyee=>" + empoyee.getDeviceId() + " [id="+ empoyee.getId()+"]");
+					System.out.println("DEBUG: Sending APNS to empoyee=>"
+							+ empoyee.getDeviceId() + " [id=" + empoyee.getId()
+							+ "]");
 					apnsNotificationService.sendAlert(empoyee, member);
 				} catch (final NotificationException e) {
-					System.out.println("DEBUG: ERROR in Sending APNS to empoyee=>" + empoyee.getDeviceId() + " [id="+ empoyee.getId()+"]");
+					System.out
+					.println("DEBUG: ERROR in Sending APNS to empoyee=>"
+							+ empoyee.getDeviceId()
+							+ " [id="
+							+ empoyee.getId() + "]");
 					e.printStackTrace();
 				}
 			}
@@ -72,8 +85,28 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		}
 	}
 
+	private ClubDto createMockClubData(final String state,
+			final ClubListingSortBy orderByClause, final int i) {
+		final ClubDto val = new ClubDto();
+		val.setAddress(Math.round(Math.random()) + " St.");
+		val.setCity(i + " city");
+		val.setClubId(i + "");
+		val.setClubName(orderByClause.equals(ClubListingSortBy.clubName) ? i
+				+ " Club"
+				: "club " + Math.round(Math.random()));
+		val.setClubType("nightclub");
+		val.setId(i);
+		val.setState(StringUtils.isEmpty(state) ? (orderByClause
+				.equals(ClubListingSortBy.state) ? i + " state" : Math
+						.round(Math.random()) + " state") : state);
+		val.setXcoord(i + "2345");
+		val.setYcoord(i + "5672345");
+		return val;
+	}
+
 	@Override
-	public void deleteBeacon(final BeaconDto beacon) throws NotFoundException, PermissionDeniedException {
+	public void deleteBeacon(final BeaconDto beacon) throws NotFoundException,
+	PermissionDeniedException {
 		Assert.notNull(beacon, "Checking beacon");
 		beaconDao.delete(beacon);
 	}
@@ -92,17 +125,55 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
-	public BeaconDto getBeacon(final String beaconActionId) throws NotFoundException {
+	public BeaconDto getBeacon(final String beaconActionId)
+			throws NotFoundException {
 		final Integer beaconPkId = beaconDao.getBeaconIdPk(beaconActionId);
 		return beaconDao.getBeacon(beaconPkId);
 	}
 
 	@Override
-	public List<BeaconDto> getBeacons(final String clubId, final String amenityId)
-			throws NotFoundException {
+	public List<BeaconDto> getBeacons(final String clubId,
+			final String amenityId) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
 		return beaconDao.getBeacons(clubIdPk, amenityIdPk);
+	}
+
+	@Override
+	public List<BlackoutDate> getBlackoutDates(final String clubId,
+			final String amenityId, final String month)
+					throws NotFoundException {
+		// TODO Mocking only. PHASE 2
+		final List<BlackoutDate> retVal = new LinkedList<BlackoutDate>();
+		final Set<Integer> dates = new TreeSet<Integer>();
+		for (int i = 0; i < 15; i++) {
+			dates.add((int) (Math.round(Math.random()*100) % 30) + 1);
+		}
+		for (final Integer date : dates) {
+			final BlackoutDate d = new BlackoutDate();
+			d.setDate(date.toString());
+			retVal.add(d);
+		}
+		return retVal;
+	}
+
+	@Override
+	public List<BlackoutTime> getBlackoutTimes(final String clubId, final String amenityId,
+			final String requestedDateMMDD) {
+		// TODO Mocking only. PHASE 2
+		final List<BlackoutTime> retVal = new LinkedList<BlackoutTime>();
+		final Set<Integer> times = new TreeSet<Integer>();
+		for (int i = 0; i < 5; i++) {
+			final int hr = (int) (Math.round(Math.random()*100) % 24) ;
+			final int mi = (int) (Math.round(Math.random()*100) % 2) * 30 ;
+			times.add(hr*100 + mi);
+		}
+		for (final Integer time : times) {
+			final BlackoutTime t = new BlackoutTime();
+			t.setTime(String.format("%04d", time));
+			retVal.add(t);
+		}
+		return retVal;
 	}
 
 	@Override
@@ -111,11 +182,21 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
-	public List<ClubDto> getClubs(final Integer userIdPk) throws NotFoundException {
+	public ClubDto getClubByKeycode(final String clubKeycode)
+			throws NotFoundException {
+		// TODO Phase 2
+		final ClubDto retVal = createMockClubData("CA", ClubListingSortBy.clubName, 1);
+		return retVal;
+	}
+
+	@Override
+	public List<ClubDto> getClubs(final Integer userIdPk)
+			throws NotFoundException {
 		final List<ClubDto> retVal = clubDao.getClubs(userIdPk);
 		if (CollectionUtils.isNotEmpty(retVal)) {
 			for (final ClubDto club : retVal) {
-				final List<AmenityDto> amenities = clubDao.getAmenities(club.getId());
+				final List<AmenityDto> amenities = clubDao.getAmenities(club
+						.getId());
 				club.setAmenities(amenities);
 			}
 		}
@@ -123,8 +204,20 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
-	public List<ImmutablePair<AccountDto, Date>> getUsers(final String amenityId,
-			final Date onDate) {
+	public List<ClubDto> getClubs(final String state,
+			final ClubListingSortBy orderByClause) {
+		// TODO Mocking Phase 2
+		final List<ClubDto> retVal = new LinkedList<ClubDto>();
+		for (int i = 0; i < 10; i++) {
+			final ClubDto val = createMockClubData(state, orderByClause, i);
+			retVal.add(val);
+		}
+		return retVal;
+	}
+
+	@Override
+	public List<ImmutablePair<AccountDto, Date>> getUsers(
+			final String amenityId, final Date onDate) {
 		return beaconDao.getUsers(amenityId, onDate);
 	}
 
@@ -137,7 +230,6 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			beaconDao.setAmenityDeptName(clubId, apnsToken, amenityDepartment);
 		}
 	}
-
 	@Override
 	public void update(final ClubDto club) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(club.getClubId());

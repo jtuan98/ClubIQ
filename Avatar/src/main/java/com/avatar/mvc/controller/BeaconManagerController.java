@@ -99,8 +99,7 @@ public class BeaconManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
-
-	@RequestMapping(value = "/GetAmenityDeptName")
+	@RequestMapping(value = { "/GetAmenityDeptName" })
 	public ModelAndView getAmenityDeptName(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,

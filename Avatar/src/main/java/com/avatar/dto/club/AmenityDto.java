@@ -7,10 +7,11 @@ import com.avatar.dto.ImagePic;
 public class AmenityDto implements Serializable {
 	protected Integer id; // primary key.
 	protected String amenityId;
-	protected String description;
+	protected String description; //
 	protected String hoursOfOperation;
 	protected ImagePic image;
-	protected String amenityType;
+	protected String amenityType; // Dining
+	protected String name;
 
 	public AmenityDto() {
 	}
@@ -47,6 +48,10 @@ public class AmenityDto implements Serializable {
 		return image;
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	public void makeCopy(final AmenityDto theCopy) {
 		id = theCopy.id;
 		amenityId = theCopy.amenityId;
@@ -77,5 +82,9 @@ public class AmenityDto implements Serializable {
 
 	public void setImage(final ImagePic image) {
 		this.image = image;
+	}
+
+	public void setName(final String name) {
+		this.name = name;
 	}
 }
