@@ -7,7 +7,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -160,9 +159,8 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-
-	//Phase 2
-	@RequestMapping(value = {"/GetClubListByAlpha", "/getClubListByAlpha"})
+	// Phase 2
+	@RequestMapping(value = { "/GetClubListByAlpha", "/getClubListByAlpha" })
 	public ModelAndView getClubListByAlpha(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
@@ -180,7 +178,8 @@ public class ClubManagerController extends BaseController {
 		}
 		WsResponse<List<ClubDto>> apiResponse = null;
 		try {
-			final List<ClubDto> clubs = beaconService.getClubs(state, ClubListingSortBy.clubName);
+			final List<ClubDto> clubs = beaconService.getClubs(state,
+					ClubListingSortBy.clubName);
 			apiResponse = new WsResponse<List<ClubDto>>(ResponseStatus.success,
 					"", clubs, "clubList");
 		} catch (final Exception e) {
@@ -190,8 +189,8 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
 	}
 
-	//Phase 2
-	@RequestMapping(value = {"/GetClubListByState", "/getClubListByState"})
+	// Phase 2
+	@RequestMapping(value = { "/GetClubListByState", "/getClubListByState" })
 	public ModelAndView getClubListByState(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
@@ -209,7 +208,8 @@ public class ClubManagerController extends BaseController {
 		}
 		WsResponse<List<ClubDto>> apiResponse = null;
 		try {
-			final List<ClubDto> clubs = beaconService.getClubs(state, ClubListingSortBy.state);
+			final List<ClubDto> clubs = beaconService.getClubs(state,
+					ClubListingSortBy.state);
 			apiResponse = new WsResponse<List<ClubDto>>(ResponseStatus.success,
 					"", clubs, "clubList");
 		} catch (final Exception e) {
@@ -220,17 +220,17 @@ public class ClubManagerController extends BaseController {
 	}
 
 	// Phase 2
-	@RequestMapping(value = {"/GetClubName/{clubKeycode}", "/getClubName/{clubKeycode}"})
+	@RequestMapping(value = { "/GetClubName", "/getClubName" })
 	public ModelAndView getClubName(
 			final HttpServletRequest req,
-			@PathVariable(value = "clubKeycode") final String clubKeycode)
+			@RequestParam(required = true, value = "clubKeycode") final String clubKeycode)
 					throws Exception {
 		init();
 		WsResponse<ClubDto> apiResponse = null;
 		try {
 			final ClubDto club = beaconService.getClubByKeycode(clubKeycode);
-			apiResponse = new WsResponse<ClubDto>(ResponseStatus.success,
-					"", club);
+			apiResponse = new WsResponse<ClubDto>(ResponseStatus.success, "",
+					club);
 		} catch (final Exception e) {
 			apiResponse = new WsResponse<ClubDto>(ResponseStatus.failure,
 					e.getMessage(), null);
@@ -257,10 +257,10 @@ public class ClubManagerController extends BaseController {
 	@Override
 	protected void init() {
 		super.init();
-		jsonAmenitiesListingView = init (jsonAmenitiesListingView);
+		jsonAmenitiesListingView = init(jsonAmenitiesListingView);
 		jsonClubListingView = init(jsonClubListingView);
-		jsonClubListingView.register(ClubDto.class,
-				new ClubListingSerializer());
+		jsonClubListingView
+		.register(ClubDto.class, new ClubListingSerializer());
 		jsonAmenitiesListingView.register(AmenityDto.class,
 				new AmenityListingSerializer());
 	}
@@ -289,7 +289,6 @@ public class ClubManagerController extends BaseController {
 		return beaconManager.setAmenityDeptName(authToken, apnsToken, null,
 				clubId);
 	}
-
 
 	@RequestMapping(value = "/SetClubAddress")
 	public ModelAndView setClubAddress(
@@ -333,6 +332,5 @@ public class ClubManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
-
 
 }
