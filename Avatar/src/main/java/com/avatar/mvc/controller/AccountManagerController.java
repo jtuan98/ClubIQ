@@ -69,15 +69,6 @@ public class AccountManagerController extends BaseController {
 			@RequestParam(required = true, value = "currentDate") final String currentDateyyyymmddhh24miss)
 					throws Exception {
 		init();
-		WsResponse<String> apiDeniedResponse = null;
-		try {
-			validateUserRoles(authToken, REQUIRED_ROLE);
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
 		WsResponse<CheckInfo> apiResponse = null;
 		final AccountDto account = authenticationService.getAccount(authToken);
 		final String userId = account.getUserId();

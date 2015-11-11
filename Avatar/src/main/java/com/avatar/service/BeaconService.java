@@ -119,9 +119,33 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
+	public String getAmenityBodyText(final String clubId, final String amenityId)
+			throws NotFoundException {
+		// TODO Phase 2
+		final String retVal = "This is mock data for Amenity Body Text";
+		return retVal;
+	}
+
+	@Override
 	public List<String> getAmenityDeptName(final String clubId)
 			throws NotFoundException {
 		return beaconDao.getAmenityDeptName(clubId);
+	}
+
+	@Override
+	public String getAmenityHeaderText(final String clubId, final String amenityId)
+			throws NotFoundException {
+		// TODO Phase 2
+		final String retVal = "This is mock data for Amenity Header Text";
+		return retVal;
+	}
+
+	@Override
+	public String getAmenitySecondaryHeaderText(final String clubId, final String amenityId)
+			throws NotFoundException {
+		// TODO Phase 2
+		final String retVal = "This is mock data for Amenity Secondary Header Text";
+		return retVal;
 	}
 
 	@Override
@@ -216,9 +240,23 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
+	public List<AmenityDto> getSubAmenityList(final String clubId, final String amenityType)
+			throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		return clubDao.getAmenities(clubIdPk, amenityType);
+	}
+
+	@Override
 	public List<ImmutablePair<AccountDto, Date>> getUsers(
 			final String amenityId, final Date onDate) {
 		return beaconDao.getUsers(amenityId, onDate);
+	}
+
+	@Override
+	public void setAmenityBodyText(final String clubId, final String amenityId,
+			final String bodyText) throws NotFoundException {
+		// TODO Phase 2
+
 	}
 
 	@Override
@@ -230,6 +268,35 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			beaconDao.setAmenityDeptName(clubId, apnsToken, amenityDepartment);
 		}
 	}
+
+	@Override
+	public void setAmenityHeaderText(final String clubId, final String amenityId,
+			final String headerText) throws NotFoundException {
+		// TODO Phase 2
+
+	}
+
+	@Override
+	public void setAmenitySecondaryHeaderText(final String clubId, final String amenityId,
+			final String headerText) throws NotFoundException {
+		// TODO Phase 2
+
+	}
+
+	@Override
+	public void setClubBodyText(final String clubId, final String bodyText)
+			throws NotFoundException {
+		// TODO Phase 2
+
+	}
+
+	@Override
+	public void setClubHeaderText(final String clubId, final String headerText)
+			throws NotFoundException {
+		// TODO Phase 2
+
+	}
+
 	@Override
 	public void update(final ClubDto club) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(club.getClubId());

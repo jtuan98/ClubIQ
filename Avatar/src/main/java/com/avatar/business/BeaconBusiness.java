@@ -24,7 +24,13 @@ public interface BeaconBusiness {
 
 	List<AmenityDto> getAmenities(String clubId) throws NotFoundException;
 
+	String getAmenityBodyText(String clubId, String amenityId) throws NotFoundException;
+
 	List<String> getAmenityDeptName(String clubId) throws NotFoundException;
+
+	String getAmenityHeaderText(String clubId, String amenityId) throws NotFoundException;
+
+	String getAmenitySecondaryHeaderText(String clubId, String amenityId)throws NotFoundException;
 
 	BeaconDto getBeacon(String beaconActionId) throws NotFoundException;
 
@@ -45,15 +51,30 @@ public interface BeaconBusiness {
 
 	List<ClubDto> getClubs(String state, ClubListingSortBy clubname);
 
+	List<AmenityDto> getSubAmenityList(String clubId, String amenityType) throws NotFoundException;
+
 	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityId, Date onDate)
 			throws NotFoundException;
 
+	void setAmenityBodyText(String clubId, String amenityId, String bodyText) throws NotFoundException;
+
 	void setAmenityDeptName(String clubId, String apnsToken,
 			String amenityDepartment) throws NotFoundException;
+
+	void setAmenityHeaderText(String clubId, String amenityId, String headerText) throws NotFoundException;
+
+	void setAmenitySecondaryHeaderText(String clubId, String amenityId,
+			String headerText) throws NotFoundException;
+
+	void setClubBodyText(String clubId, String bodyText) throws NotFoundException;
+
+	void setClubHeaderText(String clubId, String headerText) throws NotFoundException;
 
 	void update(ClubDto club) throws NotFoundException;
 
 	BeaconDto updateBeacon(BeaconDto beacon) throws NotFoundException;
 
 	boolean verifyClubPin(String clubPin);
+
+
 }

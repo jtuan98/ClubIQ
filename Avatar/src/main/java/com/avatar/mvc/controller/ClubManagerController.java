@@ -33,6 +33,9 @@ public class ClubManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.clubAdmin,
 		Privilege.staff, Privilege.superUser };
 
+	private static Privilege[] USER_ROLE = { Privilege.user, Privilege.clubAdmin,
+		Privilege.staff, Privilege.superUser };
+
 	@Resource(name = "beaconManagerController")
 	BeaconManagerController beaconManager;
 
@@ -94,6 +97,41 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	// Phase 2
+	@RequestMapping(value = { "/GetAmenityBody", "/getAmenityBody" })
+	public ModelAndView getAmenityBody(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, USER_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			final String bodyText = beaconService.getAmenityBodyText(clubId, amenityId);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					bodyText, "bodyText");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
 	// Phase2
 	@RequestMapping(value = { "/GetAmenityDept", "/getAmenityDept" })
 	public ModelAndView getAmenityDept(
@@ -127,6 +165,76 @@ public class ClubManagerController extends BaseController {
 					ResponseStatus.failure, e.getMessage(), null);
 		}
 		return new ModelAndView(jsonAmenitiesListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/GetAmenityHeadline", "/getAmenityHeadline" })
+	public ModelAndView getAmenityHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, USER_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			final String headerText = beaconService.getAmenityHeaderText(clubId, amenityId);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					headerText, "headerText");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/GetAmenitySecondaryHeadline", "/getAmenitySecondaryHeadline" })
+	public ModelAndView getAmenitySecondaryHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, USER_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			final String headerText = beaconService.getAmenitySecondaryHeaderText(clubId, amenityId);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					headerText, "headerText");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
 	}
 
 	@RequestMapping(value = "/GetClubList")
@@ -223,7 +331,7 @@ public class ClubManagerController extends BaseController {
 	@RequestMapping(value = { "/GetClubName", "/getClubName" })
 	public ModelAndView getClubName(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "clubKeycode") final String clubKeycode)
+			@RequestParam(required = true, value = "clubKeyCode") final String clubKeycode)
 					throws Exception {
 		init();
 		WsResponse<ClubDto> apiResponse = null;
@@ -254,16 +362,87 @@ public class ClubManagerController extends BaseController {
 		return retVal;
 	}
 
+	// Phase 2
+	@RequestMapping(value = { "/GetSubAmenityList", "/getSubAmenityList" })
+	public ModelAndView getSubAmenityList(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityType") final String amenityType)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, USER_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<List<AmenityDto>> apiResponse = null;
+		try {
+			final List<AmenityDto> amenities = beaconService.getSubAmenityList(clubId, amenityType);
+			apiResponse = new WsResponse<List<AmenityDto>>(ResponseStatus.success, "",
+					amenities, "amenities");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<List<AmenityDto>>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
 	@Override
 	protected void init() {
 		super.init();
 		jsonAmenitiesListingView = init(jsonAmenitiesListingView);
 		jsonClubListingView = init(jsonClubListingView);
-		jsonClubListingView
-		.register(ClubDto.class, new ClubListingSerializer());
+		jsonClubListingView.register(ClubDto.class, new ClubListingSerializer());
 		jsonAmenitiesListingView.register(AmenityDto.class,
 				new AmenityListingSerializer());
 	}
+
+	// Phase 2
+	@RequestMapping(value = { "/SetAmenityBody", "/setAmenityBody" })
+	public ModelAndView setAmenityBody(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "bodyText") final String bodyText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setAmenityBodyText(clubId, amenityId, bodyText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
 
 	@RequestMapping(value = "/RegisterAPNsToken")
 	public ModelAndView setAmenityDeptName(
@@ -288,6 +467,79 @@ public class ClubManagerController extends BaseController {
 		}
 		return beaconManager.setAmenityDeptName(authToken, apnsToken, null,
 				clubId);
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/SetAmenityHeadline", "/setAmenityHeadline" })
+	public ModelAndView setAmenityHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "headerText") final String headerText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setAmenityHeaderText(clubId, amenityId, headerText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+
+	// Phase 2
+	@RequestMapping(value = { "/SetAmenitySecondaryHeadline", "/setAmenitySecondaryHeadline" })
+	public ModelAndView setAmenitySecondaryHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "headerText") final String headerText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setAmenitySecondaryHeaderText(clubId, amenityId, headerText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
 	}
 
 	@RequestMapping(value = "/SetClubAddress")
@@ -331,6 +583,76 @@ public class ClubManagerController extends BaseController {
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/SetClubBody", "/setClubBody" })
+	public ModelAndView setClubBody(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "bodyText") final String bodyText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setClubBodyText(clubId, bodyText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/SetClubHeadline", "/setClubHeadline" })
+	public ModelAndView setClubHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "headerText") final String headerText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setClubHeaderText(clubId, headerText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
 	}
 
 }

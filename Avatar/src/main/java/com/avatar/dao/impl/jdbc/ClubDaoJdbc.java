@@ -37,6 +37,9 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private static String SEL_AMENITIES_BY_CLUBID = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CLUB_ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
 
+	private static String SEL_AMENITIES_BY_CLUBID_AMENITY_TYPE = SEL_AMENITIES_BY_CLUBID
+			+ " AND UPPER(AT.NAME)=UPPER(?)";
+
 	private static String UPD_CLUB_INFO = "update CLUBS set NAME=?, ADDRESS=?, ZIPCODE=?,"
 			+ "CITY=?, STATE=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=?, TIME_ZONE=? "
 			+ "WHERE ID=? ";
@@ -114,6 +117,15 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			throws NotFoundException {
 		final List<AmenityDto> amenities = getJdbcTemplate().query(
 				SEL_AMENITIES_BY_CLUBID, amenityMapper, clubIdPk);
+		return amenities;
+	}
+
+	@Override
+	public List<AmenityDto> getAmenities(final Integer clubIdPk,
+			final String amenityType) throws NotFoundException {
+		final List<AmenityDto> amenities = getJdbcTemplate().query(
+				SEL_AMENITIES_BY_CLUBID_AMENITY_TYPE, amenityMapper, clubIdPk,
+				amenityType);
 		return amenities;
 	}
 
