@@ -53,6 +53,7 @@
 			<url-pattern>/1/AvailabilityMgr/*</url-pattern>
 			
 			<url-pattern>/1/LoginMgr/*</url-pattern>
+			<url-pattern>/1/WebAdminMgr/*</url-pattern>
 			<url-pattern>/1/ClubMgr/*</url-pattern>
 			<url-pattern>/1/TestMgr/*</url-pattern>
 

@@ -23,6 +23,7 @@ import com.avatar.dao.impl.jdbc.mapper.RolesMapper;
 import com.avatar.dao.impl.jdbc.sql.AccountDaoSql;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.AccountNotes;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
@@ -93,6 +94,9 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private AccountDto fetch(final String sql, final Object paramUserId)
 			throws NotFoundException, InvalidParameterException {
+		//Phase 2:  Need to fetch from USER_NOTES
+		//TODO: Phase 2 Fetch the ACTIVATION_DATE and SUSPENDED_DATE.
+
 		AccountDto account = null;
 
 		if (paramUserId != null) {
@@ -142,6 +146,19 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			}
 		} else {
 			throw new InvalidParameterException("Param cannot be null");
+		}
+
+		//Phase 2: Mocking...
+		if (account != null) {
+			account.setActDate(getNow());
+			final AccountNotes note1 = new AccountNotes();
+			note1.setNoteDate(getNow());
+			note1.setNoteText("Mock data only.");
+			account.add(note1);
+			final AccountNotes note2 = new AccountNotes();
+			note2.setNoteDate(getNow());
+			note2.setNoteText("Mock data only.");
+			account.add(note2);
 		}
 		return account;
 	}

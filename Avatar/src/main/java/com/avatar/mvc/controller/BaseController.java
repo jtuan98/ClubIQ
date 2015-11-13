@@ -21,6 +21,7 @@ import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.promotion.Promotion;
+import com.avatar.dto.serializer.DateSerializer;
 import com.avatar.dto.serializer.ImagePicSerializer;
 import com.avatar.dto.serializer.PairSerializer;
 import com.avatar.dto.serializer.PromotionSerializer;
@@ -46,6 +47,9 @@ public abstract class BaseController {
 		final Date fromDate = new Date(yyyyMMddDtf.parseMillis("20150517"));
 		System.out.println("fromdate="+fromDate);
 	}
+
+	@Resource(name = "accountService")
+	protected DbDateBusiness dateService;
 
 	@Resource(name = "accountService")
 	protected AccountBusiness accountService;
@@ -90,6 +94,8 @@ public abstract class BaseController {
 			retVal.register(ImmutablePair.class, new PairSerializer());
 			retVal.register(SurveyAnswer.class, new SurveyAnswerSerializer());
 			retVal.register(Promotion.class, new PromotionSerializer());
+			final DateSerializer dateSerializer = new DateSerializer(yyyyMMdd_hh24missDtf);
+			retVal.register(Date.class, dateSerializer);
 		}
 		return retVal;
 	}

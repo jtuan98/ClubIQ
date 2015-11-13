@@ -1,7 +1,10 @@
 package com.avatar.dto.account;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import com.avatar.dto.ImagePic;
@@ -35,11 +38,27 @@ public abstract class AccountDto implements Serializable {
 
 	protected String mobileNumber;
 
+	protected String linkMobileNumber;
+
 	protected String deviceId;
 
 	protected String tangerineHandsetId;
 
+	protected Date actDate;
+
+	protected Date susDate;
+
 	protected boolean training = false;
+
+	protected List<AccountNotes> noteHistory;
+
+	public AccountDto add(final AccountNotes note) {
+		if (noteHistory == null) {
+			noteHistory = new LinkedList<AccountNotes>();
+		}
+		noteHistory.add(note);
+		return this;
+	}
 
 	public AccountDto add(final Privilege priviledge) {
 		if (priviledge != null) {
@@ -49,6 +68,10 @@ public abstract class AccountDto implements Serializable {
 			priviledges.add(priviledge);
 		}
 		return this;
+	}
+
+	public Date getActDate() {
+		return actDate;
 	}
 
 	public String getAddress() {
@@ -71,12 +94,20 @@ public abstract class AccountDto implements Serializable {
 		return id;
 	}
 
+	public String getLinkMobileNumber() {
+		return linkMobileNumber;
+	}
+
 	public String getMobileNumber() {
 		return mobileNumber;
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public List<AccountNotes> getNoteHistory() {
+		return noteHistory;
 	}
 
 	public String getPassword() {
@@ -93,6 +124,10 @@ public abstract class AccountDto implements Serializable {
 
 	public AccountStatus getStatus() {
 		return status;
+	}
+
+	public Date getSusDate() {
+		return susDate;
 	}
 
 	public String getTangerineHandsetId() {
@@ -115,6 +150,10 @@ public abstract class AccountDto implements Serializable {
 		return training;
 	}
 
+	public void setActDate(final Date activationDate) {
+		this.actDate = activationDate;
+	}
+
 	public void setAddress(final String address) {
 		this.address = address;
 	}
@@ -135,12 +174,20 @@ public abstract class AccountDto implements Serializable {
 		this.id = id;
 	}
 
+	public void setLinkMobileNumber(final String linkMobileNumber) {
+		this.linkMobileNumber = linkMobileNumber;
+	}
+
 	public void setMobileNumber(final String mobileNumber) {
 		this.mobileNumber = mobileNumber;
 	}
 
 	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public void setNoteHistory(final List<AccountNotes> noteHistory) {
+		this.noteHistory = noteHistory;
 	}
 
 	public void setPassword(final String password) {
@@ -157,6 +204,10 @@ public abstract class AccountDto implements Serializable {
 
 	public void setStatus(final AccountStatus status) {
 		this.status = status;
+	}
+
+	public void setSusDate(final Date suspendedDate) {
+		this.susDate = suspendedDate;
 	}
 
 	public void setTangerineHandsetId(final String tangerineHandsetId) {

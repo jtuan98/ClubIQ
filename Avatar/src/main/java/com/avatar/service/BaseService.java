@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.annotation.Resource;
 
+import org.joda.time.DateTime;
+
 import com.avatar.business.DbDateBusiness;
 import com.avatar.dao.DbDateDao;
 import com.avatar.dto.enums.DbTimeZone;
@@ -23,6 +25,12 @@ public class BaseService implements DbDateBusiness {
 			return getNow();
 		}
 		return dbDateDao.getNow(tz);
+	}
+
+	@Override
+	public DateTime getNowDateTime() {
+		final Date now = getNow();
+		return new DateTime(now.getTime());
 	}
 
 }

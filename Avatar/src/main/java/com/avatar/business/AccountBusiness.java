@@ -1,6 +1,9 @@
 package com.avatar.business;
 
 import java.util.Date;
+import java.util.List;
+
+import org.joda.time.DateTime;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
@@ -19,6 +22,8 @@ public interface AccountBusiness {
 	void addAmenityToUser(String userId, String amenityId)
 			throws NotFoundException, InvalidParameterException;
 
+	void addNote(String memberId, String noteText, DateTime parseDateTime)throws NotFoundException;
+
 	void cancelMembership(String userId, Date currentDate)  throws NotFoundException;
 
 	// Returns a activationToken and expiration date.
@@ -33,7 +38,13 @@ public interface AccountBusiness {
 
 	CheckInfo getCheckInfo(String userId, String availId);
 
+	List<AccountDto> getMembers(String clubId) throws NotFoundException;
+
 	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException;
+
+	void suspend(String memberId, DateTime suspendDate)throws NotFoundException;
+
+	void unsuspend(String memberId) throws NotFoundException;
 
 	void updateAccountInfo(String userId, String deviceId, String fullName,
 			String email, String pictureBase64) throws NotFoundException, InvalidParameterException;

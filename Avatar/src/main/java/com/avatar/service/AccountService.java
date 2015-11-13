@@ -1,6 +1,8 @@
 package com.avatar.service;
 
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -9,6 +11,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +25,9 @@ import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.CheckInfo;
+import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.DbTimeZone;
+import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.AccountExistedException;
 import com.avatar.exception.InvalidParameterException;
@@ -153,6 +158,13 @@ public class AccountService extends BaseService implements AccountBusiness {
 		final Integer clubAmenityIdPk = clubDao
 				.getClubAmenityIdPk(clubAmenityId);
 		accountDao.addAmenityToUser(userIdPk, clubAmenityIdPk);
+	}
+
+	@Override
+	public void addNote(final String memberId, final String noteText, final DateTime parseDateTime)
+			throws NotFoundException {
+		// TODO Phase2
+
 	}
 
 	@Override
@@ -301,9 +313,52 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
+	public List<AccountDto> getMembers(final String clubId) throws NotFoundException {
+		// TODO Phase 2
+		final List<AccountDto>  retVal = new LinkedList<AccountDto>();
+		for (int i=0;i<5;i++) {
+			final AccountDto mockAccount = new MemberAccountDto();
+			mockAccount.add(Privilege.user);
+			mockAccount.setAddress("123"+i+" whatever rd");
+			mockAccount.setDeviceId("whatever deviceid");
+			mockAccount.setEmail("123"+i+"@whatever.com");
+			mockAccount.setId(i);
+			mockAccount.setMobileNumber(getRandomPhoneNumber());
+			mockAccount.setLinkMobileNumber(getRandomPhoneNumber());
+			mockAccount.setName("whatever name " + i);
+			mockAccount.setStatus(AccountStatus.Activated);
+			mockAccount.setUserId(mockAccount.getMobileNumber());
+			retVal.add(mockAccount);
+		}
+		return retVal;
+	}
+
+	private String getRandomPhoneNumber() {
+		int pre = (int) (Math.floor(Math.random()*1000) % 1000);
+		if (pre < 200) {
+			pre += 200;
+		}
+		final int post = (int) (Math.floor(Math.random()*10000) % 10000);
+		return String.format("%03d-%04d", pre, post);
+	}
+
+	@Override
 	public void setLinkNumber(final String userId, final String linkNumber, final Date currentDate)
 			throws NotFoundException {
 		// TODO Phase 2
+
+	}
+
+	@Override
+	public void suspend(final String memberId, final DateTime suspendDate)
+			throws NotFoundException {
+		// TODO Phase2
+
+	}
+
+	@Override
+	public void unsuspend(final String memberId) throws NotFoundException {
+		// TODO Phase2
 
 	}
 

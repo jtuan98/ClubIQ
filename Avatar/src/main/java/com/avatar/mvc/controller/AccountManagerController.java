@@ -63,7 +63,9 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = { "/Mobile/cancelMembership", "/Mobile/CancelMembership" })
+	// Phase 2
+	@RequestMapping(value = { "/Mobile/cancelMembership",
+	"/Mobile/CancelMembership" })
 	public ModelAndView cancelMembership(
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "currentDate") final String currentDateyyyymmddhh24miss)
@@ -103,6 +105,7 @@ public class AccountManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
+
 	@RequestMapping(value = "/GetMemberAcct")
 	public ModelAndView getMemberAcct(
 			final Principal principal,
