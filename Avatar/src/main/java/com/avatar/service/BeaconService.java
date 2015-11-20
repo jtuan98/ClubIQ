@@ -206,11 +206,23 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
+	public String getClubBodyText(final String clubId) throws NotFoundException {
+		// TODO Mocking Phase 2
+		return "This is a mock only, body text";
+	}
+
+	@Override
 	public ClubDto getClubByKeycode(final String clubKeycode)
 			throws NotFoundException {
 		// TODO Phase 2
 		final ClubDto retVal = createMockClubData("CA", ClubListingSortBy.clubName, 1);
 		return retVal;
+	}
+
+	@Override
+	public String getClubHeadlineText(final String clubId) throws NotFoundException {
+		// TODO Mocking Phase 2
+		return "This is a mock only, headline text";
 	}
 
 	@Override

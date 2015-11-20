@@ -45,7 +45,11 @@ public interface BeaconBusiness {
 
 	ClubDto getClub(String clubId) throws NotFoundException;
 
+	String getClubBodyText(String clubId) throws NotFoundException;
+
 	ClubDto getClubByKeycode(String clubKeycode)throws NotFoundException;
+
+	String getClubHeadlineText(String clubId) throws NotFoundException;
 
 	List<ClubDto> getClubs(Integer userIdPk) throws NotFoundException;
 
@@ -75,6 +79,5 @@ public interface BeaconBusiness {
 	BeaconDto updateBeacon(BeaconDto beacon) throws NotFoundException;
 
 	boolean verifyClubPin(String clubPin);
-
 
 }

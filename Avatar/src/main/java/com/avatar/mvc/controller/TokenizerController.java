@@ -22,18 +22,17 @@ import com.avatar.exception.PermissionDeniedException;
 @RequestMapping(value = { "/LoginMgr" })
 public class TokenizerController extends BaseController {
 
-	@RequestMapping(value = { "/Login", "/GetAuthToken" })
+	@RequestMapping(value = { "/getAuthToken", "/GetAuthToken" })
 	public ModelAndView getAuthToken(
 			final Principal principal,
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "userId") final String userId,
-			@RequestParam(required = true, value = "password") final String password)
+			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber)
 					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
 			final AuthenticationTokenPrincipal principalToken = authenticationService
-					.getToken(userId, password);
+					.getToken(mobileNumber, null);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					principalToken.getToken().toString(), "authToken");
 		} catch (final Exception e) {
@@ -58,6 +57,27 @@ public class TokenizerController extends BaseController {
 					roles, "roles");
 		} catch (final Exception e) {
 			apiResponse = new WsResponse<Set<Privilege>>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = { "/Login", "/login" })
+	public ModelAndView login(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "userId") final String userId,
+			@RequestParam(required = true, value = "password") final String password)
+					throws Exception {
+		init();
+		WsResponse<String> apiResponse = null;
+		try {
+			final AuthenticationTokenPrincipal principalToken = authenticationService
+					.getToken(userId, password);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					principalToken.getToken().toString(), "authToken");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));

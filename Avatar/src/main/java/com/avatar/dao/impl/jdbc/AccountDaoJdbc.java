@@ -83,19 +83,21 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	}
 
 	@Override
-	public AccountDto fetch(final Integer userIdPk) throws NotFoundException, InvalidParameterException {
+	public AccountDto fetch(final Integer userIdPk) throws NotFoundException,
+	InvalidParameterException {
 		return fetch(AccountDaoSql.SEL_USER_BY_PK, userIdPk);
 	}
 
 	@Override
-	public AccountDto fetch(final String userId) throws NotFoundException, InvalidParameterException {
+	public AccountDto fetch(final String userId) throws NotFoundException,
+	InvalidParameterException {
 		return fetch(AccountDaoSql.SEL_USER, userId);
 	}
 
 	private AccountDto fetch(final String sql, final Object paramUserId)
 			throws NotFoundException, InvalidParameterException {
-		//Phase 2:  Need to fetch from USER_NOTES
-		//TODO: Phase 2 Fetch the ACTIVATION_DATE and SUSPENDED_DATE.
+		// Phase 2: Need to fetch from USER_NOTES
+		// TODO: Phase 2 Fetch the ACTIVATION_DATE and SUSPENDED_DATE.
 
 		AccountDto account = null;
 
@@ -148,7 +150,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			throw new InvalidParameterException("Param cannot be null");
 		}
 
-		//Phase 2: Mocking...
+		// Phase 2: Mocking...
 		if (account != null) {
 			account.setActDate(getNow());
 			final AccountNotes note1 = new AccountNotes();
@@ -165,7 +167,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	@Override
 	public AccountDto fetchByToken(final String token, final String userId,
-			final String deviceId) throws NotFoundException, InvalidParameterException {
+			final String deviceId) throws NotFoundException,
+			InvalidParameterException {
 		Integer userIdPk = null;
 		try {
 			if (StringUtils.isNotEmpty(userId)) {
@@ -474,9 +477,16 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			final String password) throws NotFoundException,
 			InvalidPasswordException {
 		final Integer userIdPk = getUserIdPkByUserId(userId);
-		final int validate = getJdbcTemplate().queryForObject(
-				AccountDaoSql.VALIDATE_USERID_PASSWD, Integer.class, userIdPk,
-				password);
+		int validate = 0;
+		if (StringUtils.isNotEmpty(password)) {
+			validate = getJdbcTemplate().queryForObject(
+					AccountDaoSql.VALIDATE_USERID_PASSWD, Integer.class,
+					userIdPk, password);
+		} else {
+			validate = getJdbcTemplate().queryForObject(
+					AccountDaoSql.VALIDATE_USERID_PASSWD_NULL, Integer.class,
+					userIdPk);
+		}
 		if (validate == 0) {
 			throw new InvalidPasswordException(
 					"Incorrect Password or Account Status Not Activated");

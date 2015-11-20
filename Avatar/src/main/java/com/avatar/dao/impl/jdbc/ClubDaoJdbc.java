@@ -100,16 +100,20 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	@Override
 	public ClubDto get(final String clubId) throws NotFoundException {
-		final ClubDto retVal = getJdbcTemplate().queryForObject(
-				GET_CLUB_FROM_CLUBID, clubDtoMapper, clubId);
 		try {
-			final Integer imageIdPk = getJdbcTemplate().queryForObject(
-					GET_IMAGE_ID, Integer.class, retVal.getId());
-			final ImagePic image = getImage(imageIdPk);
-			retVal.setImage(image);
-		} catch (final EmptyResultDataAccessException e1) {
+			final ClubDto retVal = getJdbcTemplate().queryForObject(
+					GET_CLUB_FROM_CLUBID, clubDtoMapper, clubId);
+			try {
+				final Integer imageIdPk = getJdbcTemplate().queryForObject(
+						GET_IMAGE_ID, Integer.class, retVal.getId());
+				final ImagePic image = getImage(imageIdPk);
+				retVal.setImage(image);
+			} catch (final EmptyResultDataAccessException e1) {
+			}
+			return retVal;
+		} catch(final EmptyResultDataAccessException e) {
+			throw new NotFoundException("Club " + clubId + " not found");
 		}
-		return retVal;
 	}
 
 	@Override

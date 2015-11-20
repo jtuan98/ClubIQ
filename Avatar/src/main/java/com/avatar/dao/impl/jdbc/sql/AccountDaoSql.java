@@ -73,6 +73,9 @@ public final class AccountDaoSql {
 	public static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
 			+ AccountStatus.Activated.name() + "'";
 
+	public static String VALIDATE_USERID_PASSWD_NULL = " SELECT count(*) from USERS where ID = ? and PASSWORD is null and STATUS = '"
+			+ AccountStatus.Activated.name() + "'";
+
 	public static String INS_AMENITY_EMPLOYEE = "INSERT INTO AMENITY_EMPLOYEE (ID, CLUB_AMENITY_ID, USER_ID, CREATE_DATE) VALUES (?,?,?,NOW())";
 
 	public static String UPD_AMENITY_EMPLOYEE = "UPDATE AMENITY_EMPLOYEE SET CLUB_AMENITY_ID=?, CREATE_DATE=NOW() WHERE USER_ID=? ";
