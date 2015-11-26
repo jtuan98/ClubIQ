@@ -163,14 +163,14 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public void addNote(final String memberId, final String noteText, final DateTime parseDateTime)
 			throws NotFoundException {
-		// TODO Phase2
-
+		final Integer userPkId = accountDao.getUserIdPkByUserId(memberId);
+		accountDao.addNote(userPkId, noteText, parseDateTime);
 	}
 
 	@Override
 	public void cancelMembership(final String userId, final Date currentDate)
 			throws NotFoundException {
-		// TODO Phase 2
+		accountDao.deactivate(userId, currentDate);
 	}
 
 	@Override
@@ -247,7 +247,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
 	public boolean deactivateAccount(final String userId)
 			throws NotFoundException {
-		accountDao.deactivate(userId);
+		accountDao.deactivate(userId, null);
 		return true;
 	}
 

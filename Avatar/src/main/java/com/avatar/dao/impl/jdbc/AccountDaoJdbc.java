@@ -1,5 +1,6 @@
 package com.avatar.dao.impl.jdbc;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.joda.time.DateTime;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
@@ -77,7 +79,14 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	}
 
 	@Override
-	public void deactivate(final String userId) throws NotFoundException {
+	public Number addNote(final Integer userPkId, final String noteText,
+			final DateTime parseDateTime) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void deactivate(final String userId, final Date deactivateDate) throws NotFoundException {
 		// TODO Auto-generated method stub
 
 	}
@@ -484,7 +493,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 					userIdPk, password);
 		} else {
 			validate = getJdbcTemplate().queryForObject(
-					AccountDaoSql.VALIDATE_USERID_PASSWD_NULL, Integer.class,
+					AccountDaoSql.VALIDATE_USERID_NOPASSWD, Integer.class,
 					userIdPk);
 		}
 		if (validate == 0) {

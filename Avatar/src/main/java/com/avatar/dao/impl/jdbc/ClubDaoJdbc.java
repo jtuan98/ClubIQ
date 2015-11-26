@@ -111,7 +111,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			} catch (final EmptyResultDataAccessException e1) {
 			}
 			return retVal;
-		} catch(final EmptyResultDataAccessException e) {
+		} catch (final EmptyResultDataAccessException e) {
 			throw new NotFoundException("Club " + clubId + " not found");
 		}
 	}

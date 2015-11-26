@@ -1,6 +1,9 @@
 package com.avatar.dao;
 
+import java.util.Date;
 import java.util.List;
+
+import org.joda.time.DateTime;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
@@ -16,7 +19,9 @@ public interface AccountDao {
 	void addAmenityToUser(Integer userIdPk, Integer clubAmenityIdPk)
 			throws NotFoundException, InvalidParameterException;
 
-	void deactivate(String userId) throws NotFoundException;
+	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime);
+
+	void deactivate(String userId, Date deacticateDate) throws NotFoundException;
 
 	AccountDto fetch(Integer userIdPk) throws NotFoundException, InvalidParameterException;
 

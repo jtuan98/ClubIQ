@@ -21,6 +21,7 @@ import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 
@@ -180,7 +181,7 @@ public class RegistrationController extends BaseController {
 			homeClub.setClubId(homeClubId);
 			retVal.setHomeClub(homeClub);
 		}
-
+		retVal.setStatus(AccountStatus.New);
 		retVal.setEmail(email);
 		retVal.add(Privilege.valueOf(privilege));
 		retVal.setUserId(userid);

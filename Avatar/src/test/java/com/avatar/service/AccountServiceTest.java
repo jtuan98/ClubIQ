@@ -167,6 +167,16 @@ public class AccountServiceTest extends BaseServiceTest {
 		service.activateAccount(activationToken);
 	}
 
+	@Test(expected = InvalidParameterException.class)
+	public void test002CreateAccount_nullStatus()
+			throws InvalidParameterException, NotFoundException, AccountCreationException {
+		final AccountDto account = createAccount(false,
+				null, "deviceId", Privilege.user, false,
+				"mobileNumber");
+		final String activationToken = account.getToken().getToken();
+		service.createAccount(account);
+	}
+
 	@Test
 	public void test003ActivateAccount_memberTokenValid()
 			throws NotFoundException, InvalidParameterException {
@@ -806,7 +816,7 @@ public class AccountServiceTest extends BaseServiceTest {
 			throws NotFoundException {
 		final String userId = "userid";
 		Mockito.doThrow(NotFoundException.class).when(accountDao)
-		.deactivate(userId);
+		.deactivate(userId, null);
 		service.deactivateAccount(userId);
 	}
 
@@ -816,7 +826,7 @@ public class AccountServiceTest extends BaseServiceTest {
 			throws NotFoundException {
 		final String userId = "userid";
 		service.deactivateAccount(userId);
-		verify(accountDao, times(1)).deactivate(eq(userId));
+		verify(accountDao, times(1)).deactivate(eq(userId), (Date)eq(null));
 	}
 
 	// ***** exists
@@ -945,6 +955,7 @@ public class AccountServiceTest extends BaseServiceTest {
 				tangerineHandSetId);
 	}
 
+
 	// case 2: NotFoundException
 	@Test(expected = NotFoundException.class)
 	public void test028UpdateUserTangerineHandsetId_02_NotFoundException()
@@ -952,8 +963,13 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String userId = "userId";
 		final String deviceId = "device";
 		final String tangerineHandSetId = "tangerineHandSetId";
-		Mockito.doThrow(NotFoundException.class).when(accountDao).updateUserTangerineHandSetId(userId, deviceId, tangerineHandSetId);
+		Mockito.doThrow(NotFoundException.class)
+		.when(accountDao)
+		.updateUserTangerineHandSetId(userId, deviceId,
+				tangerineHandSetId);
 		service.updateUserTangerineHandSetId(userId, deviceId,
 				tangerineHandSetId);
 	}
+
+
 }
