@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.ClubDao;
 import com.avatar.dao.impl.jdbc.mapper.AccountDtoMapper;
+import com.avatar.dao.impl.jdbc.mapper.AccountNotesDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.ActivationTokenMapper;
 import com.avatar.dao.impl.jdbc.mapper.RolesMapper;
 import com.avatar.dao.impl.jdbc.sql.AccountDaoSql;
@@ -47,11 +48,13 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private final ActivationTokenMapper activationTokenMapper = new ActivationTokenMapper();
 
+	private final AccountNotesDtoMapper accountNotesDtoMapper = new AccountNotesDtoMapper();
+
 	@Override
-	public void activate(final String userId, final String activationToken)
+	public void activate(final String userId, final String activationToken, final Date activated)
 			throws NotFoundException {
 		final int updated = getJdbcTemplate().update(
-				AccountDaoSql.UPD_ACCOUNT_ACTIVATION, activationToken, userId);
+				AccountDaoSql.UPD_ACCOUNT_ACTIVATION, activated, activationToken, userId);
 		if (updated == 0) {
 			throw new NotFoundException();
 		}
@@ -79,16 +82,21 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	}
 
 	@Override
-	public Number addNote(final Integer userPkId, final String noteText,
-			final DateTime parseDateTime) {
-		// TODO Auto-generated method stub
-		return null;
+	public Number addNote(final Integer userIdPk, final String noteText,
+			final DateTime noteDateTime) {
+
+		final int idNoteAdded = sequencer.nextVal("ID_SEQ");
+		getJdbcTemplate().update(AccountDaoSql.INS_NOTES, idNoteAdded,
+				userIdPk, noteText, noteDateTime);
+		return idNoteAdded;
 	}
 
 	@Override
-	public void deactivate(final String userId, final Date deactivateDate) throws NotFoundException {
-		// TODO Auto-generated method stub
-
+	public void deactivate(final String userId, final Date deactivateDate)
+			throws NotFoundException {
+		final int userIdPk = getUserIdPkByUserId(userId);
+		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_DEACTIVATION,
+				deactivateDate, userIdPk);
 	}
 
 	@Override
@@ -105,9 +113,6 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private AccountDto fetch(final String sql, final Object paramUserId)
 			throws NotFoundException, InvalidParameterException {
-		// Phase 2: Need to fetch from USER_NOTES
-		// TODO: Phase 2 Fetch the ACTIVATION_DATE and SUSPENDED_DATE.
-
 		AccountDto account = null;
 
 		if (paramUserId != null) {
@@ -152,6 +157,11 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 							.getId());
 					account.setPicture(image);
 				}
+
+				// Phase 2: fetch from USER_NOTES
+				final List<AccountNotes> notes = fetchNoteHistory(account.getId());
+				account.setNoteHistory(notes);
+
 			} catch (final EmptyResultDataAccessException e) {
 				throw new NotFoundException();
 			}
@@ -160,7 +170,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		}
 
 		// Phase 2: Mocking...
-		if (account != null) {
+		if (account != null && CollectionUtils.isEmpty(account.getNoteHistory())) {
 			account.setActDate(getNow());
 			final AccountNotes note1 = new AccountNotes();
 			note1.setNoteDate(getNow());
@@ -196,6 +206,11 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		return fetch(userIdPk);
 	}
 
+	private List<AccountNotes> fetchNoteHistory(final Integer userIdPk) {
+		return getJdbcTemplate().query(AccountDaoSql.SEL_NOTESHISTORY_BY_USER_ID,
+				accountNotesDtoMapper, userIdPk);
+	}
+
 	@Override
 	public List<Privilege> fetchRoles(final Integer userIdPk)
 			throws NotFoundException {
@@ -207,6 +222,12 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	public List<Privilege> fetchRoles(final String userId)
 			throws NotFoundException {
 		return fetchRoles(getUserIdPkByUserId(userId));
+	}
+
+	@Override
+	public List<AccountDto> getMembers(final int clubIdPk) throws NotFoundException {
+		// TODO Phase 2
+		return null;
 	}
 
 	@Override
@@ -227,6 +248,15 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		} catch (final EmptyResultDataAccessException e) {
 			throw new NotFoundException("Account " + userId + " not found!");
 		}
+	}
+
+	@Override
+	public void linkNumbers(final String userId, final String linkNumber, final Date currentDate)
+			throws NotFoundException {
+		final int linkNumberIdPk = getUserIdPkByUserId(linkNumber);
+		final int userIdPk = getUserIdPkByUserId(userId);
+		getJdbcTemplate().update(
+				AccountDaoSql.UPD_ACCOUNT_LINK, linkNumberIdPk, userIdPk);
 	}
 
 	@Override
@@ -385,6 +415,12 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Resource(name = "avatarDataSource")
 	public void setDataSource(final DataSource ds) {
 		initTemplate(ds);
+	}
+
+	@Override
+	public void undeactivate(final String userId) throws NotFoundException {
+		// TODO Phase 2
+
 	}
 
 	@Override

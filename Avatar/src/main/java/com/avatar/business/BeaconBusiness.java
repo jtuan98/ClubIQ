@@ -41,7 +41,7 @@ public interface BeaconBusiness {
 			String month) throws NotFoundException;
 
 	List<BlackoutTime> getBlackoutTimes(String clubId, String amenityId,
-			String requestedDateMMDD);
+			String requestedDateMMDD) throws NotFoundException;
 
 	ClubDto getClub(String clubId) throws NotFoundException;
 
@@ -49,11 +49,13 @@ public interface BeaconBusiness {
 
 	ClubDto getClubByKeycode(String clubKeycode)throws NotFoundException;
 
+	ClubDto getClubDetails(String clubId) throws NotFoundException;
+
 	String getClubHeadlineText(String clubId) throws NotFoundException;
 
 	List<ClubDto> getClubs(Integer userIdPk) throws NotFoundException;
 
-	List<ClubDto> getClubs(String state, ClubListingSortBy clubname);
+	List<ClubDto> getClubs(String state, ClubListingSortBy clubname) throws NotFoundException;
 
 	List<AmenityDto> getSubAmenityList(String clubId, String amenityType) throws NotFoundException;
 

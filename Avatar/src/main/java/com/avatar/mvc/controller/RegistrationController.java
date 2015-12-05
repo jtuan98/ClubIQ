@@ -2,6 +2,7 @@ package com.avatar.mvc.controller;
 
 import java.security.InvalidParameterException;
 import java.security.Principal;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,6 +28,7 @@ import com.avatar.dto.enums.ResponseStatus;
 
 @Controller
 public class RegistrationController extends BaseController {
+	// TODO: Need to pass in the activatedDate
 	@RequestMapping(value = { "/Registration/ActivateAccount",
 			"/Registration/ActivateAccountMember",
 			"/Registration/ActivateAccountMobile" // ActivateAccountMobile will
@@ -44,7 +46,7 @@ public class RegistrationController extends BaseController {
 		boolean activated = false;
 		try {
 			activated = accountService.activateMobileAccount(mobileNumber,
-					deviceId, activationToken);
+					deviceId, activationToken, new Date());
 		} catch (final InvalidParameterException e) {
 			msg = "Error:  Please check activation token, might have expired ["
 					+ activationToken + "]";
@@ -63,14 +65,25 @@ public class RegistrationController extends BaseController {
 	})
 	public ModelAndView activateEmployeeAccount(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "activationToken") final String activationToken)
+			@RequestParam(required = true, value = "activationToken") final String activationToken,
+			@RequestParam(required = false, value = "activateDate") final String activationDateyyyymmdd_hh24miss)
 					throws Exception {
 		init();
+		Date activateDate = new Date();
+		try {
+			if (StringUtils.isNotEmpty(activationDateyyyymmdd_hh24miss)) {
+				activateDate = yyyyMMdd_hh24missDtf.parseDateTime(
+						activationDateyyyymmdd_hh24miss).toDate();
+			}
+		} catch (final Exception e) {
+			throw new com.avatar.exception.InvalidParameterException(
+					"Date not parseable, need to be in yyymmdd hh24miss");
+		}
 		WsResponse<String> apiResponse = null;
 		String msg = "";
 		boolean activated = false;
 		try {
-			activated = accountService.activateAccount(activationToken);
+			activated = accountService.activateAccount(activationToken, activateDate);
 		} catch (final InvalidParameterException e) {
 			msg = "Error:  Please check activation token, might have expired ["
 					+ activationToken + "]";
@@ -173,7 +186,8 @@ public class RegistrationController extends BaseController {
 		} else {
 			retVal = new EmployeeAccountDto();
 			if (StringUtils.isNotEmpty(amenityId)) {
-				((EmployeeAccountDto) retVal).setAmenity(new AmenityDto(amenityId));
+				((EmployeeAccountDto) retVal).setAmenity(new AmenityDto(
+						amenityId));
 			}
 		}
 		if (StringUtils.isNotEmpty(homeClubId)) {
@@ -209,7 +223,7 @@ public class RegistrationController extends BaseController {
 		return "User is [" + principal.getName() + "]";
 	}
 
-	//2.1.1 confirmed correct
+	// 2.1.1 confirmed correct
 	@RequestMapping(value = { "/Registration/VerifyAcctExist",
 	"/open/Registration/VerifyAcctExist" })
 	public ModelAndView verifyAccount(

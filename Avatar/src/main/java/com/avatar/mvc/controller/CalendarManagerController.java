@@ -1,10 +1,13 @@
 package com.avatar.mvc.controller;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,9 +26,11 @@ import com.avatar.exception.PermissionDeniedException;
 @Controller
 @RequestMapping(value = "/CalendarMgr")
 public class CalendarManagerController extends BaseController {
-	private static Privilege[] REQUIRED_ROLE = { Privilege.user };
+	private static Privilege[] REQUIRED_ROLE = Privilege.values();
 	@Resource(name = "beaconService")
 	private BeaconBusiness beaconService;
+
+	final Calendar localCalendar = Calendar.getInstance(TimeZone.getDefault());
 
 	// Phase 2
 	@RequestMapping(value = { "/getBlackOutDates", "/GetBlackOutDates" })
@@ -34,7 +39,7 @@ public class CalendarManagerController extends BaseController {
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
 			@RequestParam(required = true, value = "amenityId") final String amenityId,
-			@RequestParam(required = false, value = "month") final String month)
+			@RequestParam(required = false, value = "month") final String monthParam /* month is 1-12 */)
 					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -45,6 +50,10 @@ public class CalendarManagerController extends BaseController {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		String month = monthParam;
+		if(StringUtils.isEmpty(month)) {
+			month = getCurrentMonth();
 		}
 		WsResponse<List<BlackoutDate>> apiResponse = null;
 		try {
@@ -89,6 +98,11 @@ public class CalendarManagerController extends BaseController {
 					ResponseStatus.failure, e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	private String getCurrentMonth() {
+		final int currentMonth = localCalendar.get(Calendar.MONTH) + 1;
+		return String.valueOf(currentMonth);
 	}
 
 }

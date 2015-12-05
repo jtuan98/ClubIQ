@@ -22,18 +22,24 @@ public final class AccountDaoSql {
 	public static String INS_ROLES = "INSERT INTO USER_ROLES (ID, "
 			+ "USER_ID, ROLE, CREATE_DATE) VALUES (?, ?, ?, NOW())";
 
-	public static String UPD_ACCOUNT_ACTIVATION = "update USERS set STATUS='"
+	public static String UPD_ACCOUNT_ACTIVATION = "update USERS set ACTIVATION_DATE=?, STATUS='"
 			+ AccountStatus.Activated.name()
 			+ "' WHERE ID = (SELECT USER_ID FROM USER_ACTIVATION_TOKEN WHERE TOKEN=? AND USER_ID = USERS.ID) AND USERID=? "
 			+ "AND STATUS in ('" + AccountStatus.TokenSent.name() + "', '"
 			+ AccountStatus.Activated.name() + "', '"
 			+ AccountStatus.New.name() + "')";
 
+	public static String UPD_ACCOUNT_DEACTIVATION = "update USERS set SUSPENDED_DATE=?, STATUS='"
+			+ AccountStatus.Cancelled.name()
+			+ "' WHERE ID = ? ";
+
 	public static String UPD_ACCOUNT_STATUS_NOTIFIED = "update USERS set STATUS='"
 			+ AccountStatus.TokenSent.name()
 			+ "' WHERE USERID = ? AND STATUS in ('"
 			+ AccountStatus.New.name()
 			+ "', '" + AccountStatus.TokenSent.name() + "')";
+
+	public static String UPD_ACCOUNT_LINK = "update USERS set LINKED_ACCOUNT_ID=? where ID = ?";
 
 	public static String UPD_USER_DEVICEID = "update USER_DEVICES set DEVICE_ID=? "
 			+ "WHERE USER_ID = (SELECT ID FROM USERS WHERE USERID=?)";
@@ -84,4 +90,7 @@ public final class AccountDaoSql {
 
 	public static String SEL_AMENITY_USER_EXISTS = "select count(*) from AMENITY_EMPLOYEE where CLUB_AMENITY_ID = ? and USER_ID = ? ";
 
+	public static String INS_NOTES = "INSERT INTO USER_NOTES (ID, USER_ID, NOTE_TEXT, NOTE_DATE) VALUES (?,?,?,?)";
+
+	public static String SEL_NOTESHISTORY_BY_USER_ID = "SELECT * FROM USER_NOTES WHERE USER_ID=? ORDER BY NOTE_DATE DESC";
 }

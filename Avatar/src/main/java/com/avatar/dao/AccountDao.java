@@ -13,7 +13,7 @@ import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 
 public interface AccountDao {
-	void activate(String userId, String activationToken)
+	void activate(String userId, String activationToken, Date activateDate)
 			throws NotFoundException;
 
 	void addAmenityToUser(Integer userIdPk, Integer clubAmenityIdPk)
@@ -21,22 +21,29 @@ public interface AccountDao {
 
 	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime);
 
-	void deactivate(String userId, Date deacticateDate) throws NotFoundException;
+	void deactivate(String userId, Date deacticateDate)
+			throws NotFoundException;
 
 	AccountDto fetch(Integer userIdPk) throws NotFoundException, InvalidParameterException;
 
 	AccountDto fetch(String userId) throws NotFoundException, InvalidParameterException;
 
 	AccountDto fetchByToken(final String token, final String userId,
-			final String deviceId) throws NotFoundException, InvalidParameterException;
+			final String deviceId) throws NotFoundException,
+			InvalidParameterException;
 
 	List<Privilege> fetchRoles(final Integer userIdPk) throws NotFoundException;
 
 	List<Privilege> fetchRoles(final String userId) throws NotFoundException;
 
+	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException;
+
 	String getUserIdByDeviceId(String deviceId) throws NotFoundException;
 
 	int getUserIdPkByUserId(String userId) throws NotFoundException;
+
+	void linkNumbers(String userId, String linkNumber, Date currentDate)
+			throws NotFoundException;
 
 	void markStatusAsNotified(String userId) throws NotFoundException;
 
@@ -44,7 +51,10 @@ public interface AccountDao {
 	void newAccount(AccountDto account, ActivationToken activationToken)
 			throws NotFoundException;
 
-	public void populateAccountInfo(final AccountDto account, boolean includePicture);
+	public void populateAccountInfo(final AccountDto account,
+			boolean includePicture);
+
+	void undeactivate(String userId) throws NotFoundException;
 
 	void updateAccountInfoEmail(String userId, String email)
 			throws NotFoundException;

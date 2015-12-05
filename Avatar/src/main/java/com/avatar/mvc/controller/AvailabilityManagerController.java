@@ -1,5 +1,7 @@
 package com.avatar.mvc.controller;
 
+import java.util.Date;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,9 +12,6 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.CheckInfo;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
-import com.avatar.exception.AuthenticationTokenExpiredException;
-import com.avatar.exception.NotFoundException;
-import com.avatar.exception.PermissionDeniedException;
 
 @Controller
 @RequestMapping(value = "/AvailabilityMgr")
@@ -25,15 +24,6 @@ public class AvailabilityManagerController extends BaseController {
 			@RequestParam(required = true, value = "availId") final String availId)
 					throws Exception {
 		init();
-		WsResponse<String> apiDeniedResponse = null;
-		try {
-			validateUserRoles(authToken, REQUIRED_ROLE);
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
 		WsResponse<CheckInfo> apiResponse = null;
 		final AccountDto account = authenticationService.getAccount(authToken);
 		final String userId = account.getUserId();
@@ -59,22 +49,14 @@ public class AvailabilityManagerController extends BaseController {
 			@RequestParam(required = true, value = "requestedDateTime") final String requestedDateTimeyyyymmddhh24mi)
 					throws Exception {
 		init();
-		WsResponse<String> apiDeniedResponse = null;
-		try {
-			validateUserRoles(authToken, REQUIRED_ROLE);
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
 		WsResponse<String> apiResponse = null;
 		final AccountDto account = authenticationService.getAccount(authToken);
 		final String userId = account.getUserId();
 		try {
+			final Date requestedDateTime = yyyyMMdd_hh24missDtf.parseDateTime(requestedDateTimeyyyymmddhh24mi).toDate();
 			final String availId = accountService.updateCheckInfo(userId,
 					requestedClubId, amenityId, numOfPerson,
-					requestedDateTimeyyyymmddhh24mi);
+					requestedDateTime);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					availId, "availId");
 		} catch (final Exception e) {

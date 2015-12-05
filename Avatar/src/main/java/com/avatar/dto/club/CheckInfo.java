@@ -1,14 +1,16 @@
 package com.avatar.dto.club;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class CheckInfo implements Serializable {
+	private Integer id;
 	private String availId;
 	private String requestedClubId;
 	private String amenityId;
 	private String amenityName;
 	private int personNumber;
-	private String requestedDateTime;// in yyyymmddhh24mi
+	private Date requestedDateTime;// in yyyymmddhh24mi
 
 	public String getAmenityId() {
 		return amenityId;
@@ -22,6 +24,10 @@ public class CheckInfo implements Serializable {
 		return availId;
 	}
 
+	public Integer getId() {
+		return id;
+	}
+
 	public int getPersonNumber() {
 		return personNumber;
 	}
@@ -30,7 +36,7 @@ public class CheckInfo implements Serializable {
 		return requestedClubId;
 	}
 
-	public String getRequestedDateTime() {
+	public Date getRequestedDateTime() {
 		return requestedDateTime;
 	}
 
@@ -46,6 +52,10 @@ public class CheckInfo implements Serializable {
 		this.availId = availId;
 	}
 
+	public void setId(final Integer id) {
+		this.id = id;
+	}
+
 	public void setPersonNumber(final int personNumber) {
 		this.personNumber = personNumber;
 	}
@@ -54,7 +64,7 @@ public class CheckInfo implements Serializable {
 		this.requestedClubId = requestedClubId;
 	}
 
-	public void setRequestedDateTime(final String requestedDateTime) {
+	public void setRequestedDateTime(final Date requestedDateTime) {
 		this.requestedDateTime = requestedDateTime;
 	}
 

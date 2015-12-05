@@ -157,14 +157,14 @@ public class AccountServiceTest extends BaseServiceTest {
 	public void test001ActivateAccount_tokenNull() throws NotFoundException,
 	InvalidParameterException {
 		final String activationToken = null;
-		service.activateAccount(activationToken);
+		service.activateAccount(activationToken, new Date());
 	}
 
 	@Test(expected = InvalidParameterException.class)
 	public void test002ActivateAccount_tokenInvalid()
 			throws InvalidParameterException {
 		final String activationToken = "not valid";
-		service.activateAccount(activationToken);
+		service.activateAccount(activationToken, new Date());
 	}
 
 	@Test(expected = InvalidParameterException.class)
@@ -190,9 +190,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String activationToken = account.getToken().getToken();
 
 		setupActivateAccountTest(activationToken, null, null, account, false);
-		service.activateAccount(activationToken);
+		service.activateAccount(activationToken, new Date());
 		verify(accountDao, times(1)).activate(eq(account.getUserId()),
-				eq(activationToken));
+				eq(activationToken), any(Date.class));
 
 	}
 
@@ -210,7 +210,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String activationToken = account.getToken().getToken();
 		setupActivateAccountTest(activationToken, account.getId().toString(),
 				deviceId, account, false);
-		service.activateAccount(activationToken);
+		service.activateAccount(activationToken, new Date());
 	}
 
 	@Test(expected = InvalidParameterException.class)
@@ -226,7 +226,7 @@ public class AccountServiceTest extends BaseServiceTest {
 				mobileNumber);
 		final String activationToken = account.getToken().getToken();
 		setupActivateAccountTest(activationToken, null, null, account, true);
-		service.activateAccount(activationToken);
+		service.activateAccount(activationToken, new Date());
 	}
 
 	@Test(expected = InvalidParameterException.class)
@@ -235,7 +235,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String mobileNumber = "12345";
 		final String deviceId = null;
 		final String activationToken = "token";
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 	}
 
 	@Test(expected = InvalidParameterException.class)
@@ -245,7 +245,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String deviceId = "device";
 		final String activationToken = "token";
 
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 	}
 
 	// //////activateMobileAccount
@@ -257,7 +257,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String deviceId = "device";
 		final String activationToken = null;
 
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 	}
 
 	// Case 2: Invalid token
@@ -268,7 +268,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String deviceId = "device";
 		final String activationToken = "not valid";
 
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 	}
 
 	// Case 3: Member account valid token (Good case)
@@ -285,9 +285,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String activationToken = account.getToken().getToken();
 		setupActivateAccountTest(activationToken, mobileNumber, deviceId,
 				account, false);
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 		verify(accountDao, times(1)).activate(eq(account.getUserId()),
-				eq(activationToken));
+				eq(activationToken), any(Date.class));
 
 	}
 
@@ -305,9 +305,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final String activationToken = account.getToken().getToken();
 		setupActivateAccountTest(activationToken, mobileNumber, deviceId,
 				account, false);
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 		verify(accountDao, times(1)).activate(eq(mobileNumber),
-				eq(activationToken));
+				eq(activationToken), any(Date.class));
 	}
 
 	// Case 4: Dao throws not found (fetchByToken)
@@ -323,7 +323,7 @@ public class AccountServiceTest extends BaseServiceTest {
 				mobileNumber);
 		final String activationToken = account.getToken().getToken();
 		setupActivateAccountTest(activationToken, null, null, account, true);
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 	}
 
 	// Case 5: Trying to call activeMobileAccount when an account is an employee
@@ -341,7 +341,7 @@ public class AccountServiceTest extends BaseServiceTest {
 
 		setupActivateAccountTest(activationToken, mobileNumber, deviceId,
 				account, false);
-		service.activateMobileAccount(mobileNumber, deviceId, activationToken);
+		service.activateMobileAccount(mobileNumber, deviceId, activationToken, new Date());
 	}
 
 	// ***** addAmenityToUser

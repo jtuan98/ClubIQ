@@ -14,7 +14,8 @@ import com.avatar.dto.enums.AccountStatus;
 public class AccountDtoMapper implements RowMapper<AccountDto> {
 
 	@Override
-	public AccountDto mapRow(final ResultSet rs, final int rowNo) throws SQLException {
+	public AccountDto mapRow(final ResultSet rs, final int rowNo)
+			throws SQLException {
 		final boolean mobile = "Y".equals(rs.getString("MOBILE_IND"));
 		final boolean training = "Y".equals(rs.getString("TRAINING"));
 		final AccountDto retVal = mobile ? new MemberAccountDto()
@@ -30,12 +31,19 @@ public class AccountDtoMapper implements RowMapper<AccountDto> {
 			retVal.setPicture(new ImagePic(rs.getInt("IMAGE_ID")));
 		}
 		if (mobile) {
-			final MemberAccountDto mobileAcct = (MemberAccountDto)retVal;
+			final MemberAccountDto mobileAcct = (MemberAccountDto) retVal;
 			mobileAcct.setMobileNumber(rs.getString("MOBILE_NUMBER"));
+		}
+
+		if (rs.getString("ACTIVATION_DATE") != null) {
+			retVal.setActDate(rs.getDate("ACTIVATION_DATE"));
+		}
+
+		if (rs.getString("SUSPENDED_DATE") != null) {
+			retVal.setActDate(rs.getDate("SUSPENDED_DATE"));
 		}
 
 		return retVal;
 	}
-
 
 }

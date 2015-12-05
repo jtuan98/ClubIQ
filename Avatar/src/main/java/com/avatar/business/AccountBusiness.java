@@ -14,10 +14,10 @@ import com.avatar.exception.NotFoundException;
 
 public interface AccountBusiness {
 
-	boolean activateAccount(String activationToken) throws InvalidParameterException;
+	boolean activateAccount(String activationToken, Date activatedDate) throws InvalidParameterException;
 
 	boolean activateMobileAccount(String mobileNumber, String deviceId,
-			String activationToken) throws InvalidParameterException;
+			String activationToken, Date activatedDate) throws InvalidParameterException;
 
 	void addAmenityToUser(String userId, String amenityId)
 			throws NotFoundException, InvalidParameterException;
@@ -36,13 +36,13 @@ public interface AccountBusiness {
 
 	AccountDto get(String userId) throws NotFoundException, InvalidParameterException;
 
-	CheckInfo getCheckInfo(String userId, String availId);
+	CheckInfo getCheckInfo(String userId, String availId) throws NotFoundException;
 
 	List<AccountDto> getMembers(String clubId) throws NotFoundException;
 
-	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException;
+	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException, InvalidParameterException;
 
-	void suspend(String memberId, DateTime suspendDate)throws NotFoundException;
+	void suspend(String memberId, DateTime suspendDate)throws NotFoundException, InvalidParameterException;
 
 	void unsuspend(String memberId) throws NotFoundException;
 
@@ -51,7 +51,7 @@ public interface AccountBusiness {
 
 	//Returns availId
 	String updateCheckInfo(String userId, String requestedClubId,
-			String amenityId, int numOfPerson, String requestedDateTime);
+			String amenityId, int numOfPerson, Date requestedDateTime) throws NotFoundException;
 
 	// SNS token is different than the activation Token.
 	void updateUserTangerineHandSetId(String userId, String deviceId,

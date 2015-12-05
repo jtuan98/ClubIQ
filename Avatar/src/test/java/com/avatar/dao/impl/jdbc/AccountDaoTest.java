@@ -5,11 +5,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.avatar.dao.ClubDao;
 import com.avatar.dao.impl.jdbc.mapper.AccountDtoMapper;
+import com.avatar.dao.impl.jdbc.mapper.AccountNotesDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.ActivationTokenMapper;
 import com.avatar.dao.impl.jdbc.mapper.ImageMapper;
 import com.avatar.dao.impl.jdbc.mapper.RolesMapper;
@@ -31,6 +34,7 @@ import com.avatar.dao.impl.jdbc.sql.BaseDaoSql;
 import com.avatar.dto.AccountDtoBuilder;
 import com.avatar.dto.ClubDtoBuilder;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.AccountNotes;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.club.ClubDto;
@@ -65,6 +69,10 @@ public class AccountDaoTest extends BaseJdbcTest {
 
 			verify(jdbcTemplate, times(1)).queryForObject(
 					eq(AccountDaoSql.GET_HOME_CLUB_ID), eq(Integer.class),
+					eq(userIdPk));
+
+			verify(jdbcTemplate, times(1)).query(
+					eq(AccountDaoSql.SEL_NOTESHISTORY_BY_USER_ID), any(AccountNotesDtoMapper.class),
 					eq(userIdPk));
 
 			if (result instanceof EmployeeAccountDto) {
@@ -196,27 +204,29 @@ public class AccountDaoTest extends BaseJdbcTest {
 								any(ActivationTokenMapper.class), eq(userIdPk)))
 								.willThrow(EmptyResultDataAccessException.class);
 			} else {
-				given(
-						jdbcTemplate.queryForObject(
-								eq(AccountDaoSql.SEL_TOKEN_BY_USERIDPK),
-								any(ActivationTokenMapper.class), eq(userIdPk)))
-								.willReturn(retVal.getToken());
+				doReturn(retVal.getToken()).when(jdbcTemplate).queryForObject(
+						eq(AccountDaoSql.SEL_TOKEN_BY_USERIDPK),
+						any(ActivationTokenMapper.class), eq(userIdPk));
 			}
+
+			final List<AccountNotes> notes = new LinkedList<>();
+			if (retVal.getNoteHistory() != null) {
+				notes.addAll(retVal.getNoteHistory());
+			}
+			given(
+					jdbcTemplate.query(eq(AccountDaoSql.SEL_NOTESHISTORY_BY_USER_ID),
+							any(AccountNotesDtoMapper.class), eq(userIdPk))).willReturn(
+									new LinkedList<AccountNotes>(notes));
 		}
 	}
 
-	@Test
-	public void test001Activate_00_RecNotFound() {
+	@Test(expected=NotFoundException.class)
+	public void test001Activate_00_RecNotFound() throws NotFoundException {
 		final String userId = "123";
 		final String activationToken = "whatever";
 
 		setUpForActivateTest(userId, activationToken, 0);
-		try {
-			dao.activate(userId, activationToken);
-			Assert.fail("Should have thrown NotFoundException");
-		} catch (final NotFoundException e) {
-			// Pass!
-		}
+		dao.activate(userId, activationToken, new Date());
 	}
 
 	@Test
@@ -226,24 +236,19 @@ public class AccountDaoTest extends BaseJdbcTest {
 
 		setUpForActivateTest(userId, activationToken, 1);
 		try {
-			dao.activate(userId, activationToken);
+			dao.activate(userId, activationToken, new Date());
 			// Pass!
 		} catch (final NotFoundException e) {
 			Assert.fail("Should have thrown NotFoundException");
 		}
 	}
 
-	@Test
-	public void test002addAmenityToUser_00_nullParam() {
+	@Test(expected=InvalidParameterException.class)
+	public void test002addAmenityToUser_00_nullParam() throws InvalidParameterException {
 		final Integer userIdPk = null;
 		final Integer clubAmenityIdPk = null;
 		setUpForAddAmenityToUserTest(userIdPk, clubAmenityIdPk, 0);
-		try {
-			dao.addAmenityToUser(userIdPk, clubAmenityIdPk);
-			Assert.fail("Should have thrown InvalidParameterException");
-		} catch (final InvalidParameterException e) {
-			// Pass!
-		}
+		dao.addAmenityToUser(userIdPk, clubAmenityIdPk);
 	}
 
 	@Test
@@ -276,21 +281,14 @@ public class AccountDaoTest extends BaseJdbcTest {
 		}
 	}
 
-	@Test
-	public void test003fetch_00_nullIntParam() {
+	@Test(expected=InvalidParameterException.class)
+	public void test003fetch_00_nullIntParam() throws NotFoundException, InvalidParameterException {
 		final Integer userIdPk = null;
 		setUpForFetchIntTest(userIdPk, null, false);
-		try {
-			dao.fetch(userIdPk);
-			Assert.fail("Should have thrown InvalidParameterException");
-		} catch (final InvalidParameterException e) {
-		} catch (final NotFoundException e) {
-			Assert.fail("Should have thrown InvalidParameterException");
-		}
-
+		dao.fetch(userIdPk);
 	}
 
-	@Test
+	@Test(expected=NotFoundException.class)
 	public void test003fetch_01_pkNotExists() {
 		final Integer userIdPk = -1;
 		setUpForFetchIntTest(userIdPk, null, true);
@@ -304,17 +302,11 @@ public class AccountDaoTest extends BaseJdbcTest {
 
 	}
 
-	@Test
-	public void test003fetch_02_pkExistsNot() {
+	@Test(expected=NotFoundException.class)
+	public void test003fetch_02_pkExistsNot() throws NotFoundException, InvalidParameterException {
 		final Integer userIdPk = -1;
 		setUpForFetchIntTest(userIdPk, null, false);
-		try {
-			dao.fetch(userIdPk);
-			Assert.fail("Should have thrown NotFoundException");
-		} catch (final InvalidParameterException e) {
-			Assert.fail("Should have thrown NotFoundException");
-		} catch (final NotFoundException e) {
-		}
+		dao.fetch(userIdPk);
 	}
 
 	@Test

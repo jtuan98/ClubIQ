@@ -68,6 +68,12 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static final String DEL_BEACON_BY_MEMBERID = "delete from BEACON_USERS where USER_ID=? and CREATE_DATE >=? and CREATE_DATE < ? ";
 
+	private final static String GET_AMENITY_BODY_TEXT = "select BODY_TEXT FROM CLUB_AMENITIES where CLUB_ID = ? and ID = ? ";
+
+	private final static String GET_AMENITY_HEADER_TEXT = "select HEADER_TEXT FROM CLUB_AMENITIES where CLUB_ID = ? and ID = ? ";
+
+	private final static String GET_AMENITY_SECONDARY_HEADER_TEXT = "select SECONDARY_HEADER_TEXT FROM CLUB_AMENITIES where CLUB_ID = ? and ID = ? ";
+
 	@Resource(name = "accountDaoJdbc")
 	AccountDao accountDao;
 
@@ -122,6 +128,16 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 				toDate);
 
 	}
+	@Override
+	public String getAmenityBodyText(final int clubIdPk, final int amenityIdPk) {
+		String retVal = "";
+		try {
+			retVal = getJdbcTemplate().queryForObject(
+					GET_AMENITY_BODY_TEXT, stringMapper, clubIdPk, amenityIdPk);
+		} catch (final EmptyResultDataAccessException e) {
+		}
+		return retVal;
+	}
 
 	@Override
 	public List<String> getAmenityDeptName(final String clubId)
@@ -138,6 +154,17 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
+	public String getAmenityHeaderText(final int clubIdPk, final int amenityIdPk) {
+		String retVal = "";
+		try {
+			retVal = getJdbcTemplate().queryForObject(
+					GET_AMENITY_HEADER_TEXT, stringMapper, clubIdPk, amenityIdPk);
+		} catch (final EmptyResultDataAccessException e) {
+		}
+		return retVal;
+	}
+
+	@Override
 	public Integer getAmenityIdPk(final Integer beaconIdPk)
 			throws NotFoundException {
 		try {
@@ -149,6 +176,17 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			throw new NotFoundException("BeaconIdPk : " + beaconIdPk
 					+ " not found!");
 		}
+	}
+
+	@Override
+	public String getAmenitySecondayHeaderText(final int clubIdPk, final int amenityIdPk) {
+		String retVal = "";
+		try {
+			retVal = getJdbcTemplate().queryForObject(
+					GET_AMENITY_SECONDARY_HEADER_TEXT, stringMapper, clubIdPk, amenityIdPk);
+		} catch (final EmptyResultDataAccessException e) {
+		}
+		return retVal;
 	}
 
 	@Override

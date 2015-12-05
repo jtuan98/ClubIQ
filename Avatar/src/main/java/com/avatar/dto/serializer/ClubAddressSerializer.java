@@ -32,6 +32,7 @@ public class ClubAddressSerializer implements JsonSerializer<ClubDto> {
 			if (StringUtils.isNotEmpty(club.getZipCode())) {
 				result.add("zipCode", new JsonPrimitive(club.getZipCode()));
 			}
+			result.add("amenities", jsonContext.serialize(club.getAmenities()));
 			return result;
 		}
 		return null;

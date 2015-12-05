@@ -9,15 +9,18 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import com.avatar.business.AccountBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.ClubDao;
+import com.avatar.dao.ReservationDao;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
@@ -42,15 +45,6 @@ import com.google.common.cache.LoadingCache;
 public class AccountService extends BaseService implements AccountBusiness {
 	private static long KEY_VALID_FOR_IN_MINUTES = 60 * 7 * 24;
 
-	public static void main(final String[] args) {
-		// final AccountService service = new AccountService();
-		// final ActivationToken token = service.generateActivationToken(true);
-		// final Gson gson = new Gson();
-		// System.out.println(gson.toJson(token));
-		final Date test = new Date(System.currentTimeMillis()
-				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000));
-		System.out.println(test);
-	}
 
 	private final LoadingCache<String, AccountDto> activationCache = CacheBuilder
 			.newBuilder().maximumSize(1000)
@@ -82,9 +76,14 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Resource(name = "clubDaoJdbc")
 	private ClubDao clubDao;
 
+	@Resource(name = "reservationDaoJdbc")
+	private ReservationDao reservationDao;
+
+	private final boolean mockingCheckInfo = false;
+
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
-	public boolean activateAccount(final String activationToken)
+	public boolean activateAccount(final String activationToken, final Date activatedDate)
 			throws InvalidParameterException {
 		if (StringUtils.isEmpty(activationToken)) {
 			throw new InvalidParameterException(
@@ -100,7 +99,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 						"Activation Token is not for EmployeeAccountDto");
 			}
 			// Update database as activated!
-			accountDao.activate(activationAccount.getUserId(), activationToken);
+			accountDao.activate(activationAccount.getUserId(), activationToken, activatedDate);
 			retVal = true;
 		} catch (InvalidCacheLoadException | ExecutionException
 				| NotFoundException e) {
@@ -113,7 +112,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	public boolean activateMobileAccount(final String mobileNumber,
-			final String deviceId, final String activationToken)
+			final String deviceId, final String activationToken, final Date activatedDate)
 					throws InvalidParameterException {
 		boolean retVal = false;
 		if (StringUtils.isEmpty(mobileNumber)) {
@@ -133,7 +132,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 						"Activation Token is not for MemberAccountDto");
 			}
 			// Update database as activated!
-			accountDao.activate(activationAccount.getUserId(), activationToken);
+			accountDao.activate(activationAccount.getUserId(), activationToken, activatedDate);
 			retVal = true;
 		} catch (InvalidCacheLoadException | ExecutionException
 				| NotFoundException e) {
@@ -297,38 +296,50 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 		return retVal;
 	}
-
-	// Phase2 TODO
+	// Phase2
 	@Override
-	public CheckInfo getCheckInfo(final String userId, final String availId) {
-		final CheckInfo retVal = new CheckInfo();
-		retVal.setAvailId(availId);
-		retVal.setAmenityId("myBar1");
-		retVal.setAmenityName("My Bar One");
-		retVal.setPersonNumber(5);
-		retVal.setRequestedClubId("Gentlemens club");
-		retVal.setRequestedDateTime("201512251700");
-
+	public CheckInfo getCheckInfo(final String userId, final String availId) throws NotFoundException {
+		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
+		CheckInfo retVal = reservationDao.getReservation (userIdPk, availId);
+		if (retVal == null) {
+			if (mockingCheckInfo) {
+				//Mocking only.
+				retVal = new CheckInfo();
+				retVal.setAvailId(availId);
+				retVal.setAmenityId("myBar1");
+				retVal.setAmenityName("My Bar One");
+				retVal.setPersonNumber(5);
+				retVal.setRequestedClubId("Gentlemens club");
+				retVal.setRequestedDateTime(new Date());
+			} else {
+				throw new NotFoundException();
+			}
+		}
 		return retVal;
 	}
 
 	@Override
 	public List<AccountDto> getMembers(final String clubId) throws NotFoundException {
-		// TODO Phase 2
-		final List<AccountDto>  retVal = new LinkedList<AccountDto>();
-		for (int i=0;i<5;i++) {
-			final AccountDto mockAccount = new MemberAccountDto();
-			mockAccount.add(Privilege.user);
-			mockAccount.setAddress("123"+i+" whatever rd");
-			mockAccount.setDeviceId("whatever deviceid");
-			mockAccount.setEmail("123"+i+"@whatever.com");
-			mockAccount.setId(i);
-			mockAccount.setMobileNumber(getRandomPhoneNumber());
-			mockAccount.setLinkMobileNumber(getRandomPhoneNumber());
-			mockAccount.setName("whatever name " + i);
-			mockAccount.setStatus(AccountStatus.Activated);
-			mockAccount.setUserId(mockAccount.getMobileNumber());
-			retVal.add(mockAccount);
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		List<AccountDto> retVal = accountDao.getMembers(clubIdPk);
+
+		// Phase 2 mocking
+		if (CollectionUtils.isEmpty(retVal)) {
+			retVal = new LinkedList<AccountDto>();
+			for (int i = 0; i < 5; i++) {
+				final AccountDto mockAccount = new MemberAccountDto();
+				mockAccount.add(Privilege.user);
+				mockAccount.setAddress("123" + i + " whatever rd");
+				mockAccount.setDeviceId("whatever deviceid");
+				mockAccount.setEmail("123" + i + "@whatever.com");
+				mockAccount.setId(i);
+				mockAccount.setMobileNumber(getRandomPhoneNumber());
+				mockAccount.setLinkMobileNumber(getRandomPhoneNumber());
+				mockAccount.setName("whatever name " + i);
+				mockAccount.setStatus(AccountStatus.Activated);
+				mockAccount.setUserId(mockAccount.getMobileNumber());
+				retVal.add(mockAccount);
+			}
 		}
 		return retVal;
 	}
@@ -344,22 +355,22 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	public void setLinkNumber(final String userId, final String linkNumber, final Date currentDate)
-			throws NotFoundException {
-		// TODO Phase 2
-
+			throws NotFoundException, InvalidParameterException {
+		exists(userId);
+		exists(linkNumber);
+		accountDao.linkNumbers(userId, linkNumber, currentDate);
 	}
 
 	@Override
 	public void suspend(final String memberId, final DateTime suspendDate)
-			throws NotFoundException {
-		// TODO Phase2
-
+			throws NotFoundException, InvalidParameterException {
+		Assert.notNull(suspendDate);
+		accountDao.deactivate(memberId, suspendDate.toDate());
 	}
 
 	@Override
 	public void unsuspend(final String memberId) throws NotFoundException {
-		// TODO Phase2
-
+		accountDao.undeactivate(memberId);
 	}
 
 	@Override
@@ -389,9 +400,13 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public String updateCheckInfo(final String userId,
 			final String requestedClubId, final String amenityId,
-			final int numOfPerson, final String requestedDateTime) {
-		// TODO Phase2
-		return UUID.randomUUID().toString();
+			final int numOfPerson, final Date requestedDateTime) throws NotFoundException {
+		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
+		final int clubIdPk = clubDao.getClubIdPk(requestedClubId);
+		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final String reservationId = UUID.randomUUID().toString();
+		reservationDao.reserve(clubIdPk, amenityIdPk, userIdPk, numOfPerson, requestedDateTime, reservationId);
+		return reservationId;
 	}
 
 	@Override

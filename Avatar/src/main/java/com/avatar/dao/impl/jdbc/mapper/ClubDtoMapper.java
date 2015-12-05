@@ -21,11 +21,13 @@ public class ClubDtoMapper implements RowMapper<ClubDto> {
 		retVal.setClubId(rs.getString("CLUBID"));
 		retVal.setClubName(rs.getString("NAME"));
 		retVal.setPhoneNumber(rs.getString("PHONE_NUMBER"));
-		retVal.setState(rs.getString("STATE"));
+		retVal.setState(rs.getString("STATE_ABBR"));
 		retVal.setZipCode(rs.getString("ZIPCODE"));
 		retVal.setClubType(rs.getString("CLUB_TYPE"));
 		retVal.setWebSite(rs.getString("CLUB_WEBSITE"));
 		retVal.setHzRestriction(rs.getString("HZRESTRICTION"));
+		retVal.setXcoord(rs.getString("X_COORD"));
+		retVal.setYcoord(rs.getString("Y_COORD"));
 		retVal.setTimeZone(DbTimeZone.convert(rs.getString("TIME_ZONE")));
 		if (rs.getString("IMAGE_ID") != null) {
 			retVal.setImage(new ImagePic(rs.getInt("IMAGE_ID")));

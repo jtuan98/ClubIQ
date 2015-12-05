@@ -19,10 +19,16 @@ public interface BeaconDao {
 
 	void deleteBeaconInfoByUserId(Integer userIdPk, Date fromDate, Date toDate);
 
+	String getAmenityBodyText(int clubIdPk, int amenityIdPk);
+
 	// Return Amenity Names
 	List<String> getAmenityDeptName(String clubId) throws NotFoundException;
 
+	String getAmenityHeaderText(int clubIdPk, int amenityIdPk);
+
 	Integer getAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
+
+	String getAmenitySecondayHeaderText(int clubIdPk, int amenityIdPk);
 
 	BeaconDto getBeacon(Integer beaconIdPk);
 
