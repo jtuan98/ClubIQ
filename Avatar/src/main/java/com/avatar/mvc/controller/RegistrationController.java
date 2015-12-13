@@ -20,8 +20,8 @@ import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
@@ -177,7 +177,7 @@ public class RegistrationController extends BaseController {
 			final String email, final String mobile, final String userid,
 			final String homeClubId, final String password, final String name,
 			final String pictureBase64Encoded, final String address,
-			final String privilege, final String amenityId) {
+			final String privilege, final String subAmenityId) {
 		init();
 		AccountDto retVal = null;
 		if (mobileFlag) {
@@ -185,9 +185,9 @@ public class RegistrationController extends BaseController {
 			((MemberAccountDto) retVal).setMobileNumber(mobile);
 		} else {
 			retVal = new EmployeeAccountDto();
-			if (StringUtils.isNotEmpty(amenityId)) {
-				((EmployeeAccountDto) retVal).setAmenity(new AmenityDto(
-						amenityId));
+			if (StringUtils.isNotEmpty(subAmenityId)) {
+				((EmployeeAccountDto) retVal).setSubAmenity(new SubAmenityDto(
+						subAmenityId));
 			}
 		}
 		if (StringUtils.isNotEmpty(homeClubId)) {

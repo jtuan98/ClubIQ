@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.avatar.business.AuthenticationTokenizerBusiness;
@@ -53,7 +54,10 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 
 	@Override
 	public AccountDto getAccount(final String token) throws NotFoundException,
-			AuthenticationTokenExpiredException {
+	AuthenticationTokenExpiredException, InvalidParameterException {
+		if (token == null) {
+			throw new InvalidParameterException("Token is null");
+		}
 		AccountDto retVal = null;
 		try {
 			retVal = accountCache.get(token);
@@ -66,7 +70,10 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 
 	@Override
 	public Set<Privilege> getRoles(final String token)
-			throws NotFoundException, AuthenticationTokenExpiredException {
+			throws NotFoundException, AuthenticationTokenExpiredException, InvalidParameterException {
+		if (StringUtils.isEmpty(token)) {
+			throw new InvalidParameterException();
+		}
 		Set<Privilege> retVal = null;
 		try {
 			final AuthenticationTokenPrincipal principal = tokenCache
@@ -82,8 +89,11 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 	@Override
 	public AuthenticationTokenPrincipal getToken(final String userId,
 			final String password) throws InvalidPasswordException,
-			NotFoundException, InvalidParameterException 
+			NotFoundException, InvalidParameterException
 	{
+		if (StringUtils.isEmpty(userId)) {
+			throw new InvalidParameterException();
+		}
 		AuthenticationTokenPrincipal retVal = null;
 		final boolean validated = accountDao.validateUserIdPasswd(userId,
 				password);

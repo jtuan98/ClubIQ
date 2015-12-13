@@ -77,11 +77,11 @@ public class AccountDaoTest extends BaseJdbcTest {
 
 			if (result instanceof EmployeeAccountDto) {
 				verify(jdbcTemplate, times(1)).queryForObject(
-						eq(AccountDaoSql.SEL_AMENITY_ID_BY_USERID),
+						eq(AccountDaoSql.SEL_SUBAMENITY_ID_BY_USERID),
 						eq(Integer.class), eq(userIdPk));
 			} else {
 				verify(jdbcTemplate, never()).queryForObject(
-						eq(AccountDaoSql.SEL_AMENITY_ID_BY_USERID),
+						eq(AccountDaoSql.SEL_SUBAMENITY_ID_BY_USERID),
 						eq(Integer.class), eq(userIdPk));
 			}
 			if (account.getHomeClub() != null) {
@@ -135,7 +135,7 @@ public class AccountDaoTest extends BaseJdbcTest {
 	private void setUpForAddAmenityToUserTest(final Integer userIdPk,
 			final Integer clubAmenityIdPk, final int rowUpdated) {
 		given(
-				jdbcTemplate.update(eq(AccountDaoSql.UPD_AMENITY_EMPLOYEE),
+				jdbcTemplate.update(eq(AccountDaoSql.UPD_SUBAMENITY_EMPLOYEE),
 						eq(clubAmenityIdPk), eq(userIdPk))).willReturn(
 								rowUpdated);
 
@@ -248,7 +248,7 @@ public class AccountDaoTest extends BaseJdbcTest {
 		final Integer userIdPk = null;
 		final Integer clubAmenityIdPk = null;
 		setUpForAddAmenityToUserTest(userIdPk, clubAmenityIdPk, 0);
-		dao.addAmenityToUser(userIdPk, clubAmenityIdPk);
+		dao.addSubAmenityToUser(userIdPk, clubAmenityIdPk);
 	}
 
 	@Test
@@ -257,9 +257,9 @@ public class AccountDaoTest extends BaseJdbcTest {
 		final Integer clubAmenityIdPk = 2;
 		setUpForAddAmenityToUserTest(userIdPk, clubAmenityIdPk, 1);
 		try {
-			dao.addAmenityToUser(userIdPk, clubAmenityIdPk);
+			dao.addSubAmenityToUser(userIdPk, clubAmenityIdPk);
 			verify(jdbcTemplate, never()).update(
-					eq(AccountDaoSql.INS_AMENITY_EMPLOYEE), anyInt(),
+					eq(AccountDaoSql.INS_SUBAMENITY_EMPLOYEE), anyInt(),
 					eq(clubAmenityIdPk), eq(userIdPk));
 		} catch (final InvalidParameterException e) {
 			Assert.fail("Should not have thrown InvalidParameterException");
@@ -272,9 +272,9 @@ public class AccountDaoTest extends BaseJdbcTest {
 		final Integer clubAmenityIdPk = 2;
 		setUpForAddAmenityToUserTest(userIdPk, clubAmenityIdPk, 0);
 		try {
-			dao.addAmenityToUser(userIdPk, clubAmenityIdPk);
+			dao.addSubAmenityToUser(userIdPk, clubAmenityIdPk);
 			verify(jdbcTemplate, times(1)).update(
-					eq(AccountDaoSql.INS_AMENITY_EMPLOYEE), anyInt(),
+					eq(AccountDaoSql.INS_SUBAMENITY_EMPLOYEE), anyInt(),
 					eq(clubAmenityIdPk), eq(userIdPk));
 		} catch (final InvalidParameterException e) {
 			Assert.fail("Should not have thrown InvalidParameterException");

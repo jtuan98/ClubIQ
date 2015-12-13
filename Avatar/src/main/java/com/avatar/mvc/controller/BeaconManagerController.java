@@ -21,9 +21,9 @@ import org.springframework.web.servlet.ModelAndView;
 import com.avatar.business.BeaconBusiness;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.exception.AuthenticationTokenExpiredException;
@@ -99,6 +99,8 @@ public class BeaconManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
+
+	//GetAmenityDeptName is equivalent to getSubAmenities
 	@RequestMapping(value = { "/GetAmenityDeptName" })
 	public ModelAndView getAmenityDeptName(
 			final HttpServletRequest req,
@@ -122,10 +124,10 @@ public class BeaconManagerController extends BaseController {
 
 		WsResponse<List<String>> apiResponse = null;
 		try {
-			final List<String> amenityNames = beaconService
-					.getAmenityDeptName(clubId);
+			final List<String> subAmenityNames = beaconService
+					.getSubAmenityDeptName(clubId);
 			apiResponse = new WsResponse<List<String>>(ResponseStatus.success,
-					"", amenityNames, "amenityDeptList");
+					"", subAmenityNames, "amenityDeptList");
 		} catch (final Exception e) {
 			apiResponse = new WsResponse<List<String>>(ResponseStatus.failure,
 					e.getMessage(), null);
@@ -133,38 +135,14 @@ public class BeaconManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = "/BeaconDetectionWithAmenity")
-	public ModelAndView getAmenityInfo(
-			final HttpServletRequest req,
-			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
-					throws Exception {
-		init();
-		BeaconDto beacon = null;
-		WsResponse<Map<String, String>> apiResponse = null;
-		try {
-			beacon = beaconService.getBeacon(beaconActionId);
-			System.out.println("Beacon=>" + beacon);
-			final AmenityDto amenity = beacon.getAmenity();
-			final Map<String, String> result = new HashMap<String, String>();
-			result.put("amenityId", amenity.getAmenityId());
-			result.put("amenityType", amenity.getAmenityType());
-			apiResponse = new WsResponse<Map<String, String>>(
-					ResponseStatus.success, "", result);
-		} catch (final Exception e) {
-			apiResponse = new WsResponse<Map<String, String>>(
-					ResponseStatus.failure, e.getMessage(), null);
-		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
-	}
-
 	private BeaconDto getBeaconInstance(final String clubId,
-			final String amenityId, final String beaconActionId,
+			final String subAmenityId, final String beaconActionId,
 			final String location, final String description,
 			final String installerStaffUserId, final String installationDate)
 					throws InvalidParameterException {
 		final BeaconDto retVal = new BeaconDto();
 		retVal.setBeaconActionId(beaconActionId);
-		retVal.setAmenityId(amenityId);
+		retVal.setSubAmenityId(subAmenityId);
 		retVal.setClubId(clubId);
 		retVal.setInstallerStaffId(installerStaffUserId);
 		retVal.setDescription(description);
@@ -192,7 +170,7 @@ public class BeaconManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId)
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId)
 					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -212,7 +190,7 @@ public class BeaconManagerController extends BaseController {
 		WsResponse<List<BeaconDto>> apiResponse = null;
 		try {
 			final List<BeaconDto> beacons = beaconService.getBeacons(clubId,
-					amenityId);
+					subAmenityId);
 			apiResponse = new WsResponse<List<BeaconDto>>(
 					ResponseStatus.success, "", beacons, "beaconList");
 		} catch (final Exception e) {
@@ -222,14 +200,40 @@ public class BeaconManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = "/BeaconDetectionWithAmenity")
+	public ModelAndView getSubAmenityInfo(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)
+					throws Exception {
+		init();
+		BeaconDto beacon = null;
+		WsResponse<Map<String, String>> apiResponse = null;
+		try {
+			beacon = beaconService.getBeacon(beaconActionId);
+			System.out.println("Beacon=>" + beacon);
+			final SubAmenityDto subAmenity = beacon.getSubAmenity();
+			final Map<String, String> result = new HashMap<String, String>();
+			result.put("subAmenityId", subAmenity.getSubAmenityId());
+			result.put("amenityId", subAmenity.getAmenityId());
+			apiResponse = new WsResponse<Map<String, String>>(
+					ResponseStatus.success, "", result);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<Map<String, String>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	// SetAmenityDeptName is equivalent to setSubAmenity
 	@RequestMapping(value = "/SetAmenityDeptName")
 	public ModelAndView setAmenityDeptName(
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "apnsToken") final String apnsToken,
-			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment,
-			@RequestParam(required = true, value = "clubId") final String clubId)
+			@RequestParam(required = true, value = "amenityDepartment") final String subAmenityId,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
 					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -246,18 +250,18 @@ public class BeaconManagerController extends BaseController {
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
 
-		return setAmenityDeptName(authToken, apnsToken, amenityDepartment,
-				clubId);
+		return setAmenityDeptName(authToken, apnsToken, subAmenityId,
+				clubId, amenityId);
 	}
 
 	ModelAndView setAmenityDeptName(final String authToken,
-			final String apnsToken, final String amenityDepartment,
-			final String clubId) throws Exception {
+			final String apnsToken, final String subAmenityId,
+			final String clubId, final String amenityId) throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
-			beaconService.setAmenityDeptName(clubId, apnsToken,
-					amenityDepartment);
+			beaconService.setSubAmenityId(clubId, apnsToken,
+					amenityId, subAmenityId);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					null);
 		} catch (final Exception e) {
@@ -273,7 +277,7 @@ public class BeaconManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId,
 			@RequestParam(required = true, value = "location") final String location,
 			@RequestParam(required = true, value = "desc") final String description,
@@ -296,7 +300,7 @@ public class BeaconManagerController extends BaseController {
 		}
 		WsResponse<String> apiResponse = null;
 		try {
-			final BeaconDto beacon = getBeaconInstance(clubId, amenityId,
+			final BeaconDto beacon = getBeaconInstance(clubId, subAmenityId,
 					beaconActionId, location, description,
 					installerStaffUserId, installationDate);
 			beaconService.updateBeacon(beacon);
@@ -335,7 +339,7 @@ public class BeaconManagerController extends BaseController {
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
-			@RequestParam(required = true, value = "amenityDepartment") final String amenityDepartment,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
 			@RequestParam(required = false, value = "date") final String onDate)
 					throws Exception {
 		init();
@@ -356,7 +360,7 @@ public class BeaconManagerController extends BaseController {
 		WsResponse<List<ImmutablePair<AccountDto, Date>>> apiResponse = null;
 		try {
 			final List<ImmutablePair<AccountDto, Date>> users = beaconService
-					.getUsers(amenityDepartment, entryDate);
+					.getUsers(subAmenityId, entryDate);
 			System.out.println(users.getClass());
 			apiResponse = new WsResponse<List<ImmutablePair<AccountDto, Date>>>(
 					ResponseStatus.success, "", users,

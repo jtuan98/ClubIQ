@@ -118,12 +118,12 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 		Assert.notNull(promotion);
 		Assert.notNull(promotion.getClub());
 		Assert.notNull(promotion.getClub().getId());
-		Assert.notNull(promotion.getAmenity());
-		Assert.notNull(promotion.getAmenity().getId());
+		Assert.notNull(promotion.getSubAmenity());
+		Assert.notNull(promotion.getSubAmenity().getId());
 
 		final int idPk = sequencer.nextVal("ID_SEQ");
 		getJdbcTemplate().update(INS_NEW_PROMOTION, idPk,
-				promotion.getClub().getId(), promotion.getAmenity().getId(),
+				promotion.getClub().getId(), promotion.getSubAmenity().getId(),
 				promotion.getTitle(), promotion.getDescription(),
 				promotion.getEffectiveDate(), promotion.getEndingDate());
 	}

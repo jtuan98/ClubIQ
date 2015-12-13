@@ -14,6 +14,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
@@ -50,6 +52,9 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 
 	private final AccountNotesDtoMapper accountNotesDtoMapper = new AccountNotesDtoMapper();
 
+	protected final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
+			.forPattern("yyyy-MM-dd HH:mm:ss");
+
 	@Override
 	public void activate(final String userId, final String activationToken, final Date activated)
 			throws NotFoundException {
@@ -61,33 +66,33 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	}
 
 	@Override
-	public void addAmenityToUser(final Integer userIdPk,
-			final Integer clubAmenityIdPk) throws InvalidParameterException {
-		if (userIdPk == null || clubAmenityIdPk == null) {
+	public void addSubAmenityToUser(final Integer userIdPk,
+			final Integer clubSubAmenityIdPk) throws InvalidParameterException {
+		if (userIdPk == null || clubSubAmenityIdPk == null) {
 			throw new InvalidParameterException("Keys cannot be null");
 		}
-		addLinkAmenityUserId(clubAmenityIdPk, userIdPk);
+		addLinkSubAmenityUserId(clubSubAmenityIdPk, userIdPk);
 	}
 
-	private void addLinkAmenityUserId(final Integer amenityIdPk,
+	private void addLinkSubAmenityUserId(final Integer subAmenityIdPk,
 			final Integer userIdPk) {
 
 		final int updated = getJdbcTemplate().update(
-				AccountDaoSql.UPD_AMENITY_EMPLOYEE, amenityIdPk, userIdPk);
+				AccountDaoSql.UPD_SUBAMENITY_EMPLOYEE, subAmenityIdPk, userIdPk);
 		if (updated == 0) {
-			final int idAmenityEmployee = sequencer.nextVal("ID_SEQ");
-			getJdbcTemplate().update(AccountDaoSql.INS_AMENITY_EMPLOYEE,
-					idAmenityEmployee, amenityIdPk, userIdPk);
+			final int idSubAmenityEmployee = sequencer.nextVal("ID_SEQ");
+			getJdbcTemplate().update(AccountDaoSql.INS_SUBAMENITY_EMPLOYEE,
+					idSubAmenityEmployee, subAmenityIdPk, userIdPk);
 		}
 	}
 
 	@Override
 	public Number addNote(final Integer userIdPk, final String noteText,
 			final DateTime noteDateTime) {
-
+		System.out.println("adding note date: " + yyyyMMdd_hh24missDtf.print(noteDateTime.getMillis()));
 		final int idNoteAdded = sequencer.nextVal("ID_SEQ");
 		getJdbcTemplate().update(AccountDaoSql.INS_NOTES, idNoteAdded,
-				userIdPk, noteText, noteDateTime);
+				userIdPk, noteText, yyyyMMdd_hh24missDtf.print(noteDateTime.getMillis()));
 		return idNoteAdded;
 	}
 
@@ -96,7 +101,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			throws NotFoundException {
 		final int userIdPk = getUserIdPkByUserId(userId);
 		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_DEACTIVATION,
-				deactivateDate, userIdPk);
+				yyyyMMdd_hh24missDtf.print(deactivateDate.getTime()), userIdPk);
 	}
 
 	@Override
@@ -140,13 +145,13 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 				}
 				if (account instanceof EmployeeAccountDto) {
 					try {
-						final Integer amenityIdPk = getJdbcTemplate()
+						final Integer subAmenityIdPk = getJdbcTemplate()
 								.queryForObject(
-										AccountDaoSql.SEL_AMENITY_ID_BY_USERID,
+										AccountDaoSql.SEL_SUBAMENITY_ID_BY_USERID,
 										Integer.class, account.getId());
 						final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
-						employeeAccount.setAmenity(clubDao
-								.getAmenity(amenityIdPk));
+						employeeAccount.setSubAmenity(clubDao
+								.getSubAmenity(subAmenityIdPk));
 					} catch (final EmptyResultDataAccessException e) {
 					}
 				}
@@ -167,19 +172,6 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 			}
 		} else {
 			throw new InvalidParameterException("Param cannot be null");
-		}
-
-		// Phase 2: Mocking...
-		if (account != null && CollectionUtils.isEmpty(account.getNoteHistory())) {
-			account.setActDate(getNow());
-			final AccountNotes note1 = new AccountNotes();
-			note1.setNoteDate(getNow());
-			note1.setNoteText("Mock data only.");
-			account.add(note1);
-			final AccountNotes note2 = new AccountNotes();
-			note2.setNoteDate(getNow());
-			note2.setNoteText("Mock data only.");
-			account.add(note2);
 		}
 		return account;
 	}
@@ -324,8 +316,8 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		}
 		if (!mobile) {
 			final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
-			if (employeeAccount.getAmenity() != null) {
-				addLinkAmenityUserId(employeeAccount.getAmenity().getId(),
+			if (employeeAccount.getSubAmenity() != null) {
+				addLinkSubAmenityUserId(employeeAccount.getSubAmenity().getId(),
 						account.getId());
 			}
 		}

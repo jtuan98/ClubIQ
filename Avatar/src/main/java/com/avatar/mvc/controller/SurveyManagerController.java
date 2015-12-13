@@ -17,8 +17,8 @@ import org.springframework.web.servlet.ModelAndView;
 import com.avatar.business.PromotionBusiness;
 import com.avatar.business.SurveyBusiness;
 import com.avatar.dto.WsResponse;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.dto.promotion.Promotion;
@@ -162,14 +162,14 @@ public class SurveyManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	Promotion getPromotionInstance(final String clubId, final String amenityId,
+	Promotion getPromotionInstance(final String clubId, final String subAmenityId,
 			final String promotionTitle, final String promotionDetails,
 			final String effectiveDateYYYYMMDDHH24MISS,
 			final String endingDateYYYYMMDDHH24MISS)
 					throws InvalidParameterException {
 		final Promotion promotion = new Promotion();
-		promotion.setAmenity(new AmenityDto());
-		promotion.getAmenity().setAmenityId(amenityId);
+		promotion.setSubAmenity(new SubAmenityDto());
+		promotion.getSubAmenity().setSubAmenityId(subAmenityId);
 		promotion.setClub(new ClubDto());
 		promotion.getClub().setClubId(clubId);
 		promotion.setTitle(promotionTitle);

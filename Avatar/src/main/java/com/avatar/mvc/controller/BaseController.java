@@ -29,6 +29,7 @@ import com.avatar.dto.serializer.SurveyAnswerSerializer;
 import com.avatar.dto.serializer.WsResponseSerializer;
 import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
@@ -76,7 +77,7 @@ public abstract class BaseController {
 
 	protected Set<Privilege> getUserRoles(final String authToken)
 			throws NotFoundException, AuthenticationTokenExpiredException,
-			PermissionDeniedException {
+			PermissionDeniedException, InvalidParameterException {
 		final Set<Privilege> roles = authenticationService.getRoles(authToken);
 		return roles;
 	}
@@ -137,13 +138,13 @@ public abstract class BaseController {
 
 	protected void validateSuperUserRole(final String authToken)
 			throws NotFoundException, AuthenticationTokenExpiredException,
-			PermissionDeniedException {
+			PermissionDeniedException, InvalidParameterException {
 		validateUserRoles(authToken, superUser);
 	}
 
 	protected void validateUserRoles(final String authToken,
 			final Privilege[] requiredRoles) throws NotFoundException,
-			AuthenticationTokenExpiredException, PermissionDeniedException {
+			AuthenticationTokenExpiredException, PermissionDeniedException, InvalidParameterException {
 		final Set<Privilege> roles = authenticationService.getRoles(authToken);
 		boolean retVal = false;
 		String msg = "";

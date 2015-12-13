@@ -7,17 +7,17 @@ public class CheckInfo implements Serializable {
 	private Integer id;
 	private String availId;
 	private String requestedClubId;
-	private String amenityId;
-	private String amenityName;
+	private String subAmenityId;
+	private String subAmenityName;
 	private int personNumber;
 	private Date requestedDateTime;// in yyyymmddhh24mi
 
-	public String getAmenityId() {
-		return amenityId;
+	public String getSubAmenityId() {
+		return subAmenityId;
 	}
 
-	public String getAmenityName() {
-		return amenityName;
+	public String getSubAmenityName() {
+		return subAmenityName;
 	}
 
 	public String getAvailId() {
@@ -40,12 +40,12 @@ public class CheckInfo implements Serializable {
 		return requestedDateTime;
 	}
 
-	public void setAmenityId(final String amenityId) {
-		this.amenityId = amenityId;
+	public void setSubAmenityId(final String subAmenityId) {
+		this.subAmenityId = subAmenityId;
 	}
 
-	public void setAmenityName(final String amenityName) {
-		this.amenityName = amenityName;
+	public void setSubAmenityName(final String subAmenityName) {
+		this.subAmenityName = subAmenityName;
 	}
 
 	public void setAvailId(final String availId) {

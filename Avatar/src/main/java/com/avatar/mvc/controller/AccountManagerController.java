@@ -32,13 +32,13 @@ public class AccountManagerController extends BaseController {
 
 	private final DateFormat df = new SimpleDateFormat(YYYYMMDDHH24MISS);
 
-	@RequestMapping(value = { "/AddClubAmenityToAccount" })
+	@RequestMapping(value = { "/AddClubSubAmenityToAccount" })
 	public ModelAndView addClubAmenityToAccount(
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "userId") final String userId,
-			@RequestParam(required = true, value = "clubAmenityId") final String clubAmenityId)
+			@RequestParam(required = true, value = "clubSubAmenityId") final String clubSubAmenityId)
 					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -52,7 +52,7 @@ public class AccountManagerController extends BaseController {
 		}
 		WsResponse<String> apiResponse = null;
 		try {
-			accountService.addAmenityToUser(userId, clubAmenityId);
+			accountService.addSubAmenityToUser(userId, clubSubAmenityId);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					null);
 		} catch (final Exception e) {
@@ -106,25 +106,25 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = "/GetMemberAcct")
-	public ModelAndView getMemberAcct(
-			final Principal principal,
-			final HttpServletRequest req,
-			@RequestParam(required = true, value = "deviceId") final String deviceId)
-					throws Exception {
-		init();
-		WsResponse<AccountDto> apiResponse = null;
-		final String userId = principal.getName();
-		try {
-			final AccountDto account = accountService.get(userId);
-			apiResponse = new WsResponse<AccountDto>(ResponseStatus.success,
-					"", account);
-		} catch (final Exception e) {
-			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
-					e.getMessage(), null);
-		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
-	}
+	//	@RequestMapping(value = "/GetMemberAcct")
+	//	public ModelAndView getMemberAcct(
+	//			final Principal principal,
+	//			final HttpServletRequest req,
+	//			@RequestParam(required = true, value = "deviceId") final String deviceId)
+	//					throws Exception {
+	//		init();
+	//		WsResponse<AccountDto> apiResponse = null;
+	//		final String userId = principal.getName();
+	//		try {
+	//			final AccountDto account = accountService.get(userId);
+	//			apiResponse = new WsResponse<AccountDto>(ResponseStatus.success,
+	//					"", account);
+	//		} catch (final Exception e) {
+	//			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
+	//					e.getMessage(), null);
+	//		}
+	//		return new ModelAndView(jsonView, toModel(apiResponse));
+	//	}
 
 	@RequestMapping(value = { "/Mobile/setLinkPhone", "/Mobile/SetLinkPhone" })
 	public ModelAndView setLinkPhone(
@@ -134,23 +134,26 @@ public class AccountManagerController extends BaseController {
 					throws Exception {
 		init();
 		WsResponse<CheckInfo> apiResponse = null;
-		final AccountDto account = authenticationService.getAccount(authToken);
-		final String userId = account.getUserId();
 		try {
-			final Date currentDate = df.parse(currentDateyyyymmddhh24miss);
-			accountService.setLinkNumber(userId, linkNumber, currentDate);
-			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",
-					null);
-		} catch (final Exception e) {
-			e.printStackTrace();
+			final AccountDto account = authenticationService.getAccount(authToken);
+			final String userId = account.getUserId();
+			try {
+				final Date currentDate = df.parse(currentDateyyyymmddhh24miss);
+				accountService.setLinkNumber(userId, linkNumber, currentDate);
+				apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",
+						null);
+			} catch (final Exception e) {
+				apiResponse = new WsResponse<CheckInfo>(ResponseStatus.failure,
+						e.getMessage(), null);
+			}
+		} catch(final AuthenticationTokenExpiredException e){
 			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = { "/Mobile/SetAccountInfo", // This will be
-			// deprecated
+	@RequestMapping(value = { "/Mobile/SetAccountInfo",
 			"/Member/SetAccountInfo", "/SetAccountInfo" })
 	public ModelAndView updateAccount(
 			final Principal principal,

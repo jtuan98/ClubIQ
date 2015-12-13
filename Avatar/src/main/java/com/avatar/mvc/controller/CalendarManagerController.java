@@ -38,7 +38,7 @@ public class CalendarManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
 			@RequestParam(required = false, value = "month") final String monthParam /* month is 1-12 */)
 					throws Exception {
 		init();
@@ -58,7 +58,7 @@ public class CalendarManagerController extends BaseController {
 		WsResponse<List<BlackoutDate>> apiResponse = null;
 		try {
 			final List<BlackoutDate> dates = beaconService.getBlackoutDates(
-					clubId, amenityId, month);
+					clubId, subAmenityId, month);
 			apiResponse = new WsResponse<List<BlackoutDate>>(
 					ResponseStatus.success, "", dates, "blackoutDates");
 		} catch (final Exception e) {
@@ -74,7 +74,7 @@ public class CalendarManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
 			@RequestParam(required = false, value = "requestedDate") final String requestedDateMMDD)
 					throws Exception {
 		init();
@@ -90,7 +90,7 @@ public class CalendarManagerController extends BaseController {
 		WsResponse<List<BlackoutTime>> apiResponse = null;
 		try {
 			final List<BlackoutTime> times = beaconService.getBlackoutTimes(
-					clubId, amenityId, requestedDateMMDD);
+					clubId, subAmenityId, requestedDateMMDD);
 			apiResponse = new WsResponse<List<BlackoutTime>>(
 					ResponseStatus.success, "", times, "blackoutTimes");
 		} catch (final Exception e) {

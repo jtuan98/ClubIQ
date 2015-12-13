@@ -24,15 +24,15 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	private static final String INS_RESERVATION = "INSERT INTO USER_RESERVATIONS (ID, RESERVATION_NUMBER, "
 			+ "USER_ID,"
 			+ "CLUB_ID,"
-			+ "AMENITY_ID,"
+			+ "SUBAMENITY_ID,"
 			+ "NO_PERSONS,"
-			+ "ACTIVATION_DATE) VALUES (?,?,?,?,?,?,?) ";
+			+ "RESERVATION_DATE) VALUES (?,?,?,?,?,?,?) ";
 
-	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT * FROM USER_RESERVATIONS UR WHERE USER_ID = ? AND RESERVATION_NUMBER = ?";
+	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, CSA.NAME SUBAMENITY_NAME, c.CLUBID FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES csa, CLUBS c WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND USER_ID = ? AND RESERVATION_NUMBER = ?";
 
-	private static final String SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID = "SELECT DAY(BLACKOUT_DATE) BLACKOUT_DAY FROM AMENITY_BLACKOUT where club_id = ? and amenity_id = ? and YEAR(BLACKOUT_DATE) = YEAR(NOW()) and MONTH(BLACKOUT_DATE) = ? ORDER BY 1";
+	private static final String SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID = "SELECT DAY(BLACKOUT_DATE) BLACKOUT_DAY FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = YEAR(NOW()) and MONTH(BLACKOUT_DATE) = ? ORDER BY 1";
 
-	private static final String SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID = "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and amenity_id = ? and YEAR(BLACKOUT_DATE) = YEAR(NOW()) and MONTH(BLACKOUT_DATE) = ? and DAY(BLACKOUT_DATE) = ? LIMIT 1";
+	private static final String SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID = "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = YEAR(NOW()) and MONTH(BLACKOUT_DATE) = ? and DAY(BLACKOUT_DATE) = ? LIMIT 1";
 
 	private final ReservationMapper reservationMapper = new ReservationMapper();
 
@@ -41,19 +41,19 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	private final BlackoutTimesMapper blackoutTimesMapper = new BlackoutTimesMapper();
 
 	@Override
-	public List<BlackoutDate> fetchBlackoutDates(final int clubIdPk, final int amenityIdPk,
+	public List<BlackoutDate> fetchBlackoutDates(final int clubIdPk, final int subAmenityIdPk,
 			final String month) {
 		final List<BlackoutDate> retVal = getJdbcTemplate().query(SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID,
-				blackoutDateMapper, clubIdPk, amenityIdPk, month);
+				blackoutDateMapper, clubIdPk, subAmenityIdPk, month);
 		return retVal;
 	}
 	@Override
-	public List<BlackoutTime> fetchBlackoutTimes(final int clubIdPk, final int amenityIdPk,
+	public List<BlackoutTime> fetchBlackoutTimes(final int clubIdPk, final int subAmenityIdPk,
 			final String month, final String day) {
 		List<BlackoutTime> retVal = null;
 		try {
 			retVal = getJdbcTemplate().queryForObject(SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID,
-					blackoutTimesMapper, clubIdPk, amenityIdPk, Integer.parseInt(month), Integer.parseInt(day));
+					blackoutTimesMapper, clubIdPk, subAmenityIdPk, Integer.parseInt(month), Integer.parseInt(day));
 		} catch(final EmptyResultDataAccessException e) {
 
 		}
@@ -73,13 +73,13 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	}
 
 	@Override
-	public Number reserve(final int clubIdPk, final int amenityIdPk,
+	public Number reserve(final int clubIdPk, final int subAmenityIdPk,
 			final int userIdPk, final int numberOfPeople,
 			final Date reservationDate, final String reservationNumber)
 					throws NotFoundException {
 		final int idReservationAdded = sequencer.nextVal("ID_SEQ");
 		getJdbcTemplate().update(INS_RESERVATION, idReservationAdded,
-				reservationNumber, clubIdPk, amenityIdPk, userIdPk,
+				reservationNumber, userIdPk, clubIdPk, subAmenityIdPk,
 				numberOfPeople, reservationDate);
 		return idReservationAdded;
 	}

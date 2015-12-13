@@ -82,13 +82,13 @@ public final class AccountDaoSql {
 	public static String VALIDATE_USERID_NOPASSWD = " SELECT count(*) from USERS where ID = ? and STATUS = '"
 			+ AccountStatus.Activated.name() + "'";
 
-	public static String INS_AMENITY_EMPLOYEE = "INSERT INTO AMENITY_EMPLOYEE (ID, CLUB_AMENITY_ID, USER_ID, CREATE_DATE) VALUES (?,?,?,NOW())";
+	public static String INS_SUBAMENITY_EMPLOYEE = "INSERT INTO AMENITY_EMPLOYEE (ID, CLUB_SUBAMENITY_ID, USER_ID, CREATE_DATE) VALUES (?,?,?,NOW())";
 
-	public static String UPD_AMENITY_EMPLOYEE = "UPDATE AMENITY_EMPLOYEE SET CLUB_AMENITY_ID=?, CREATE_DATE=NOW() WHERE USER_ID=? ";
+	public static String UPD_SUBAMENITY_EMPLOYEE = "UPDATE AMENITY_EMPLOYEE SET CLUB_SUBAMENITY_ID=?, CREATE_DATE=NOW() WHERE USER_ID=? ";
 
-	public static String SEL_AMENITY_ID_BY_USERID = "select distinct CLUB_AMENITY_ID from AMENITY_EMPLOYEE where USER_ID = ? ";
+	public static String SEL_SUBAMENITY_ID_BY_USERID = "select distinct CLUB_SUBAMENITY_ID from AMENITY_EMPLOYEE where USER_ID = ? ";
 
-	public static String SEL_AMENITY_USER_EXISTS = "select count(*) from AMENITY_EMPLOYEE where CLUB_AMENITY_ID = ? and USER_ID = ? ";
+	public static String SEL_SUBAMENITY_USER_EXISTS = "select count(*) from AMENITY_EMPLOYEE where CLUB_SUBAMENITY_ID = ? and USER_ID = ? ";
 
 	public static String INS_NOTES = "INSERT INTO USER_NOTES (ID, USER_ID, NOTE_TEXT, NOTE_DATE) VALUES (?,?,?,?)";
 

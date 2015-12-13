@@ -16,9 +16,11 @@ import com.avatar.dao.ClubDao;
 import com.avatar.dao.impl.jdbc.mapper.AmenityMapper;
 import com.avatar.dao.impl.jdbc.mapper.ClubDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.StringMapper;
+import com.avatar.dao.impl.jdbc.mapper.SubAmenityDtoMapper;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.ClubListingSortBy;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.NotFoundException;
@@ -35,14 +37,15 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private static String GET_CLUBIDPK = "SELECT ID FROM CLUBS WHERE CLUBID=?";
 	private static String GET_CLUBIDPK_BYKEYCODE = "SELECT CLUB_ID FROM CLUB_KEYS WHERE KEYCODE = ?";
-
 	private static String SEL_AMENITY_PK_BY_AMENITYID = "SELECT ID FROM CLUB_AMENITIES WHERE AMENITYID = ? ";
-	private static String SEL_AMENITY_BY_PK = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
+	private static String SEL_AMENITIES_BY_CLUBID= "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? ORDER BY ORDERING";
+	private static String SEL_SUBAMENITY_PK_BY_SUBAMENITYID = "SELECT ID FROM CLUB_SUB_AMENITIES WHERE SUBAMENITYID = ? ";
+	private static String SEL_SUBAMENITY_BY_PK = "SELECT CA.*, AT.AMENITYID FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_ID ";
 
-	private static String SEL_AMENITIES_BY_CLUBID = "SELECT CA.*, AT.NAME FROM CLUB_AMENITIES CA, AMENITY_TYPES AT WHERE CLUB_ID = ? and AT.ID = CA.AMENITY_TYPE_ID ";
+	private static String SEL_SUBAMENITIES_BY_CLUBID = "SELECT CA.*, AT.AMENITYID FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.CLUB_ID = ? and AT.ID = CA.AMENITY_ID ";
 
-	private static String SEL_AMENITIES_BY_CLUBID_AMENITY_TYPE = SEL_AMENITIES_BY_CLUBID
-			+ " AND UPPER(AT.NAME)=UPPER(?)";
+	private static String SEL_SUBAMENITIES_BY_CLUBID_AMENITYID = SEL_SUBAMENITIES_BY_CLUBID
+			+ " AND UPPER(AT.AMENITYID)=UPPER(?)";
 
 	private static String UPD_CLUB_INFO = "update CLUBS set NAME=?, ADDRESS=?, ZIPCODE=?,"
 			+ "CITY=?, STATE_ABBR=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=?, TIME_ZONE=?, X_COORD=?, Y_COORD=? "
@@ -65,13 +68,22 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	private static final String GET_CLUBS_BY_STATE = "select C.*, RS.STATE_NAME FROM CLUBS C, REF_STATES RS where C.STATE_ABBR = RS.STATE_ABBR AND (UPPER(RS.STATE_NAME) = ? OR RS.STATE_ABBR=?)  ORDER BY ";
 	private static final String GET_ALL_CLUBS = "select C.*, RS.STATE_NAME FROM CLUBS C, REF_STATES RS where C.STATE_ABBR = RS.STATE_ABBR ORDER BY ";
 
-	private static final String UPD_CLUB_AMENITY = "UPDATE CLUB_AMENITIES set COLUMN=? where CLUB_ID = ? and ID = ?";
-	private static final String UPD_CLUB_AMENITY_BODY = UPD_CLUB_AMENITY.replace("COLUMN", "BODY_TEXT");
-	private static final String UPD_CLUB_AMENITY_HEADER = UPD_CLUB_AMENITY.replace("COLUMN", "HEADER_TEXT");
-	private static final String UPD_CLUB_AMENITY_SECONDARY_HEADER = UPD_CLUB_AMENITY.replace("COLUMN", "SECONDARY_HEADER_TEXT");
+	private static final String UPD_CLUB_AMENITY_HEADER = "UPDATE CLUB_AMENITIES set HEADER = ? where CLUB_ID = ? and ID = ?";
+	private static final String UPD_CLUB_SUBAMENITY = "UPDATE CLUB_SUB_AMENITIES set COLUMN=? where CLUB_ID = ? and ID = ?";
+	private static final String UPD_CLUB_SUBAMENITY_BODY = UPD_CLUB_SUBAMENITY.replace("COLUMN", "BODY_TEXT");
+	private static final String UPD_CLUB_SUBAMENITY_HEADER = UPD_CLUB_SUBAMENITY.replace("COLUMN", "HEADER_TEXT");
+	private static final String UPD_CLUB_SUBAMENITY_SECONDARY_HEADER = UPD_CLUB_SUBAMENITY.replace("COLUMN", "SECONDARY_HEADER_TEXT");
 	private static final String UPD_CLUB = "UPDATE CLUBS SET COLUMN = ? where ID = ?";
 	private static final String UPD_CLUB_BODY = UPD_CLUB.replace("COLUMN", "BODY_TEXT");
 	private static final String UPD_CLUB_HEADER = UPD_CLUB.replace("COLUMN", "HEADER_TEXT");
+
+	private final static String GET_AMENITY_HEADER_TEXT = "select HEADER FROM CLUB_AMENITIES where CLUB_ID = ? and ID = ? ";
+
+	private final static String GET_SUBAMENITY_BODY_TEXT = "select BODY_TEXT FROM CLUB_SUB_AMENITIES where CLUB_ID = ? and ID = ? ";
+	private final static String GET_SUBAMENITY_HEADER_TEXT = "select HEADER_TEXT FROM CLUB_SUB_AMENITIES where CLUB_ID = ? and ID = ? ";
+
+	private final static String GET_SUBAMENITY_SECONDARY_HEADER_TEXT = "select SECONDARY_HEADER_TEXT FROM CLUB_SUB_AMENITIES where CLUB_ID = ? and ID = ? ";
+	private static String GET_SUBAMENITY_DEPT_NAMES = "SELECT CA.SUBAMENITYID FROM CLUB_SUB_AMENITIES CA WHERE CLUB_ID=? ORDER BY 1";
 
 	@Resource(name = "accountDaoJdbc")
 	private AccountDao accountDao;
@@ -79,6 +91,8 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	private final ClubDtoMapper clubDtoMapper = new ClubDtoMapper();
 
 	private final AmenityMapper amenityMapper = new AmenityMapper();
+
+	private final SubAmenityDtoMapper subAmenityMapper = new SubAmenityDtoMapper();
 
 	private final StringMapper stringMapper = new StringMapper();
 
@@ -165,32 +179,14 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public List<AmenityDto> getAmenities(final Integer clubIdPk,
-			final String amenityType) throws NotFoundException {
-		final List<AmenityDto> amenities = getJdbcTemplate().query(
-				SEL_AMENITIES_BY_CLUBID_AMENITY_TYPE, amenityMapper, clubIdPk,
-				amenityType);
-		return amenities;
-	}
-
-	@Override
-	public AmenityDto getAmenity(final Integer amenityIdPk)
+	public String getAmenityHeaderText(final int clubIdPk, final int amenityIdPk)
 			throws NotFoundException {
+		String retVal = "";
 		try {
-			final AmenityDto amenity = getJdbcTemplate().queryForObject(
-					SEL_AMENITY_BY_PK, amenityMapper, amenityIdPk);
-			return amenity;
-		} catch (final IncorrectResultSizeDataAccessException e) {
-			throw new NotFoundException("Club Amenity " + amenityIdPk
-					+ " not found!");
+			retVal = getJdbcTemplate().queryForObject(
+					GET_AMENITY_HEADER_TEXT, stringMapper, clubIdPk, amenityIdPk);
+		} catch (final EmptyResultDataAccessException e) {
 		}
-	}
-
-	@Override
-	public List<Integer> getAmenityEmployees(final Integer clubAmenityId)
-			throws NotFoundException {
-		final List<Integer> retVal = getJdbcTemplate().queryForList(
-				GET_EMPLOYEES_FOR_AMENITY_PK, Integer.class, clubAmenityId);
 		return retVal;
 	}
 
@@ -206,14 +202,14 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public Integer getClubAmenityIdPk(final String clubAmenityId)
+	public Integer getClubAmenityIdPk(final String amenityId)
 			throws NotFoundException {
 		try {
 			final Integer amenityIdPk = getJdbcTemplate().queryForObject(
-					SEL_AMENITY_PK_BY_AMENITYID, Integer.class, clubAmenityId);
+					SEL_AMENITY_PK_BY_AMENITYID, Integer.class, amenityId);
 			return amenityIdPk;
 		} catch (final IncorrectResultSizeDataAccessException e) {
-			throw new NotFoundException("Club Amenity " + clubAmenityId
+			throw new NotFoundException("Club Amenity " + amenityId
 					+ " not found!");
 		}
 	}
@@ -259,6 +255,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 		return clubs;
 	}
 
+
 	@Override
 	public List<ClubDto> getClubsByState(final String state,
 			final ClubListingSortBy orderByClause) {
@@ -275,12 +272,102 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 		return clubs;
 	}
 
+
+	@Override
+	public Integer getClubSubAmenityIdPk(final String clubSubAmenityId)
+			throws NotFoundException {
+		try {
+			final Integer subAmenityIdPk = getJdbcTemplate().queryForObject(
+					SEL_SUBAMENITY_PK_BY_SUBAMENITYID, Integer.class, clubSubAmenityId);
+			return subAmenityIdPk;
+		} catch (final IncorrectResultSizeDataAccessException e) {
+			throw new NotFoundException("Club Sub Amenity " + clubSubAmenityId
+					+ " not found!");
+		}
+	}
+
 	@Override
 	public String getHeadlineText(final int clubIdPk) {
 		String retVal = "";
 		try {
 			retVal = getJdbcTemplate().queryForObject(GET_CLUB_HEADLINE_TEXT,
 					stringMapper, clubIdPk);
+		} catch (final EmptyResultDataAccessException e) {
+		}
+		return retVal;
+	}
+
+	@Override
+	public List<SubAmenityDto> getSubAmenities(final Integer clubIdPk,
+			final String amenityId) throws NotFoundException {
+		final List<SubAmenityDto> amenities = getJdbcTemplate().query(
+				SEL_SUBAMENITIES_BY_CLUBID_AMENITYID, subAmenityMapper, clubIdPk,
+				amenityId);
+		return amenities;
+	}
+
+	@Override
+	public SubAmenityDto getSubAmenity(final Integer subAmenityIdPk)
+			throws NotFoundException {
+		try {
+			final SubAmenityDto subAmenity = getJdbcTemplate().queryForObject(
+					SEL_SUBAMENITY_BY_PK, subAmenityMapper, subAmenityIdPk);
+			return subAmenity;
+		} catch (final IncorrectResultSizeDataAccessException e) {
+			throw new NotFoundException("Club SUB Amenity " + subAmenityIdPk
+					+ " not found!");
+		}
+	}
+
+	@Override
+	public String getSubAmenityBodyText(final int clubIdPk, final int subAmenityIdPk) {
+		String retVal = "";
+		try {
+			retVal = getJdbcTemplate().queryForObject(
+					GET_SUBAMENITY_BODY_TEXT, stringMapper, clubIdPk, subAmenityIdPk);
+		} catch (final EmptyResultDataAccessException e) {
+		}
+		return retVal;
+	}
+
+	@Override
+	public List<String> getSubAmenityDeptName(final String clubId)
+			throws NotFoundException {
+		try {
+			final Integer clubIdPk = getClubIdPk(clubId);
+			final List<String> deptName = getJdbcTemplate().query(
+					GET_SUBAMENITY_DEPT_NAMES, stringMapper, clubIdPk);
+			return deptName;
+		} catch (final EmptyResultDataAccessException e) {
+			throw new NotFoundException("Club : " + clubId + " not found!");
+		}
+	}
+
+	@Override
+	public List<Integer> getSubAmenityEmployees(final Integer clubAmenityId)
+			throws NotFoundException {
+		final List<Integer> retVal = getJdbcTemplate().queryForList(
+				GET_EMPLOYEES_FOR_AMENITY_PK, Integer.class, clubAmenityId);
+		return retVal;
+	}
+
+	@Override
+	public String getSubAmenityHeaderText(final int clubIdPk, final int subAmenityIdPk) {
+		String retVal = "";
+		try {
+			retVal = getJdbcTemplate().queryForObject(
+					GET_SUBAMENITY_HEADER_TEXT, stringMapper, clubIdPk, subAmenityIdPk);
+		} catch (final EmptyResultDataAccessException e) {
+		}
+		return retVal;
+	}
+
+	@Override
+	public String getSubAmenitySecondayHeaderText(final int clubIdPk, final int subAmenityIdPk) {
+		String retVal = "";
+		try {
+			retVal = getJdbcTemplate().queryForObject(
+					GET_SUBAMENITY_SECONDARY_HEADER_TEXT, stringMapper, clubIdPk, subAmenityIdPk);
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
@@ -319,21 +406,9 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public void updateAmenityBody(final Integer clubIdPk, final Integer amenityIdPk,
-			final String bodyText) throws NotFoundException {
-		getJdbcTemplate().update(UPD_CLUB_AMENITY_BODY, bodyText, clubIdPk, amenityIdPk);
-	}
-
-	@Override
 	public void updateAmenityHeaderText(final Integer clubIdPk, final Integer amenityIdPk,
 			final String headerText) throws NotFoundException {
 		getJdbcTemplate().update(UPD_CLUB_AMENITY_HEADER, headerText, clubIdPk, amenityIdPk);
-	}
-
-	@Override
-	public void updateAmenitySecondaryHeaderText(final Integer clubIdPk, final Integer amenityIdPk,
-			final String headerText) throws NotFoundException {
-		getJdbcTemplate().update(UPD_CLUB_AMENITY_SECONDARY_HEADER, headerText, clubIdPk, amenityIdPk);
 	}
 
 	@Override
@@ -349,10 +424,29 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
+	public void updateSubAmenityBody(final Integer clubIdPk, final Integer subAmenityIdPk,
+			final String bodyText) throws NotFoundException {
+		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_BODY, bodyText, clubIdPk, subAmenityIdPk);
+	}
+
+	@Override
+	public void updateSubAmenityHeaderText(final Integer clubIdPk, final Integer subAmenityIdPk,
+			final String headerText) throws NotFoundException {
+		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_HEADER, headerText, clubIdPk, subAmenityIdPk);
+	}
+
+	@Override
+	public void updateSubAmenitySecondaryHeaderText(final Integer clubIdPk, final Integer subAmenityIdPk,
+			final String headerText) throws NotFoundException {
+		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_SECONDARY_HEADER, headerText, clubIdPk, subAmenityIdPk);
+	}
+
+	@Override
 	public boolean verifyClubPin(final String clubPin) {
 		final Integer counter = getJdbcTemplate().queryForObject(
 				COUNT_CLUB_PIN, Integer.class, clubPin);
 		return counter > 0;
 	}
+
 
 }

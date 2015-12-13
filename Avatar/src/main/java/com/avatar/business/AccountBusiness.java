@@ -19,10 +19,10 @@ public interface AccountBusiness {
 	boolean activateMobileAccount(String mobileNumber, String deviceId,
 			String activationToken, Date activatedDate) throws InvalidParameterException;
 
-	void addAmenityToUser(String userId, String amenityId)
-			throws NotFoundException, InvalidParameterException;
-
 	void addNote(String memberId, String noteText, DateTime parseDateTime)throws NotFoundException;
+
+	void addSubAmenityToUser(String userId, String amenityId)
+			throws NotFoundException, InvalidParameterException;
 
 	void cancelMembership(String userId, Date currentDate)  throws NotFoundException;
 
@@ -51,7 +51,7 @@ public interface AccountBusiness {
 
 	//Returns availId
 	String updateCheckInfo(String userId, String requestedClubId,
-			String amenityId, int numOfPerson, Date requestedDateTime) throws NotFoundException;
+			String subAmenityId, int numOfPerson, Date requestedDateTime) throws NotFoundException;
 
 	// SNS token is different than the activation Token.
 	void updateUserTangerineHandSetId(String userId, String deviceId,

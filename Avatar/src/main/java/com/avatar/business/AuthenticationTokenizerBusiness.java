@@ -13,10 +13,10 @@ import com.avatar.exception.NotFoundException;
 public interface AuthenticationTokenizerBusiness {
 
 	AccountDto getAccount(String token) throws NotFoundException,
-	AuthenticationTokenExpiredException;
+	AuthenticationTokenExpiredException, InvalidParameterException;
 
 	Set<Privilege> getRoles(String token) throws NotFoundException,
-	AuthenticationTokenExpiredException;
+	AuthenticationTokenExpiredException, InvalidParameterException;
 
 	AuthenticationTokenPrincipal getToken(String userId, String password)
 			throws InvalidPasswordException, NotFoundException, InvalidParameterException;

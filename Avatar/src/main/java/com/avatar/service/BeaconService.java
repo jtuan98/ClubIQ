@@ -26,6 +26,7 @@ import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.BlackoutDate;
 import com.avatar.dto.club.BlackoutTime;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.ClubListingSortBy;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
@@ -61,11 +62,11 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		final AccountDto member = accountDao.fetch(userId);
 
 		// Find the amenity associated to beacon
-		final Integer clubAmenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
+		final Integer clubAmenityIdPk = beaconDao.getSubAmenityIdPk(beaconIdPk);
 
 		// Find the staff associated to amenity
 		final List<Integer> amenityEmployeeIdsPk = clubDao
-				.getAmenityEmployees(clubAmenityIdPk);
+				.getSubAmenityEmployees(clubAmenityIdPk);
 		// Send alert to staff
 		if (CollectionUtils.isNotEmpty(amenityEmployeeIdsPk)) {
 			System.out.println("DEBUG: amenityEmployeeIdsPk=>"
@@ -124,34 +125,11 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
-	public String getAmenityBodyText(final String clubId, final String amenityId)
-			throws NotFoundException {
-		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-
-		return beaconDao.getAmenityBodyText(clubIdPk, amenityIdPk);
-	}
-
-	@Override
-	public List<String> getAmenityDeptName(final String clubId)
-			throws NotFoundException {
-		return beaconDao.getAmenityDeptName(clubId);
-	}
-
-	@Override
 	public String getAmenityHeaderText(final String clubId,
 			final String amenityId) throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
 		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-		return beaconDao.getAmenityHeaderText(clubIdPk, amenityIdPk);
-	}
-
-	@Override
-	public String getAmenitySecondaryHeaderText(final String clubId,
-			final String amenityId) throws NotFoundException {
-		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-		return beaconDao.getAmenitySecondayHeaderText(clubIdPk, amenityIdPk);
+		return clubDao.getAmenityHeaderText(clubIdPk, amenityIdPk);
 	}
 
 	@Override
@@ -163,47 +141,35 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 
 	@Override
 	public List<BeaconDto> getBeacons(final String clubId,
-			final String amenityId) throws NotFoundException {
+			final String subAmenityId) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-		return beaconDao.getBeacons(clubIdPk, amenityIdPk);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		return beaconDao.getBeacons(clubIdPk, subAmenityIdPk);
 	}
 
 	@Override
 	public List<BlackoutDate> getBlackoutDates(final String clubId,
-			final String amenityId, final String month)
+			final String subAmenityId, final String month)
 					throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
 		List<BlackoutDate> retVal = null;
 		if (!mockingBlackoutDates) {
-			retVal = reservationDao.fetchBlackoutDates(clubIdPk, amenityIdPk,
+			retVal = reservationDao.fetchBlackoutDates(clubIdPk, subAmenityIdPk,
 					month);
-		} else {
-			// TODO Mocking only. PHASE 2
-			retVal = new LinkedList<BlackoutDate>();
-			final Set<Integer> dates = new TreeSet<Integer>();
-			for (int i = 0; i < 15; i++) {
-				dates.add((int) (Math.round(Math.random() * 100) % 30) + 1);
-			}
-			for (final Integer date : dates) {
-				final BlackoutDate d = new BlackoutDate();
-				d.setDate(date.toString());
-				retVal.add(d);
-			}
 		}
 		return retVal;
 	}
 
 	@Override
 	public List<BlackoutTime> getBlackoutTimes(final String clubId,
-			final String amenityId, final String requestedDateMMDD)
+			final String subAmenityId, final String requestedDateMMDD)
 					throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
 		List<BlackoutTime> retVal = null;
 		if (!mockingBlackoutDates) {
-			retVal = reservationDao.fetchBlackoutTimes(clubIdPk, amenityIdPk,
+			retVal = reservationDao.fetchBlackoutTimes(clubIdPk, subAmenityIdPk,
 					requestedDateMMDD.substring(0, 2),
 					requestedDateMMDD.substring(2, 4));
 		} else {
@@ -279,34 +245,47 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
-	public List<AmenityDto> getSubAmenityList(final String clubId,
-			final String amenityType) throws NotFoundException {
+	public String getSubAmenityBodyText(final String clubId, final String subAmenityId)
+			throws NotFoundException {
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+
+		return clubDao.getSubAmenityBodyText(clubIdPk, subAmenityIdPk);
+	}
+
+	@Override
+	public List<String> getSubAmenityDeptName(final String clubId)
+			throws NotFoundException {
+		return clubDao.getSubAmenityDeptName(clubId);
+	}
+
+	@Override
+	public String getSubAmenityHeaderText(final String clubId, final String subAmenityId)
+			throws NotFoundException {
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		return clubDao.getSubAmenityHeaderText(clubIdPk, subAmenityIdPk);
+	}
+
+	@Override
+	public List<SubAmenityDto> getSubAmenityList(final String clubId,
+			final String amenityId) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		return clubDao.getAmenities(clubIdPk, amenityType);
+		return clubDao.getSubAmenities(clubIdPk, amenityId);
+	}
+
+	@Override
+	public String getSubAmenitySecondaryHeaderText(final String clubId,
+			final String subAmenityId) throws NotFoundException {
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		return clubDao.getSubAmenitySecondayHeaderText(clubIdPk, subAmenityIdPk);
 	}
 
 	@Override
 	public List<ImmutablePair<AccountDto, Date>> getUsers(
-			final String amenityId, final Date onDate) {
-		return beaconDao.getUsers(amenityId, onDate);
-	}
-
-	@Override
-	public void setAmenityBodyText(final String clubId, final String amenityId,
-			final String bodyText) throws NotFoundException {
-		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-		clubDao.updateAmenityBody(clubIdPk, amenityIdPk, bodyText);
-	}
-
-	@Override
-	public void setAmenityDeptName(final String clubId, final String apnsToken,
-			final String amenityDepartment) throws NotFoundException {
-		if (StringUtils.isEmpty(amenityDepartment)) {
-			beaconDao.setApnsToken(clubId, apnsToken);
-		} else {
-			beaconDao.setAmenityDeptName(clubId, apnsToken, amenityDepartment);
-		}
+			final String subAmenityId, final Date onDate) {
+		return beaconDao.getUsers(subAmenityId, onDate);
 	}
 
 	@Override
@@ -316,15 +295,6 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
 		clubDao.updateAmenityHeaderText(clubIdPk, amenityIdPk, headerText);
-	}
-
-	@Override
-	public void setAmenitySecondaryHeaderText(final String clubId,
-			final String amenityId, final String headerText)
-					throws NotFoundException {
-		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
-		clubDao.updateAmenitySecondaryHeaderText(clubIdPk, amenityIdPk, headerText);
 	}
 
 	@Override
@@ -339,6 +309,41 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		clubDao.updateHeaderText(clubIdPk, headerText);
+	}
+
+	@Override
+	public void setSubAmenityBodyText(final String clubId, final String subAmenityId,
+			final String bodyText) throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		clubDao.updateSubAmenityBody(clubIdPk, subAmenityIdPk, bodyText);
+	}
+
+	@Override
+	public void setSubAmenityHeaderText(final String clubId, final String subAmenityId,
+			final String headerText) throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		clubDao.updateSubAmenityHeaderText(clubIdPk, subAmenityIdPk, headerText);
+	}
+
+	@Override
+	public void setSubAmenityId(final String clubId, final String apnsToken,
+			final String amenityId, final String subAmenityId) throws NotFoundException {
+		if (StringUtils.isEmpty(subAmenityId)) {
+			beaconDao.setApnsToken(clubId, apnsToken);
+		} else {
+			beaconDao.setSubAmenityId(clubId, apnsToken, amenityId, subAmenityId);
+		}
+	}
+
+	@Override
+	public void setSubAmenitySecondaryHeaderText(final String clubId,
+			final String subAmenityId, final String headerText)
+					throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		clubDao.updateSubAmenitySecondaryHeaderText(clubIdPk, subAmenityIdPk, headerText);
 	}
 
 	@Override
@@ -389,20 +394,20 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			throws NotFoundException {
 		Assert.notNull(beacon, "Checking beacon");
 		Assert.notNull(beacon.getClub(), "Checking club");
-		Assert.notNull(beacon.getAmenity(), "Checking amenity");
+		Assert.notNull(beacon.getSubAmenity(), "Checking sub amenity");
 		Assert.notNull(beacon.getInstallerStaff(), "Checking installer");
 		Assert.notNull(beacon.getClub().getClubId(), "Checking club id");
-		Assert.notNull(beacon.getAmenity().getAmenityId(),
-				"Checking amenity id");
+		Assert.notNull(beacon.getSubAmenity().getSubAmenityId(),
+				"Checking sub amenity id");
 		Assert.notNull(beacon.getInstallerStaff().getUserId(),
 				"Checking installer userid ");
 		// Find the pk
 		final Integer clubIdPk = clubDao.getClubIdPk(beacon.getClub()
 				.getClubId());
 		beacon.getClub().setId(clubIdPk);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(beacon
-				.getAmenity().getAmenityId());
-		beacon.getAmenity().setId(amenityIdPk);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(beacon
+				.getSubAmenity().getSubAmenityId());
+		beacon.getSubAmenity().setId(subAmenityIdPk);
 		final Integer installerIdPk = accountDao.getUserIdPkByUserId(beacon
 				.getInstallerStaff().getUserId());
 		beacon.getInstallerStaff().setId(installerIdPk);

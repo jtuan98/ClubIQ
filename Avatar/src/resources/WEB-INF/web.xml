@@ -48,6 +48,9 @@
 		<web-resource-collection>
 			<web-resource-name>Public</web-resource-name>
 			<url-pattern>/1/AcctMgr/GetMemberAcct</url-pattern>
+			<url-pattern>/1/AcctMgr/GetAccountInfo</url-pattern>
+			<url-pattern>/1/AcctMgr/AddClubSubAmenityToAccount</url-pattern>
+			<url-pattern>/1/AcctMgr/get*</url-pattern>
 			<url-pattern>/1/BeaconMgr/*</url-pattern>
 			<url-pattern>/1/CalendarMgr/*</url-pattern>
 			<url-pattern>/1/AvailabilityMgr/*</url-pattern>
@@ -65,8 +68,7 @@
 			<url-pattern>/1/AcctMgr/Member/*</url-pattern>
 			<url-pattern>/1/AcctMgr/NonMobile/*</url-pattern>
 			<url-pattern>/1/AcctMgr/Employee/*</url-pattern>
-			<url-pattern>/1/AcctMgr/Mobile/MapTangerineHandsetIDwithUser</url-pattern>
-			<url-pattern>/1/AcctMgr/Member/MapTangerineHandsetIDwithUser</url-pattern>
+			<url-pattern>/1/AcctMgr/MapTangerineHandsetIDwithUser</url-pattern>
 			<url-pattern>/1/AcctMgr/AddClubAmenityToAccount</url-pattern>
 			<url-pattern>/1/AcctMgr/SetAccountInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/SetEmployeeAccountInfo</url-pattern>

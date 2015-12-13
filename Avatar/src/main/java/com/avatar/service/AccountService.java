@@ -26,8 +26,8 @@ import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.account.MobileActivationPin;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.CheckInfo;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.DbTimeZone;
 import com.avatar.dto.enums.Privilege;
@@ -144,19 +144,19 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public void addAmenityToUser(final String userId, final String clubAmenityId)
+	public void addSubAmenityToUser(final String userId, final String clubSubAmenityId)
 			throws NotFoundException, InvalidParameterException {
 		if (StringUtils.isEmpty(userId)) {
 			throw new InvalidParameterException("UserId cannot be null");
 		}
-		if (StringUtils.isEmpty(clubAmenityId)) {
+		if (StringUtils.isEmpty(clubSubAmenityId)) {
 			throw new InvalidParameterException("ClubAmenityId cannot be null");
 		}
 
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
-		final Integer clubAmenityIdPk = clubDao
-				.getClubAmenityIdPk(clubAmenityId);
-		accountDao.addAmenityToUser(userIdPk, clubAmenityIdPk);
+		final Integer clubSubAmenityIdPk = clubDao
+				.getClubSubAmenityIdPk(clubSubAmenityId);
+		accountDao.addSubAmenityToUser(userIdPk, clubSubAmenityIdPk);
 	}
 
 	@Override
@@ -222,16 +222,16 @@ public class AccountService extends BaseService implements AccountBusiness {
 				} catch (final NotFoundException | InvalidParameterException e) {
 				}
 
-				// Verify amenity id
+				// Verify sub amenity id
 				if (!mobile) {
 					final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) accountInfo;
-					if (employeeAccountInfo.getAmenity() != null) {
-						final Integer amenityIdPk = clubDao
-								.getClubAmenityIdPk(employeeAccountInfo.getAmenity()
-										.getAmenityId());
-						final AmenityDto amenityFromDb = clubDao
-								.getAmenity(amenityIdPk);
-						employeeAccountInfo.getAmenity().makeCopy(amenityFromDb);
+					if (employeeAccountInfo.getSubAmenity() != null) {
+						final Integer subAmenityIdPk = clubDao
+								.getClubSubAmenityIdPk(employeeAccountInfo.getSubAmenity()
+										.getSubAmenityId());
+						final SubAmenityDto subAmenityFromDb = clubDao
+								.getSubAmenity(subAmenityIdPk);
+						employeeAccountInfo.getSubAmenity().makeCopy(subAmenityFromDb);
 					}
 				}
 				// Persist account info
@@ -306,8 +306,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 				//Mocking only.
 				retVal = new CheckInfo();
 				retVal.setAvailId(availId);
-				retVal.setAmenityId("myBar1");
-				retVal.setAmenityName("My Bar One");
+				retVal.setSubAmenityId("myBar1");
+				retVal.setSubAmenityName("My Bar One");
 				retVal.setPersonNumber(5);
 				retVal.setRequestedClubId("Gentlemens club");
 				retVal.setRequestedDateTime(new Date());
@@ -399,13 +399,13 @@ public class AccountService extends BaseService implements AccountBusiness {
 	// Phase 2
 	@Override
 	public String updateCheckInfo(final String userId,
-			final String requestedClubId, final String amenityId,
+			final String requestedClubId, final String subAmenityId,
 			final int numOfPerson, final Date requestedDateTime) throws NotFoundException {
 		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 		final int clubIdPk = clubDao.getClubIdPk(requestedClubId);
-		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
 		final String reservationId = UUID.randomUUID().toString();
-		reservationDao.reserve(clubIdPk, amenityIdPk, userIdPk, numOfPerson, requestedDateTime, reservationId);
+		reservationDao.reserve(clubIdPk, subAmenityIdPk, userIdPk, numOfPerson, requestedDateTime, reservationId);
 		return reservationId;
 	}
 

@@ -1,11 +1,11 @@
 package com.avatar.dto.account;
 
-import com.avatar.dto.club.AmenityDto;
+import com.avatar.dto.club.SubAmenityDto;
 
 // Club staffs
 public class EmployeeAccountDto extends AccountDto {
-	private AmenityDto amenity; // which amenities does this user work
-								// for.
+	private SubAmenityDto subAmenity; // which sub amenities does this user work
+	// for.
 
 	public EmployeeAccountDto() {
 		super();
@@ -15,11 +15,11 @@ public class EmployeeAccountDto extends AccountDto {
 		setId(employeeId);
 	}
 
-	public AmenityDto getAmenity() {
-		return amenity;
+	public SubAmenityDto getSubAmenity() {
+		return subAmenity;
 	}
 
-	public void setAmenity(final AmenityDto amenity) {
-		this.amenity = amenity;
+	public void setSubAmenity(final SubAmenityDto subAmenity) {
+		this.subAmenity = subAmenity;
 	}
 }

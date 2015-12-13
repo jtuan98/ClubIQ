@@ -10,15 +10,11 @@ public class BeaconDto implements Serializable {
 	protected Integer id; // primary key.
 	protected String beaconActionId;
 	protected ClubDto club;
-	protected AmenityDto amenity;
+	protected SubAmenityDto subAmenity;
 	protected String location;
 	protected String description;
 	protected AccountDto installerStaff;
 	protected Date installationDate;
-
-	public AmenityDto getAmenity() {
-		return amenity;
-	}
 
 	public String getBeaconActionId() {
 		return beaconActionId;
@@ -48,16 +44,8 @@ public class BeaconDto implements Serializable {
 		return location;
 	}
 
-	public void setAmenity(final AmenityDto amenity) {
-		this.amenity = amenity;
-	}
-
-	public AmenityDto setAmenityId(final String amenityId) {
-		if (amenity == null) {
-			amenity = new AmenityDto();
-		}
-		amenity.setAmenityId(amenityId);
-		return amenity;
+	public SubAmenityDto getSubAmenity() {
+		return subAmenity;
 	}
 
 	public void setBeaconActionId(final String beaconid) {
@@ -102,5 +90,17 @@ public class BeaconDto implements Serializable {
 
 	public void setLocation(final String location) {
 		this.location = location;
+	}
+
+	public void setSubAmenity(final SubAmenityDto subAmenity) {
+		this.subAmenity = subAmenity;
+	}
+
+	public SubAmenityDto setSubAmenityId(final String subAmenityId) {
+		if (subAmenity == null) {
+			subAmenity = new SubAmenityDto();
+		}
+		subAmenity.setSubAmenityId(subAmenityId);
+		return subAmenity;
 	}
 }

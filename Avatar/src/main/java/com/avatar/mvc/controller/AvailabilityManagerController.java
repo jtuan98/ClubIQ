@@ -12,6 +12,7 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.CheckInfo;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.dto.serializer.DateSerializer;
 
 @Controller
 @RequestMapping(value = "/AvailabilityMgr")
@@ -40,11 +41,18 @@ public class AvailabilityManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@Override
+	protected void init() {
+		super.init();
+		final DateSerializer dateSerializer = new DateSerializer(yyyyMMdd_hh24missDtf);
+		jsonView.register(Date.class, dateSerializer);
+	}
+
 	@RequestMapping(value = { "/setCheckInfo", "/SetCheckInfo" })
 	public ModelAndView setCheckInfo(
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "requestedClubId") final String requestedClubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
 			@RequestParam(required = true, value = "numOfPerson", defaultValue = "1") final int numOfPerson,
 			@RequestParam(required = true, value = "requestedDateTime") final String requestedDateTimeyyyymmddhh24mi)
 					throws Exception {
@@ -55,7 +63,7 @@ public class AvailabilityManagerController extends BaseController {
 		try {
 			final Date requestedDateTime = yyyyMMdd_hh24missDtf.parseDateTime(requestedDateTimeyyyymmddhh24mi).toDate();
 			final String availId = accountService.updateCheckInfo(userId,
-					requestedClubId, amenityId, numOfPerson,
+					requestedClubId, subAmenityId, numOfPerson,
 					requestedDateTime);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					availId, "availId");

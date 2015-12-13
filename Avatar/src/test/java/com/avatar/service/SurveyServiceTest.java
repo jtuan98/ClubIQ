@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.avatar.dto.club.AmenityDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.survey.Survey;
 import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.InvalidParameterException;
@@ -142,7 +142,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		final String beaconId = "123";
 		final Integer beaconIdPk = 1;
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(beaconIdPk);
-		given(beaconDao.getAmenityIdPk(beaconIdPk)).willThrow(
+		given(beaconDao.getSubAmenityIdPk(beaconIdPk)).willThrow(
 				NotFoundException.class);
 		service.getNextSurvey(beaconId, memberId);
 	}
@@ -155,7 +155,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		final Integer beaconIdPk = 1;
 		final Integer amenityIdPk = 1;
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(beaconIdPk);
-		given(beaconDao.getAmenityIdPk(beaconIdPk)).willReturn(amenityIdPk);
+		given(beaconDao.getSubAmenityIdPk(beaconIdPk)).willReturn(amenityIdPk);
 		given(beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk)).willThrow(
 				NotFoundException.class);
 		service.getNextSurvey(beaconId, memberId);
@@ -177,17 +177,17 @@ public class SurveyServiceTest extends BaseServiceTest {
 			final boolean surveyIdsSinceBeginningFlag)
 					throws NotFoundException, InvalidParameterException {
 		final Integer beaconIdPk = 1;
-		final Integer amenityIdPk = 1;
+		final Integer subAmenityIdPk = 1;
 		final Integer clubIdPk = 1;
 		final Integer userIdPk = 1;
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(beaconIdPk);
-		given(beaconDao.getAmenityIdPk(beaconIdPk)).willReturn(amenityIdPk);
+		given(beaconDao.getSubAmenityIdPk(beaconIdPk)).willReturn(subAmenityIdPk);
 		given(beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk)).willReturn(
 				clubIdPk);
 		given(accountDao.getUserIdPkByUserId(memberId)).willReturn(userIdPk);
 
-		final AmenityDto amenity = getAmenityInstance(amenityIdPk, "amenity1");
-		given(clubDao.getAmenity(amenityIdPk)).willReturn(amenity);
+		final SubAmenityDto subAmenity = getSubAmenityInstance(subAmenityIdPk, "amenity1");
+		given(clubDao.getSubAmenity(subAmenityIdPk)).willReturn(subAmenity);
 
 		final Set<Integer> surveyPks = new HashSet<Integer>();
 		if (!surveyEmpty) {
@@ -200,7 +200,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 				given(surveyDao.getSurvey(eq(surveyIdPk))).willReturn(survey);
 			}
 		}
-		given(surveyDao.getSurveyConfiguration(amenity.getAmenityType()))
+		given(surveyDao.getSurveyConfiguration(subAmenity.getAmenityId()))
 		.willReturn(surveyPks);
 
 		final Set<Integer> surveyIdsSincePastMon = new HashSet<Integer>();
@@ -209,7 +209,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		}
 		final Date lastMon = getLastMonday(1);
 		given(
-				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(amenityIdPk),
+				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(subAmenityIdPk),
 						eq(userIdPk), eq(lastMon))).willReturn(
 								surveyIdsSincePastMon);
 
@@ -218,7 +218,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 			surveyIdsSinceBeginning.add(0);
 		}
 		given(
-				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(amenityIdPk),
+				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(subAmenityIdPk),
 						eq(userIdPk), eq(since))).willReturn(
 								surveyIdsSinceBeginning);
 	}
@@ -402,7 +402,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		answer.setSurvey(new Survey());
 		answer.getSurvey().setId(1);
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
-		given(beaconDao.getAmenityIdPk(1)).willThrow(NotFoundException.class);
+		given(beaconDao.getSubAmenityIdPk(1)).willThrow(NotFoundException.class);
 		service.persistSurveyAnswer(beaconId, memberId, answer);
 	}
 
@@ -415,7 +415,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		answer.setSurvey(new Survey());
 		answer.getSurvey().setId(1);
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
-		given(beaconDao.getAmenityIdPk(1)).willReturn(1);
+		given(beaconDao.getSubAmenityIdPk(1)).willReturn(1);
 		given(beaconDao.getClubIdPkByBeaconIdPk(1)).willThrow(
 				NotFoundException.class);
 		service.persistSurveyAnswer(beaconId, memberId, answer);
@@ -430,7 +430,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		answer.setSurvey(new Survey());
 		answer.getSurvey().setId(1);
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
-		given(beaconDao.getAmenityIdPk(1)).willReturn(1);
+		given(beaconDao.getSubAmenityIdPk(1)).willReturn(1);
 		given(beaconDao.getClubIdPkByBeaconIdPk(1)).willReturn(1);
 		given(accountDao.getUserIdPkByUserId(memberId)).willThrow(
 				NotFoundException.class);
@@ -447,7 +447,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		answer.setSurvey(new Survey());
 		answer.getSurvey().setId(1);
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(1);
-		given(beaconDao.getAmenityIdPk(1)).willReturn(1);
+		given(beaconDao.getSubAmenityIdPk(1)).willReturn(1);
 		given(beaconDao.getClubIdPkByBeaconIdPk(1)).willReturn(1);
 		given(accountDao.getUserIdPkByUserId(memberId)).willReturn(1);
 		Mockito.doThrow(NotFoundException.class).when(surveyDao).updateAnswer(answer);

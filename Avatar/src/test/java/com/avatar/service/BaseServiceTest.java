@@ -12,6 +12,7 @@ import com.avatar.dao.DbDateDao;
 import com.avatar.dao.SurveyDao;
 import com.avatar.dto.AccountDtoBuilder;
 import com.avatar.dto.club.AmenityDto;
+import com.avatar.dto.club.SubAmenityDto;
 
 public abstract class BaseServiceTest {
 	protected AccountDao accountDao = mock(AccountDao.class);
@@ -26,17 +27,17 @@ public abstract class BaseServiceTest {
 
 	protected AccountDtoBuilder builder;
 
-	protected AmenityDto getAmenityInstance(final Integer amenityIdPk,
-			final String amenityId) {
-		AmenityDto amenity = null;
-		if (amenityId != null) {
-			amenity = new AmenityDto(1);
-			amenity.setAmenityId(amenityId);
-			amenity.setAmenityType("type");
-			amenity.setDescription("Test");
-			amenity.setHoursOfOperation("1");
+	protected SubAmenityDto getSubAmenityInstance(final Integer subAmenityIdPk,
+			final String subAmenityId) {
+		SubAmenityDto subAmenity = null;
+		if (subAmenityId != null) {
+			subAmenity = new SubAmenityDto(1);
+			subAmenity.setSubAmenityId(subAmenityId);
+			subAmenity.setAmenity(new AmenityDto("type"));
+			subAmenity.setDescription("Test");
+			subAmenity.setHoursOfOperation("1");
 		}
-		return amenity;
+		return subAmenity;
 	}
 
 	protected void setup() {

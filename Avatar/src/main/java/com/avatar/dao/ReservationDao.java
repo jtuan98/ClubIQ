@@ -10,12 +10,12 @@ import com.avatar.exception.NotFoundException;
 
 public interface ReservationDao {
 
-	List<BlackoutDate> fetchBlackoutDates(int clubIdPk, int amenityIdPk, String month);
+	List<BlackoutDate> fetchBlackoutDates(int clubIdPk, int subAmenityIdPk, String month);
 
-	List<BlackoutTime> fetchBlackoutTimes(int clubIdPk, int amenityIdPk,
+	List<BlackoutTime> fetchBlackoutTimes(int clubIdPk, int subAmenityIdPk,
 			String month, String day);
 
 	CheckInfo getReservation(int userIdPk, String availId) throws NotFoundException;
 
-	Number reserve (int clubIdPk, int amenityIdPk, int userIdPk, int numberOfPeople, Date reservationDate, String reservationNumber) throws NotFoundException;
+	Number reserve (int clubIdPk, int subAmenityIdPk, int userIdPk, int numberOfPeople, Date reservationDate, String reservationNumber) throws NotFoundException;
 }

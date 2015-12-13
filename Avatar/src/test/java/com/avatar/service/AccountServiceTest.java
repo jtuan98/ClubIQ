@@ -25,8 +25,8 @@ import com.avatar.dto.ClubDtoBuilder;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.AccountCreationException;
@@ -49,7 +49,7 @@ public class AccountServiceTest extends BaseServiceTest {
 	private AccountDto createAccount(final boolean employeeAccount,
 			final AccountStatus status, final String deviceId,
 			final Privilege role, final boolean expiredToken,
-			final String userIdOrMobileNumber, final String amenityId) {
+			final String userIdOrMobileNumber, final String subAmenityId) {
 		final Set<Privilege> privileges = new HashSet<>();
 		privileges.add(Privilege.user);
 		final ClubDto club = new ClubDtoBuilder().withId(1).getBuiltInstance();
@@ -58,11 +58,11 @@ public class AccountServiceTest extends BaseServiceTest {
 		token.setExpirationDate(new Date(System.currentTimeMillis()
 				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000 * (expiredToken ? -1
 						: 1))));
-		final AmenityDto amenity = getAmenityInstance(1, amenityId);
+		final SubAmenityDto subAmenity = getSubAmenityInstance(1, subAmenityId);
 		final AccountDtoBuilder builder = new AccountDtoBuilder(employeeAccount);
 		builder.withId(1).withStatus(status).withToken(token)
 		.withDeviceId(deviceId).withHomeClub(club)
-		.withPrivilege(privileges).withAmenity(amenity);
+		.withPrivilege(privileges).withSubAmenity(subAmenity);
 		builder.withUserId(userIdOrMobileNumber);
 		final AccountDto account = builder.getBuiltInstance();
 		return account;
@@ -93,24 +93,24 @@ public class AccountServiceTest extends BaseServiceTest {
 	}
 
 	private void setupAddAmenityToUserTest(final String userId,
-			final String clubAmenityId,
+			final String clubSubAmenityId,
 			final boolean throwNotFoundByAccountDao,
 			final boolean throwNotFoundByClubDao, final Integer userPkId,
-			final Integer clubAmenityPkId) throws NotFoundException {
+			final Integer clubSubAmenityPkId) throws NotFoundException {
 		if (throwNotFoundByAccountDao) {
 			given(accountDao.getUserIdPkByUserId(userId)).willThrow(
 					NotFoundException.class);
 		} else if (throwNotFoundByClubDao) {
-			given(clubDao.getClubAmenityIdPk(clubAmenityId)).willThrow(
+			given(clubDao.getClubSubAmenityIdPk(clubSubAmenityId)).willThrow(
 					NotFoundException.class);
 		} else {
 			if (userPkId != null) {
 				given(accountDao.getUserIdPkByUserId(eq(userId))).willReturn(
 						userPkId);
 			}
-			if (clubAmenityPkId != null) {
-				given(clubDao.getClubAmenityIdPk(clubAmenityId)).willReturn(
-						clubAmenityPkId);
+			if (clubSubAmenityPkId != null) {
+				given(clubDao.getClubSubAmenityIdPk(clubSubAmenityId)).willReturn(
+						clubSubAmenityPkId);
 			}
 
 		}
@@ -123,7 +123,7 @@ public class AccountServiceTest extends BaseServiceTest {
 	}
 
 	private void setupCreateAccountTest(final AccountDto account,
-			final boolean accountExists, final boolean throwAmenityNotFound)
+			final boolean accountExists, final boolean throwSubAmenityNotFound)
 					throws NotFoundException, InvalidParameterException {
 		if (accountExists) {
 			given(accountDao.fetch(account.getUserId())).willReturn(account);
@@ -133,20 +133,20 @@ public class AccountServiceTest extends BaseServiceTest {
 		}
 		if (account instanceof EmployeeAccountDto) {
 			final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) account;
-			if (throwAmenityNotFound) {
+			if (throwSubAmenityNotFound) {
 				given(
-						clubDao.getClubAmenityIdPk(employeeAccountInfo
-								.getAmenity().getAmenityId())).willThrow(
+						clubDao.getClubSubAmenityIdPk(employeeAccountInfo
+								.getSubAmenity().getSubAmenityId())).willThrow(
 										NotFoundException.class);
-			} else if (employeeAccountInfo.getAmenity() != null) {
-				final String amenityId = employeeAccountInfo.getAmenity()
-						.getAmenityId();
-				final Integer amenityPkId = employeeAccountInfo.getAmenity()
+			} else if (employeeAccountInfo.getSubAmenity() != null) {
+				final String subAmenityId = employeeAccountInfo.getSubAmenity()
+						.getSubAmenityId();
+				final Integer subAmenityPkId = employeeAccountInfo.getSubAmenity()
 						.getId();
-				given(clubDao.getClubAmenityIdPk(amenityId)).willReturn(
-						amenityPkId);
-				final AmenityDto amenity = employeeAccountInfo.getAmenity();
-				when(clubDao.getAmenity(amenityPkId)).thenReturn(amenity);
+				given(clubDao.getClubSubAmenityIdPk(subAmenityId)).willReturn(
+						subAmenityPkId);
+				final SubAmenityDto subAmenity = employeeAccountInfo.getSubAmenity();
+				when(clubDao.getSubAmenity(subAmenityPkId)).thenReturn(subAmenity);
 			}
 
 		}
@@ -356,8 +356,8 @@ public class AccountServiceTest extends BaseServiceTest {
 
 		setupAddAmenityToUserTest(userId, clubAmenityId, false, false,
 				userPkId, clubAmenityPkId);
-		service.addAmenityToUser(userId, clubAmenityId);
-		verify(accountDao, never()).addAmenityToUser(eq(userPkId),
+		service.addSubAmenityToUser(userId, clubAmenityId);
+		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
 				eq(clubAmenityPkId));
 	}
 
@@ -370,8 +370,8 @@ public class AccountServiceTest extends BaseServiceTest {
 		final Integer clubAmenityPkId = 1;
 		setupAddAmenityToUserTest(userId, clubAmenityId, true, false, userPkId,
 				clubAmenityPkId);
-		service.addAmenityToUser(userId, clubAmenityId);
-		verify(accountDao, never()).addAmenityToUser(eq(userPkId),
+		service.addSubAmenityToUser(userId, clubAmenityId);
+		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
 				eq(clubAmenityPkId));
 	}
 
@@ -386,8 +386,8 @@ public class AccountServiceTest extends BaseServiceTest {
 
 		setupAddAmenityToUserTest(userId, clubAmenityId, false, true, userPkId,
 				clubAmenityPkId);
-		service.addAmenityToUser(userId, clubAmenityId);
-		verify(accountDao, never()).addAmenityToUser(eq(userPkId),
+		service.addSubAmenityToUser(userId, clubAmenityId);
+		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
 				eq(clubAmenityPkId));
 	}
 
@@ -400,8 +400,8 @@ public class AccountServiceTest extends BaseServiceTest {
 		final Integer clubAmenityPkId = 1;
 		setupAddAmenityToUserTest(userId, clubAmenityId, false, false,
 				userPkId, clubAmenityPkId);
-		service.addAmenityToUser(userId, clubAmenityId);
-		verify(accountDao, never()).addAmenityToUser(eq(userPkId),
+		service.addSubAmenityToUser(userId, clubAmenityId);
+		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
 				eq(clubAmenityPkId));
 	}
 
@@ -411,13 +411,13 @@ public class AccountServiceTest extends BaseServiceTest {
 	InvalidParameterException {
 		final String userId = "whatever";
 		final Integer userPkId = 1;
-		final String clubAmenityId = "whatever";
-		final Integer clubAmenityPkId = 1;
-		setupAddAmenityToUserTest(userId, clubAmenityId, false, false,
-				userPkId, clubAmenityPkId);
-		service.addAmenityToUser(userId, clubAmenityId);
-		verify(accountDao, times(1)).addAmenityToUser(eq(userPkId),
-				eq(clubAmenityPkId));
+		final String clubSubAmenityId = "whatever";
+		final Integer clubSubAmenityPkId = 1;
+		setupAddAmenityToUserTest(userId, clubSubAmenityId, false, false,
+				userPkId, clubSubAmenityPkId);
+		service.addSubAmenityToUser(userId, clubSubAmenityId);
+		verify(accountDao, times(1)).addSubAmenityToUser(eq(userPkId),
+				eq(clubSubAmenityPkId));
 	}
 
 	// ***** createAccount
@@ -685,12 +685,12 @@ public class AccountServiceTest extends BaseServiceTest {
 		final boolean expiredToken = false;
 		final boolean accountExists = false;
 		final AccountDto account = createAccount(employeeAccount, status,
-				"device", Privilege.user, expiredToken, "userid", "junkamenity");
+				"device", Privilege.user, expiredToken, "userid", "junksubamenity");
 
 		setupCreateAccountTest(account, accountExists, false);
 		final ActivationToken returnedToken = service.createAccount(account);
-		verify(clubDao, times(1)).getAmenity(
-				eq(((EmployeeAccountDto) account).getAmenity().getId()));
+		verify(clubDao, times(1)).getSubAmenity(
+				eq(((EmployeeAccountDto) account).getSubAmenity().getId()));
 	}
 
 	// Case 3c: employee account with no amenity
@@ -707,7 +707,7 @@ public class AccountServiceTest extends BaseServiceTest {
 
 		setupCreateAccountTest(account, accountExists, false);
 		final ActivationToken returnedToken = service.createAccount(account);
-		verify(clubDao, never()).getAmenity(anyInt());
+		verify(clubDao, never()).getSubAmenity(anyInt());
 	}
 
 	// Case 4: member account already exists...

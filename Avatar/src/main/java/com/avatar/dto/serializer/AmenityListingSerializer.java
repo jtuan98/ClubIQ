@@ -2,6 +2,8 @@ package com.avatar.dto.serializer;
 
 import java.lang.reflect.Type;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.avatar.dto.club.AmenityDto;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -17,8 +19,10 @@ public class AmenityListingSerializer implements JsonSerializer<AmenityDto> {
 		if (amenity != null) {
 			final JsonObject result = new JsonObject();
 			result.add("amenityId", new JsonPrimitive(amenity.getAmenityId()));
-			result.add("type", new JsonPrimitive(amenity.getAmenityType()));
-			result.add("name", new JsonPrimitive(amenity.getName()));
+			result.add("description", new JsonPrimitive(amenity.getDescription()));
+			if (StringUtils.isNotEmpty(amenity.getHeader())) {
+				result.add("header", new JsonPrimitive(amenity.getHeader()));
+			}
 			return result;
 		}
 		return null;

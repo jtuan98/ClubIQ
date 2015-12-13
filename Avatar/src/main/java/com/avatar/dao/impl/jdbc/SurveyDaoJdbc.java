@@ -37,7 +37,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 
 	private static String SEL_SURVEY_ANSWER_BY_PK = "SELECT * FROM SURVEY_ANSWERS WHERE ID=?";
 
-	private static String SEL_AMENITY_ID_PK = "select ID from AMENITY_TYPES where NAME=?";
+	private static String SEL_AMENITY_ID_PK = "select ID from CLUB_AMENITIES where AMENITYID=?";
 
 	static private final String DEL_ANSWERS = "DELETE FROM SURVEY_ANSWERS where MEMBER_ID = ? and CREATE_DATE >= ? and CREATE_DATE <= ?";
 
@@ -81,20 +81,20 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 
 	// Returns Survey ID pk
 	@Override
-	public Set<Integer> getSurveyConfiguration(final String amenityType)
+	public Set<Integer> getSurveyConfiguration(final String amenityId)
 			throws NotFoundException {
-		Integer amenityTypeIdPk = null;
+		Integer amenityIdPk = null;
 		try {
-			amenityTypeIdPk = getJdbcTemplate().queryForObject(
-					SEL_AMENITY_ID_PK, Integer.class, amenityType);
+			amenityIdPk = getJdbcTemplate().queryForObject(
+					SEL_AMENITY_ID_PK, Integer.class, amenityId);
 		} catch (final EmptyResultDataAccessException e) {
-			throw new NotFoundException("AmenityType " + amenityType
+			throw new NotFoundException("AmenityId " + amenityId
 					+ " not found!");
 		}
 
 		final List<Integer> questionIdsPk = getJdbcTemplate().queryForList(
 				SEL_SURVEY_IDS_BY_AMENITY_TYPE_ID, Integer.class,
-				amenityTypeIdPk);
+				amenityIdPk);
 		return new HashSet<Integer>(questionIdsPk);
 	}
 

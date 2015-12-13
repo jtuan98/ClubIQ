@@ -24,6 +24,7 @@ public class ClubDto implements Serializable {
 	protected String xcoord;
 	protected String ycoord;
 
+	protected List<SubAmenityDto> subAmenities;
 	protected List<AmenityDto> amenities;
 
 	public ClubDto() {
@@ -75,6 +76,10 @@ public class ClubDto implements Serializable {
 
 	public String getState() {
 		return state;
+	}
+
+	public List<SubAmenityDto> getSubAmenities() {
+		return subAmenities;
 	}
 
 	public DbTimeZone getTimeZone() {
@@ -139,6 +144,10 @@ public class ClubDto implements Serializable {
 
 	public void setState(final String state) {
 		this.state = state;
+	}
+
+	public void setSubAmenities(final List<SubAmenityDto> subAmenities) {
+		this.subAmenities = subAmenities;
 	}
 
 	public void setTimeZone(final DbTimeZone timeZone) {

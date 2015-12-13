@@ -24,7 +24,7 @@ public class PromotionSerializer implements JsonSerializer<Promotion> {
 			result.add("promotionId", new JsonPrimitive(promotion.getId()));
 			result.add("clubId", new JsonPrimitive(promotion.getClub()
 					.getClubId()));
-			result.add("amenityId", new JsonPrimitive(promotion.getAmenity()
+			result.add("amenityId", new JsonPrimitive(promotion.getSubAmenity()
 					.getAmenityId()));
 			result.add("promotionTitle",
 					new JsonPrimitive(promotion.getTitle()));

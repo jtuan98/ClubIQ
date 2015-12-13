@@ -9,8 +9,8 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 
@@ -31,9 +31,9 @@ public class AccountDtoBuilder implements DtoBuilder<AccountDto> {
 		given(account.getAddress()).willReturn(address);
 		return this;
 	}
-	public AccountDtoBuilder withAmenity(final AmenityDto amenity) {
-		if (amenity != null) {
-			given(((EmployeeAccountDto)account).getAmenity()).willReturn(amenity);
+	public AccountDtoBuilder withSubAmenity(final SubAmenityDto subAmenity) {
+		if (subAmenity != null) {
+			given(((EmployeeAccountDto)account).getSubAmenity()).willReturn(subAmenity);
 		}
 		return this;
 	}

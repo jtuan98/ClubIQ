@@ -16,6 +16,7 @@ import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.ClubListingSortBy;
 import com.avatar.dto.enums.DbTimeZone;
 import com.avatar.dto.enums.Privilege;
@@ -69,7 +70,7 @@ public class ClubManagerController extends BaseController {
 	public ModelAndView getAmenities(
 			final Principal principal,
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 					throws Exception {
 		init();
@@ -86,32 +87,11 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	// Phase 2
-	@RequestMapping(value = { "/GetAmenityBody", "/getAmenityBody" })
-	public ModelAndView getAmenityBody(
-			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
-			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId)
-					throws Exception {
-		init();
-		WsResponse<String> apiResponse = null;
-		try {
-			final String bodyText = beaconService.getAmenityBodyText(clubId, amenityId);
-			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
-					bodyText, "bodyText");
-		} catch (final Exception e) {
-			apiResponse = new WsResponse<String>(ResponseStatus.failure,
-					e.getMessage(), null);
-		}
-		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
-	}
-
 	// Phase2
 	@RequestMapping(value = { "/GetAmenityDept", "/getAmenityDept" })
 	public ModelAndView getAmenityDept(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 					throws Exception {
 		init();
@@ -133,7 +113,7 @@ public class ClubManagerController extends BaseController {
 	@RequestMapping(value = { "/GetAmenityHeadline", "/getAmenityHeadline" })
 	public ModelAndView getAmenityHeadline(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
 			@RequestParam(required = true, value = "amenityId") final String amenityId)
 					throws Exception {
@@ -151,32 +131,10 @@ public class ClubManagerController extends BaseController {
 	}
 
 	// Phase 2
-	@RequestMapping(value = { "/GetAmenitySecondaryHeadline", "/getAmenitySecondaryHeadline" })
-	public ModelAndView getAmenitySecondaryHeadline(
-			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
-			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId)
-					throws Exception {
-		init();
-
-		WsResponse<String> apiResponse = null;
-		try {
-			final String headerText = beaconService.getAmenitySecondaryHeaderText(clubId, amenityId);
-			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
-					headerText, "headerText");
-		} catch (final Exception e) {
-			apiResponse = new WsResponse<String>(ResponseStatus.failure,
-					e.getMessage(), null);
-		}
-		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
-	}
-
-	// Phase 2
 	@RequestMapping(value = { "/GetClubAddress", "/getClubAddress" })
 	public ModelAndView getClubAddress(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 					throws Exception {
 		init();
@@ -197,7 +155,7 @@ public class ClubManagerController extends BaseController {
 	@RequestMapping(value = { "/GetClubBody", "/getClubBody" })
 	public ModelAndView getClubBody(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 					throws Exception {
 		init();
@@ -217,7 +175,7 @@ public class ClubManagerController extends BaseController {
 	@RequestMapping(value = { "/GetClubDetail", "/getClubDetail" })
 	public ModelAndView getClubDetail(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 					throws Exception {
 		init();
@@ -238,7 +196,7 @@ public class ClubManagerController extends BaseController {
 	@RequestMapping(value = { "/GetClubHeadline", "/getClubHeadline" })
 	public ModelAndView getClubHeadline(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId)
 					throws Exception {
 		init();
@@ -357,22 +315,87 @@ public class ClubManagerController extends BaseController {
 	}
 
 	// Phase 2
-	@RequestMapping(value = { "/GetSubAmenityList", "/getSubAmenityList" })
-	public ModelAndView getSubAmenityList(
+	@RequestMapping(value = { "/GetSubAmenityBody", "/getSubAmenityBody" })
+	public ModelAndView getSubAmenityBody(
 			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = false, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityType") final String amenityType)
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId)
+					throws Exception {
+		init();
+		WsResponse<String> apiResponse = null;
+		try {
+			final String bodyText = beaconService.getSubAmenityBodyText(clubId, subAmenityId);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					bodyText, "bodyText");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/GetSubAmenityHeadline", "/getSubAmenityHeadline" })
+	public ModelAndView getSubAmenityHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId)
 					throws Exception {
 		init();
 
-		WsResponse<List<AmenityDto>> apiResponse = null;
+		WsResponse<String> apiResponse = null;
 		try {
-			final List<AmenityDto> amenities = beaconService.getSubAmenityList(clubId, amenityType);
-			apiResponse = new WsResponse<List<AmenityDto>>(ResponseStatus.success, "",
+			final String headerText = beaconService.getSubAmenityHeaderText(clubId, subAmenityId);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					headerText, "headerText");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/GetSubAmenityList", "/getSubAmenityList" })
+	public ModelAndView getSubAmenityList(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
+					throws Exception {
+		init();
+
+		WsResponse<List<SubAmenityDto>> apiResponse = null;
+		try {
+			final List<SubAmenityDto> amenities = beaconService.getSubAmenityList(clubId, amenityId);
+			apiResponse = new WsResponse<List<SubAmenityDto>>(ResponseStatus.success, "",
 					amenities, "amenities");
 		} catch (final Exception e) {
-			apiResponse = new WsResponse<List<AmenityDto>>(ResponseStatus.failure,
+			apiResponse = new WsResponse<List<SubAmenityDto>>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/GetSubAmenitySecondaryHeadline", "/getSubAmenitySecondaryHeadline" })
+	public ModelAndView getSubAmenitySecondaryHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId)
+					throws Exception {
+		init();
+
+		WsResponse<String> apiResponse = null;
+		try {
+			final String headerText = beaconService.getSubAmenitySecondaryHeaderText(clubId, subAmenityId);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					headerText, "headerText");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
@@ -414,45 +437,8 @@ public class ClubManagerController extends BaseController {
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
 		return beaconManager.setAmenityDeptName(authToken, apnsToken, null,
-				clubId);
+				clubId, null);
 	}
-
-	// Phase 2
-	@RequestMapping(value = { "/SetAmenityBody", "/setAmenityBody" })
-	public ModelAndView setAmenityBody(
-			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
-			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId,
-			@RequestParam(required = true, value = "bodyText") final String bodyText)
-					throws Exception {
-		init();
-		WsResponse<String> apiDeniedResponse = null;
-		try {
-			validateUserRoles(authToken, REQUIRED_ROLE);
-			// Verify using authToken to see if user have the perm to edit club
-			// info.
-			validateStaffInClub(authenticationService.getAccount(authToken),
-					clubId);
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
-
-		WsResponse<String> apiResponse = null;
-		try {
-			beaconService.setAmenityBodyText(clubId, amenityId, bodyText);
-			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
-					null);
-		} catch (final Exception e) {
-			apiResponse = new WsResponse<String>(ResponseStatus.failure,
-					e.getMessage(), null);
-		}
-		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
-	}
-
 
 	// Phase 2
 	@RequestMapping(value = { "/SetAmenityHeadline", "/setAmenityHeadline" })
@@ -490,41 +476,6 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
 	}
 
-	// Phase 2
-	@RequestMapping(value = { "/SetAmenitySecondaryHeadline", "/setAmenitySecondaryHeadline" })
-	public ModelAndView setAmenitySecondaryHeadline(
-			final HttpServletRequest req,
-			@RequestParam(required = true, value = "authToken") final String authToken,
-			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId,
-			@RequestParam(required = true, value = "headerText") final String headerText)
-					throws Exception {
-		init();
-		WsResponse<String> apiDeniedResponse = null;
-		try {
-			validateUserRoles(authToken, REQUIRED_ROLE);
-			// Verify using authToken to see if user have the perm to edit club
-			// info.
-			validateStaffInClub(authenticationService.getAccount(authToken),
-					clubId);
-		} catch (NotFoundException | AuthenticationTokenExpiredException
-				| PermissionDeniedException e) {
-			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
-					e.getMessage(), null);
-			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
-		}
-
-		WsResponse<String> apiResponse = null;
-		try {
-			beaconService.setAmenitySecondaryHeaderText(clubId, amenityId, headerText);
-			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
-					null);
-		} catch (final Exception e) {
-			apiResponse = new WsResponse<String>(ResponseStatus.failure,
-					e.getMessage(), null);
-		}
-		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
-	}
 
 	@RequestMapping(value = "/SetClubAddress")
 	public ModelAndView setClubAddress(
@@ -570,7 +521,6 @@ public class ClubManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
-
 
 	// Phase 2
 	@RequestMapping(value = { "/SetClubBody", "/setClubBody" })
@@ -642,4 +592,111 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
 	}
 
+
+	// Phase 2
+	@RequestMapping(value = { "/SetSubAmenityBody", "/setSubAmenityBody" })
+	public ModelAndView setSubAmenityBody(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
+			@RequestParam(required = true, value = "bodyText") final String bodyText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setSubAmenityBodyText(clubId, subAmenityId, bodyText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = { "/SetSubAmenityHeadline", "/setSubAmenityHeadline" })
+	public ModelAndView setSubAmenityHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
+			@RequestParam(required = true, value = "headerText") final String headerText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setSubAmenityHeaderText(clubId, subAmenityId, headerText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/SetSubAmenitySecondaryHeadline", "/setSubAmenitySecondaryHeadline" })
+	public ModelAndView setSubAmenitySecondaryHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
+			@RequestParam(required = true, value = "headerText") final String headerText)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			beaconService.setSubAmenitySecondaryHeaderText(clubId, subAmenityId, headerText);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
 }

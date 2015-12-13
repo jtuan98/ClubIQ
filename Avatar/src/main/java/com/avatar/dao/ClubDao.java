@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.ClubListingSortBy;
 import com.avatar.exception.NotFoundException;
 
@@ -19,16 +20,11 @@ public interface ClubDao {
 
 	List<AmenityDto> getAmenities(Integer clubIdPk) throws NotFoundException;
 
-	List<AmenityDto> getAmenities(Integer clubIdPk, String amenityType) throws NotFoundException;
-
-	AmenityDto getAmenity(Integer amenityIdPk) throws NotFoundException;
-
-	List<Integer> getAmenityEmployees(Integer clubAmenityId)
-			throws NotFoundException;
+	String getAmenityHeaderText(int clubIdPk, int amenityIdPk) throws NotFoundException;
 
 	String getBodyText(int clubIdPk);
 
-	Integer getClubAmenityIdPk(String clubAmenityId) throws NotFoundException;
+	Integer getClubAmenityIdPk(String amenityId) throws NotFoundException;
 
 	ClubDto getClubByKeyCode(String clubKeycode) throws NotFoundException;
 
@@ -38,21 +34,42 @@ public interface ClubDao {
 
 	List<ClubDto> getClubsByState(String state, ClubListingSortBy orderByClause);
 
+	Integer getClubSubAmenityIdPk(String clubSubAmenityId) throws NotFoundException;
+
 	String getHeadlineText(int clubIdPk);
 
-	void update(ClubDto club) throws NotFoundException;
+	List<SubAmenityDto> getSubAmenities(Integer clubIdPk, String amenity) throws NotFoundException;
 
-	void updateAmenityBody(Integer clubIdPk, Integer amenityIdPk, String bodyText)throws NotFoundException;
+	SubAmenityDto getSubAmenity(Integer subAmenityIdPk) throws NotFoundException;
+
+	String getSubAmenityBodyText(int clubIdPk, int amenityIdPk);
+
+	// Return Amenity Names
+	List<String> getSubAmenityDeptName(String clubId) throws NotFoundException;
+
+	List<Integer> getSubAmenityEmployees(Integer clubAmenityId)
+			throws NotFoundException;
+
+	String getSubAmenityHeaderText(int clubIdPk, int amenityIdPk);
+
+	String getSubAmenitySecondayHeaderText(int clubIdPk, int amenityIdPk);
+
+	void update(ClubDto club) throws NotFoundException;
 
 	void updateAmenityHeaderText(Integer clubIdPk, Integer amenityIdPk,
 			String headerText) throws NotFoundException;
 
-	void updateAmenitySecondaryHeaderText(Integer clubIdPk,
-			Integer amenityIdPk, String headerText) throws NotFoundException;
-
 	void updateBodyText(Integer clubIdPk, String bodyText) throws NotFoundException;
 
 	void updateHeaderText(Integer clubIdPk, String headerText) throws NotFoundException;
+
+	void updateSubAmenityBody(Integer clubIdPk, Integer subAmenityIdPk, String bodyText)throws NotFoundException;
+
+	void updateSubAmenityHeaderText(Integer clubIdPk, Integer subAmenityIdPk,
+			String headerText) throws NotFoundException;
+
+	void updateSubAmenitySecondaryHeaderText(Integer clubIdPk,
+			Integer subAmenityIdPk, String headerText) throws NotFoundException;
 
 	boolean verifyClubPin(String clubPin);
 }

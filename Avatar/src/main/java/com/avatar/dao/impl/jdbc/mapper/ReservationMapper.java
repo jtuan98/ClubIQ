@@ -15,14 +15,13 @@ public class ReservationMapper implements RowMapper<CheckInfo> {
 	public CheckInfo mapRow(final ResultSet rs, final int rowNumber) throws SQLException {
 		final CheckInfo retVal = new CheckInfo ();
 		retVal.setId(rs.getInt("ID"));
-		retVal.setAvailId(rs.getString("RESERVATION_ID"));
-		retVal.setAmenityId(rs.getString("AMENITY_ID"));
-		retVal.setAmenityName(rs.getString("AMENITY_NAME"));
-		retVal.setAmenityName(rs.getString("AMENITY_NAME"));
+		retVal.setAvailId(rs.getString("RESERVATION_NUMBER"));
+		retVal.setSubAmenityId(rs.getString("SUBAMENITYID"));
+		retVal.setSubAmenityName(rs.getString("SUBAMENITY_NAME"));
 		retVal.setPersonNumber(rs.getInt("NO_PERSONS"));
-		retVal.setRequestedClubId(rs.getString("CLUB_ID"));
+		retVal.setRequestedClubId(rs.getString("CLUBID"));
 		if (StringUtils.isNotEmpty(rs.getString("RESERVATION_DATE"))) {
-			retVal.setRequestedDateTime(rs.getDate("RESERVATION_DATE"));
+			retVal.setRequestedDateTime(rs.getTimestamp("RESERVATION_DATE"));
 		}
 		return retVal;
 	}

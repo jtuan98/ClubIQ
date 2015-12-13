@@ -19,17 +19,6 @@ public interface BeaconDao {
 
 	void deleteBeaconInfoByUserId(Integer userIdPk, Date fromDate, Date toDate);
 
-	String getAmenityBodyText(int clubIdPk, int amenityIdPk);
-
-	// Return Amenity Names
-	List<String> getAmenityDeptName(String clubId) throws NotFoundException;
-
-	String getAmenityHeaderText(int clubIdPk, int amenityIdPk);
-
-	Integer getAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
-
-	String getAmenitySecondayHeaderText(int clubIdPk, int amenityIdPk);
-
 	BeaconDto getBeacon(Integer beaconIdPk);
 
 	Integer getBeaconIdPk(String beaconId) throws NotFoundException;
@@ -39,10 +28,12 @@ public interface BeaconDao {
 	Integer getClubIdPkByBeaconIdPk(Integer beaconIdPk)
 			throws NotFoundException;
 
-	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityDepartment, Date onDate);
+	Integer getSubAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
 
-	void setAmenityDeptName(String clubId, String apnsToken,
-			String amenityDepartment) throws NotFoundException;
+	List<ImmutablePair<AccountDto, Date>> getUsers(String subAmenityId, Date onDate);
+
+	void setSubAmenityId(String clubId, String apnsToken,
+			String amenityId, String amenityDepartment) throws NotFoundException;
 
 	void setApnsToken(final String clubId, final String apnsToken)
 			throws NotFoundException;

@@ -14,8 +14,8 @@ import com.avatar.dao.AccountDao;
 import com.avatar.dao.BeaconDao;
 import com.avatar.dao.ClubDao;
 import com.avatar.dao.PromotionDao;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.promotion.Promotion;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
@@ -54,10 +54,10 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 			throws NotFoundException {
 		final Promotion promotion = promotionDao.getPromotion(promoIdPk);
 		final ClubDto club = clubDao.get(promotion.getClub().getId(), false);
-		final AmenityDto amenity = clubDao.getAmenity(promotion.getAmenity()
+		final SubAmenityDto subAmenity = clubDao.getSubAmenity(promotion.getSubAmenity()
 				.getId());
 		promotion.setClub(club);
-		promotion.setAmenity(amenity);
+		promotion.setSubAmenity(subAmenity);
 		return promotion;
 	}
 
@@ -66,16 +66,16 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 			throws NotFoundException {
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
 		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
-		final Integer amenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
+		final Integer subAmenityIdPk = beaconDao.getSubAmenityIdPk(beaconIdPk);
 
 		final List<Promotion> promotions = promotionDao.getValidPromotions(
-				clubIdPk, amenityIdPk);
+				clubIdPk, subAmenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
 			final ClubDto club = clubDao.get(clubIdPk, false);
-			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
+			final SubAmenityDto subAmenity = clubDao.getSubAmenity(subAmenityIdPk);
 			for (final Promotion promotion : promotions) {
 				promotion.setClub(club);
-				promotion.setAmenity(amenity);
+				promotion.setSubAmenity(subAmenity);
 			}
 		}
 		return promotions;
@@ -83,17 +83,17 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 
 	@Override
 	public List<Promotion> getPromotions(final String clubId,
-			final String amenityId) throws NotFoundException {
+			final String subAmenityId) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
 		final List<Promotion> promotions = promotionDao.getAllPromotions(
-				clubIdPk, amenityIdPk);
+				clubIdPk, subAmenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
 			final ClubDto club = clubDao.get(clubIdPk, true);
-			final AmenityDto amenity = clubDao.getAmenity(amenityIdPk);
+			final SubAmenityDto subAmenity = clubDao.getSubAmenity(subAmenityIdPk);
 			for (final Promotion promotion : promotions) {
 				promotion.setClub(club);
-				promotion.setAmenity(amenity);
+				promotion.setSubAmenity(subAmenity);
 			}
 		}
 		return promotions;
@@ -111,14 +111,14 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 		Assert.notNull(promotion);
 		Assert.notNull(promotion.getClub());
 		Assert.hasText(promotion.getClub().getClubId());
-		Assert.notNull(promotion.getAmenity());
-		Assert.hasText(promotion.getAmenity().getAmenityId());
+		Assert.notNull(promotion.getSubAmenity());
+		Assert.hasText(promotion.getSubAmenity().getAmenityId());
 		final Integer clubIdPk = clubDao.getClubIdPk(promotion.getClub()
 				.getClubId());
 		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(promotion
-				.getAmenity().getAmenityId());
+				.getSubAmenity().getAmenityId());
 		promotion.getClub().setId(clubIdPk);
-		promotion.getAmenity().setId(amenityIdPk);
+		promotion.getSubAmenity().setId(amenityIdPk);
 	}
 
 	@Override

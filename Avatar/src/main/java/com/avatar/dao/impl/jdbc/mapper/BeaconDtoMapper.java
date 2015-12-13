@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
 
 import com.avatar.dto.account.EmployeeAccountDto;
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 
 public class BeaconDtoMapper implements RowMapper<BeaconDto> {
 
@@ -19,7 +19,7 @@ public class BeaconDtoMapper implements RowMapper<BeaconDto> {
 		retVal.setId(rs.getInt("ID"));
 		retVal.setBeaconActionId(rs.getString("BEACONID"));
 		retVal.setClub(new ClubDto(rs.getInt("CLUB_ID")));
-		retVal.setAmenity(new AmenityDto(rs.getInt("AMENITY_ID")));
+		retVal.setSubAmenity(new SubAmenityDto(rs.getInt("SUBAMENITY_ID")));
 		retVal.setDescription(rs.getString("DESCRIPTION"));
 		retVal.setLocation(rs.getString("LOCATION"));
 		retVal.setInstallerStaff(new EmployeeAccountDto(rs

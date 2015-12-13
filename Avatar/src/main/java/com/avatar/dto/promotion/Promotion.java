@@ -3,24 +3,20 @@ package com.avatar.dto.promotion;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.SubAmenityDto;
 
 public class Promotion implements Serializable {
 
 	protected Integer id; // primary key.
 	protected ClubDto club;
-	protected AmenityDto amenity;
+	protected SubAmenityDto subAmenity;
 	protected String title;
 	protected String description;
 	protected Date effectiveDate;
 	protected Date endingDate;
 
 	public Promotion() {
-	}
-
-	public AmenityDto getAmenity() {
-		return amenity;
 	}
 
 	public ClubDto getClub() {
@@ -43,12 +39,12 @@ public class Promotion implements Serializable {
 		return id;
 	}
 
-	public String getTitle() {
-		return title;
+	public SubAmenityDto getSubAmenity() {
+		return subAmenity;
 	}
 
-	public void setAmenity(final AmenityDto amenity) {
-		this.amenity = amenity;
+	public String getTitle() {
+		return title;
 	}
 
 	public void setClub(final ClubDto club) {
@@ -69,6 +65,10 @@ public class Promotion implements Serializable {
 
 	public void setId(final Integer id) {
 		this.id = id;
+	}
+
+	public void setSubAmenity(final SubAmenityDto subAmenity) {
+		this.subAmenity = subAmenity;
 	}
 
 	public void setTitle(final String title) {
