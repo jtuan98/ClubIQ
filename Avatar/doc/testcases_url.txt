@@ -1,0 +1,117 @@
+////////////// ACCOUNT MGR //////////////////////////////////////////////////////////////////////////////////////////////////////
+http://localhost:8081/Avatar/1/AcctMgr/AddClubSubAmenityToAccount?authToken=AUTH_TOKEN&userId=jtuan98@yahoo.com&clubSubAmenityId=pharoah1-Bar
+PASS
+http://localhost:8081/Avatar/1/AcctMgr/Mobile/setLinkPhone?authToken=AUTH_TOKEN&linkNumber=12345&currentDate=20151201110000
+PASS
+http://localhost:8081/Avatar/1/AcctMgr/Member/SetAccountInfo?mobileNumber=12345&deviceId=123456789&realname=testing&email=abc@yahoo.com&pictureBase64=1234
+PASS
+http://localhost:8081/Avatar/1/AcctMgr/Employee/SetAccountInfo?email=jtuan98@yahoo.com&deviceId=123456789&realname=testing1&pictureBase64=1234
+PASS
+http://localhost:8081/Avatar/1/AcctMgr/mobile/MapTangerineHandsetIDwithUser?mobileNumber=1234&deviceId=123456789&tangerineHandsetId=tangy1234
+PASS
+
+
+//////////// READ APIS  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+http://localhost:8081/Avatar/1/AcctMgr/Mobile/cancelMembership?authToken=AUTH_TOKEN&currentDate=20151201 11:00:00
+PASS
+http://localhost:8081/Avatar/1/AcctMgr/GetAccountInfo?mobileNumber=12345
+PASS
+
+http://localhost:8081/Avatar/1/AcctMgr/GetMemberAcct?deviceId=deviceId1234
+why is this not locked down???  It needs the principal.  DONT THINK ANYONE CAN CALL THIS. 
+
+//////////// AvailabilityMgr ////////////////////////////////////////////////////////////////////////////////////////////////////////
+--12/05
+http://localhost:8081/Avatar/1/AvailabilityMgr/setCheckInfo?authToken=AUTH_TOKEN&requestedClubId=pharaoh1&requestedDateTime=20151130 13:00:15&numOfPerson=2&subAmenityId=pharoah1-Bar
+PASS
+
+http://localhost:8081/Avatar/1/AvailabilityMgr/getAvailInfo?authToken=AUTH_TOKEN&availId=AVAIL_ID
+PASS
+
+//////////// BeaconMgr ////////////////////////////////////////////////////////////////////////////////////////////////////////
+http://localhost:8081/Avatar/1/BeaconMgr/DeleteBeacon?authToken=AUTH_TOKEN&beaconActionId=Beacon1
+PASS
+http://localhost:8081/Avatar/1/BeaconMgr/GetAmenityDeptName?authToken=AUTH_TOKEN&clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/BeaconMgr/GetBeaconList?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=pharoah1-Bar
+PASS
+http://localhost:8081/Avatar/1/BeaconMgr/BeaconDetectionWithAmenity?beaconActionId=Beacon1
+PASS
+http://localhost:8081/Avatar/1/BeaconMgr/SetAmenityDeptName?authToken=AUTH_TOKEN&apnsToken=APNS_TOKEN&amenityDepartment=1234&clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/BeaconMgr/UpdateBeacon?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=pharoah1-Bar&beaconActionId=Beacon1&location=LEFT&desc=whatever&installerStaffUserId=jtuan98@yahoo.com&installDate=20151202
+PASS
+http://localhost:8081/Avatar/1/BeaconMgr/SetMemberEntry?mobileNumber=12345&beaconActionId=Beacon1
+PASS
+http://localhost:8081/Avatar/1/BeaconMgr/ShowMemberByDept?authToken=AUTH_TOKEN&subAmenityId=pharoah1-Bar
+
+
+//////////// CalendarMgr ////////////////////////////////////////////////////////////////////////////////////////////////////////
+http://localhost:8081/Avatar/1/CalendarMgr/getBlackOutDates?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=pharoah1-Bar&month=11
+PASS
+http://localhost:8081/Avatar/1/CalendarMgr/getBlackOutTimes?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=pharoah1-Bar&requestedDate=1129
+PASS
+
+
+//////////// ClubMgr ////////////////////////////////////////////////////////////////////////////////////////////////////////
+http://localhost:8081/Avatar/1/ClubMgr/ClubPinVerification?clubPin=123
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/GetAmenityList?clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getAmenityDept?clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getAmenityHeadline?clubId=pharaoh1&amenityId=Restaurant
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubAddress?clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubBody?clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubDetail?clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubHeadline?clubId=pharaoh1
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/GetClubList?authToken=AUTH_TOKEN
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubListByAlpha?state=VA
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubListByAlpha
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubListByState?state=VA
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubListByState
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getClubName?clubKeyCode=12345
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getSubAmenityBody?clubId=pharaoh1&subAmenityId=pharoah1-Bar
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getSubAmenityHeadline?clubId=pharaoh1&subAmenityId=pharoah1-Bar
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getSubAmenitySecondaryHeadline?clubId=pharaoh1&subAmenityId=pharoah1-Bar
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/getSubAmenityList?clubId=pharaoh1&amenityId=Restaurant
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/RegisterAPNsToken?authToken=AUTH_TOKEN&userId=jtuan98@yahoo.com&apnsToken=APNS_TOKEN&clubId=pharaoh1
+PASS
+
+http://localhost:8081/Avatar/1/ClubMgr/setAmenityHeadline?authToken=AUTH_TOKEN&clubId=pharaoh1&amenityId=Restaurant&headerText=testing
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/setSubAmenitySecondaryHeadline?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=pharoah1-Bar&headerText=testing
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/SetClubAddress?authToken=AUTH_TOKEN&clubId=pharaoh1&clubName=club jumpy&clubAddress=123 Abc st&clubZipCode=12345&clubState=CA&clubPhoneNumber=123-456-7890&hzRestriction=restricted&xCoord=123&yCoord=456&timezone=US_PST
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/setClubBody?authToken=AUTH_TOKEN&clubId=pharaoh1&bodyText=testing
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/setClubHeadline?authToken=AUTH_TOKEN&clubId=pharaoh1&headerText=testing
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/setSubAmenityBody?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=pharoah1-Bar&bodyText=testing
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/setSubAmenityHeadline?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=haraoh1-Bar&headerText=Testing
+PASS
+http://localhost:8081/Avatar/1/ClubMgr/setSubAmenitySecondaryHeadline?authToken=AUTH_TOKEN&clubId=pharaoh1&subAmenityId=haraoh1-Bar&headerText=Testing
+PASS
+
+
+authToken=AUTH_TOKEN
+
+

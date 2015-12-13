@@ -1,0 +1,235 @@
+
+--- Verification
+http://localhost:8080/Avatar/1/Registration/VerifyAcctExist?mobileNumber=1234
+--Not Exists Results:
+{"exist":"false","statusCode":200,"statusMessage":""}
+--Exists Results:
+{"exist":"true","statusCode":200,"statusMessage":""}
+
+--- Mobile Account Create
+http://localhost:8080/Avatar/1/Registration/CreateAccountMobile?mobileNumber=1234&deviceId=deviceId1234&homeClubId=wrong
+- Case 1: Club not exists
+{"statusCode":500,"statusMessage":"Club wrong not found!"}
+http://localhost:8080/Avatar/1/Registration/CreateAccountMobile?mobileNumber=1234&deviceId=deviceId1234&homeClubId=pharaoh1
+- Case 2: success
+{"token":"9777","expirationDate":"Mar 22, 2015 3:52:04 PM","statusCode":200,"statusMessage":""}
+http://localhost:8080/Avatar/1/Registration/CreateAccountMobile?mobileNumber=1234&deviceId=deviceId1234&homeClubId=pharaoh1
+- Case 3: already existed account, Activated status
+{"statusCode":500,"statusMessage":"Account 1234 is already activated!"}
+http://localhost:8080/Avatar/1/Registration/CreateAccountMobile?mobileNumber=12345&deviceId=deviceId1234&homeClubId=pharaoh1
+- Case 4: already existed account, New/TokenSent status
+{"id":148,"token":"3486","expirationDate":"Mar 26, 2015","statusCode":200,"statusMessage":""}
+
+--- Mobile Activation
+http://localhost:8080/Avatar/1/Registration/ActivateAccount?mobileNumber=1111&deviceId=bad&activationToken=nonexistent
+- Case 1: Invalid token
+{"statusCode":500,"statusMessage":"Error:  Please check activation token, might have expired [nonexistent]"}
+- Case 2: Valid token but invalid phone, same error!
+http://localhost:8080/Avatar/1/Registration/ActivateAccount?mobileNumber=1111&deviceId=bad&activationToken=9777
+{"statusCode":500,"statusMessage":"Error:  Please check activation token, might have expired [nonexistent]"}
+- Case 3: Valid token, phone but invalid device, same error!
+http://localhost:8080/Avatar/1/Registration/ActivateAccount?mobileNumber=1234&deviceId=bad&activationToken=9777
+- Case 4: Valid token, phone, device but token expired, same error!
+http://localhost:8080/Avatar/1/Registration/ActivateAccount?mobileNumber=1234&deviceId=bad&activationToken=9777
+{"statusCode":500,"statusMessage":"Error:  Please check activation token, might have expired [9777]"}
+-- Case 5: Success (same tomcat, not restart between CreateAccountMobile and ActivateAccount)
+{"statusCode":200,"statusMessage":""}
+-- Case 6: Success (same tomcat, restart between CreateAccountMobile and ActivateAccount)
+{"statusCode":200,"statusMessage":""}
+-- Case 7: Success (Already activated accounts)
+{"statusCode":200,"statusMessage":""}
+
+--- Non Mobile Account Create
+http://localhost:8080/Avatar/1/Registration/NonMobile/CreateAccount?email=jtuan98@yahoo.com&password=testing123&privilege=clubAdmin
+{"statusCode":200,"statusMessage":"Token Sent"}
+http://localhost:8080/Avatar/1/Registration/NonMobile/ActivateAccount?activationToken=7dff3d49-84a8-4a42-a520-4e729281c87c
+{"statusCode":200,"statusMessage":""}
+
+---- Account Manager
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/SetUserAccount?mobileNumber=1111&deviceId=123
+http://localhost:8080/Avatar/1/AcctMgr/SetUserAccount?mobileNumber=1111&deviceId=123
+* Verify no authentication needed.
+--Case 1: Invalid mobileNumber
+{"statusCode":500,"statusMessage":"Mobile Number not found!"}
+
+http://localhost:8080/Avatar/1/AcctMgr/NonMobile/SetUserAccount?email=jtuan98@yhaoo.com
+* Verify no authentication needed.
+--Case 2: Success, updating deviceId
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/SetUserAccount?mobileNumber=1234&realname='James Dong'
+* Verify no authentication needed.
+--Case 3: Success, updating realname with single quotes
+{"statusCode":200,"statusMessage":""}
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/SetUserAccount?mobileNumber=1234&realname=James Dong
+--Case 3a: Success, updating realname regular
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/SetUserAccount?mobileNumber=1234&email=123@YAHOO.COM
+--Case 4: Success, updating EMAIL
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/SetUserAccount?mobileNumber=1234&pictureBase64=123456
+--Case 5: Success, updating Pic Image
+{"statusCode":200,"statusMessage":""}
+
+
+http://localhost:8080/Avatar/1/AcctMgr/GetMemberAcct?deviceId=deviceId123
+*** Verify that this call requires Authentication with clubAdmin Role
+{"id":137,"userId":"jtuan98@yahoo.com","priviledges":["clubAdmin"],"email":"jtuan98@yahoo.com","statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/MapTangerineHandsetIDwithUser?mobileNumber=1234&deviceId=deviceId123&tangerineHandsetId=tHandset101
+--Case 1: invalid deviceId
+{"statusCode":500,"statusMessage":"Mobile 1234/deviceId12x3 not found!"}
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/MapTangerineHandsetIDwithUser?mobileNumber=x1234&deviceId=deviceId123&tangerineHandsetId=tHandset101-
+--Case 2: invalid mobileNumber
+{"statusCode":500,"statusMessage":"Mobile x1234/deviceId123 not found!"}
+http://localhost:8080/Avatar/1/AcctMgr/Mobile/MapTangerineHandsetIDwithUser?mobileNumber=1234&deviceId=deviceId123&tangerineHandsetId=tHandset101-
+--Case 3: success
+{"statusCode":200,"statusMessage":""}
+
+
+http://localhost:8080/Avatar/1/AcctMgr/NonMobile/SetUserAccount?email=jtuan98@yhaoo.com
+http://localhost:8080/Avatar/1/AcctMgr/SetUserNonMobileAccount?email=jtuan98@yhaoo.com
+* Verify no authentication needed.
+--Case 1: Invalid email
+{"statusCode":500,"statusMessage":"Account not found!"}
+
+http://localhost:8080/Avatar/1/AcctMgr/NonMobile/SetUserAccount?email=jtuan98@yahoo.com&realname=jt
+* Verify no authentication needed.
+--Case 2: Success, updating deviceId
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/AcctMgr/NonMobile/SetUserAccount?email=jtuan98@yahoo.com&realname='James Dong'
+* Verify no authentication needed.
+--Case 3: Success, updating realname with single quotes with space
+{"statusCode":200,"statusMessage":""}
+http://localhost:8080/Avatar/1/AcctMgr/NonMobile/SetUserAccount?email=jtuan98@yahoo.com&realname=James Dong
+--Case 3a: Success, updating realname regular
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/AcctMgr/NonMobile/SetUserAccount?email=jtuan98@yahoo.com&pictureBase64=123456
+--Case 4: Success, updating Pic Image
+{"statusCode":200,"statusMessage":""}
+
+
+
+-------- BEACON MGR
+http://localhost:8080/Avatar/1/BeaconMgr/getAmenityDeptName?clubId=pharaho1
+* Verify authentication with clubAmin
+--Case 1: club id not found
+{"statusCode":500,"statusMessage":"Club : pharaho1 not found!"}
+--Case 2: success
+{"department":["Massage Service","myBar"],"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/BeaconMgr/SetAmenityDeptName?clubId=pharoah1&apnsToken=testingApnTok&amenityDepartment=Massage Service1
+* Verify authentication with clubAmin
+--Case 1: club id not found
+{"statusCode":500,"statusMessage":"Club pharoah1 not found!"}
+http://localhost:8080/Avatar/1/BeaconMgr/SetAmenityDeptName?clubId=pharoah1&apnsToken=testingApnTok&amenityDepartment=Massage Service1
+--Case 2: amenityDepartment not found, the backend inserts a new rec in CLUB_AMENITIES and the CLUB_APNS_TOKEN
+{"statusCode":200,"statusMessage":""}
+http://localhost:8080/Avatar/1/BeaconMgr/SetAmenityDeptName?clubId=pharoah1&apnsToken=testingApnTok111&amenityDepartment=Massage Service
+--Case 3: existing amenityDepartment
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/BeaconMgr/SetMemberEntry?mobileNumber=1234&beaconActionId=beacon1
+* Verify authentication with clubAmin
+-- Case 1: Success
+{"statusCode":200,"statusMessage":"1234 added to beacon1"}
+http://localhost:8080/Avatar/1/BeaconMgr/SetMemberEntry?mobileNumber=12345&beaconActionId=beacon1
+-- Case 2: Invalid mobile number
+{"statusCode":500,"statusMessage":"Account 12345 not found!"}
+http://localhost:8080/Avatar/1/BeaconMgr/SetMemberEntry?mobileNumber=1234&beaconActionId=beacon12
+-- Case 3: Invalid beacon
+{"statusCode":500,"statusMessage":"Beacon beacon12 not found!"}
+
+http://localhost:8080/Avatar/1/BeaconMgr/ShowMemberByDept?beaconId=beacon1&amenityDepartment=Massage Service
+* Verify authentication with clubAmin
+-- Case 1: Success
+{"users":[{"mobileNumber":"1234","id":131,"userId":"1234","picture":{"picture":"12345w"},"name":"James Dong","email":"123@YAHOO.COM","homeClub":{"id":1,"clubId":"pharaoh1","clubName":"Pharaoh Gentlemen\u0027s Club","phoneNumber":"123-1234"}}],"statusCode":200,"statusMessage":""}
+-- Case 2: non existent beaconId
+{"users":[],"statusCode":200,"statusMessage":""}
+
+--- New as of 3/22
+------------------------- ClubMgr -----------
+http://localhost:8080/Avatar/1/ClubMgr/SetAPNsToken?userId=unused&clubId=pharaoh1x&apnsToken=apnstok1
+* Verify authentication with clubAmin
+-- Case 1: clubId invalid or non existent
+-- Case 2: clubId invalid or non existent
+
+
+
+------- SurveyMgr -----
+http://localhost:8080/Avatar/1/SurveyMgr/GetSurveyQuestion?beaconActionId=pharoah1x&mobileNumber=1234
+* Verify no authentication 
+-- Case 1: beaconId invalid or non existent
+{"statusCode":500,"statusMessage":"Beacon: pharoah1x not found!"}
+
+http://localhost:8080/Avatar/1/SurveyMgr/GetSurveyQuestion?beaconActionId=Beacon1&mobileNumber=1234x
+-- Case 2: mobileNumber invalid or non existent
+{"statusCode":500,"statusMessage":"Account 1234x not found!"}
+
+http://localhost:8080/Avatar/1/SurveyMgr/GetSurveyQuestion?beaconActionId=Beacon1&mobileNumber=1234
+-- Case 3: success
+{"surveyAnswerId":146,"id":1,"questionA":"How did you like your food?","questionB":"How did you rate the music?","statusCode":200,"statusMessage":""}
+http://localhost:8080/Avatar/1/SurveyMgr/GetSurveyQuestion?beaconActionId=Beacon1&mobileNumber=1234
+-- Case 4: asked next survey again and again, same answer... 
+{"surveyAnswerId":146,"id":1,"questionA":"How did you like your food?","questionB":"How did you rate the music?","statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/SurveyMgr/SetSurvey?beaconActionId=Beacon1&mobileNumber=1234&surveyQuestionId=1&answerA=5&answerB=9
+--Case 1: Non existent surveyAnswerId
+{"statusCode":500,"statusMessage":"Answer ID 157 not found!"}
+--Case 2: success
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/SurveyMgr/GetPromotions?beaconActionId=Beacon1xxx&mobileNumber=1234
+--Case 1: Non existent beaconActionId
+{"statusCode":500,"statusMessage":"Beacon: Beacon1xxx not found!"}
+http://localhost:8080/Avatar/1/SurveyMgr/GetPromotions?beaconActionId=Beacon1&mobileNumber=1234
+http://awseb-e-g-awsebloa-jh5n676jwbbx-1396095954.us-east-1.elb.amazonaws.com/1/SurveyMgr/GetPromotions?beaconActionId=Beacon1&mobileNumber=1234
+--Case 2: No promos
+{"statusCode":500,"statusMessage":"Beacon: Beacon1xxx not found!"}
+
+
+--Jt's deviceId
+deviceId=3979F4659177CO4C
+
+http://localhost:8080/Avatar/1/SurveyMgr/PromotionRead?mobileNumber=1234&promotionId=1&promotionRead=Y
+-- Case 1: Invalid Mobile Number
+{"statusCode":500,"statusMessage":"Account 1234x not found!"}
+-- Case 2: Invalid PromotionId
+{"statusCode":500,"statusMessage":"promotionId -1 not found!"}
+-- Case 3: Success
+{"statusCode":200,"statusMessage":""}
+
+http://localhost:8080/Avatar/1/SurveyMgr/SetPromotions?mobileNumber=1234&clubId=pharaoh1&amenityId=myBar&promotionTitle=Special march Madness&promotionDetail=Buy 1 get 1 free on all domestic beers&effectiveDate=2015020&endingDate=20150420
+-- case 1: invalid clubId
+{"statusCode":500,"statusMessage":"Club pharoah1xx not found!"}
+-- case 2: invalid amenityId
+{"statusCode":500,"statusMessage":"Club Amenity xxmyBar not found!"}
+-- case 3: invalid effectiveDate
+{"statusCode":500,"statusMessage":"Invalid EffectiveDate: 201-50-20"}
+-- case 4: invalid endingDate
+{"statusCode":500,"statusMessage":"Invalid EndingDate: 201504-20"}
+-- case 5: success
+{"statusCode":200,"statusMessage":""}
+
+
+http://localhost:8080/Avatar/1/BeaconMgr/SetBeacon?installerStaffUserId=1234x&clubId=pharaoh1&amenityId=myBar&beaconActionId=Beacon2&location=FWL&desc=Bar Beacon1located Upper Left toward the Wall.
+** Verify Authentication is needed with clubAdmin
+-- Case 1: Invalid installerStaffUserId
+{"statusCode":500,"statusMessage":"Account 1234x not found!"}
+-- Case 2: Invalid Clubid
+{"statusCode":500,"statusMessage":"Club pharaoh1x not found!"}
+-- Case 3: Invalid amenityId
+{"statusCode":500,"statusMessage":"Club Amenity myBarx not found!"}
+-- Case 4: Invalid Location
+{"statusCode":500,"statusMessage":"Invalid location FWLxxx"}
+-- Case 5: Non Existent Beacon ID
+{"statusCode":200,"statusMessage":""}
+-- Case 6: Existent Beacon ID
+{"statusCode":200,"statusMessage":""}
+
+
+ 
