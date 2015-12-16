@@ -201,7 +201,7 @@ public class SurveyManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId)
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId)
 					throws Exception {
 		init();
 		WsResponse<String> apiDeniedResponse = null;
@@ -220,7 +220,7 @@ public class SurveyManagerController extends BaseController {
 		WsResponse<List<Promotion>> apiResponse = null;
 		try {
 			final List<Promotion> promotions = promotionService.getPromotions(
-					clubId, amenityId);
+					clubId, subAmenityId);
 			apiResponse = new WsResponse<List<Promotion>>(
 					ResponseStatus.success, "", promotions, "promotions");
 		} catch (final Exception e) {
@@ -260,7 +260,7 @@ public class SurveyManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "amenityId") final String amenityId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
 			@RequestParam(required = true, value = "promotionTitle") final String promotionTitle,
 			@RequestParam(required = true, value = "promotionDetail") final String promotionDetails,
 			@RequestParam(required = true, value = "effectiveDate") final String effectiveDateYYYYMMDDHH24MISS,
@@ -283,7 +283,7 @@ public class SurveyManagerController extends BaseController {
 		// amenityId or not.
 		WsResponse<String> apiResponse = null;
 		try {
-			final Promotion promotion = getPromotionInstance(clubId, amenityId,
+			final Promotion promotion = getPromotionInstance(clubId, subAmenityId,
 					promotionTitle, promotionDetails,
 					effectiveDateYYYYMMDDHH24MISS, endingDateYYYYMMDDHH24MISS);
 

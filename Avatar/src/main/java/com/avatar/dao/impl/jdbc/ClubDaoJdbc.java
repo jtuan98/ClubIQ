@@ -51,7 +51,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			+ "CITY=?, STATE_ABBR=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=?, TIME_ZONE=?, X_COORD=?, Y_COORD=? "
 			+ "WHERE ID=? ";
 
-	private static String GET_EMPLOYEES_FOR_AMENITY_PK = "select USER_ID from AMENITY_EMPLOYEE where CLUB_AMENITY_ID = ? ";
+	private static String GET_EMPLOYEES_FOR_SUBAMENITY_PK = "select USER_ID from AMENITY_EMPLOYEE where CLUB_SUBAMENITY_ID = ? ";
 
 	static private String SEL_CLUBS_BY_USER_IDPK = "SELECT CLUBS.* FROM CLUBS, USERS, USER_ROLES where USERS.ID = ? and HOME_CLUB_ID = CLUBS.ID AND USER_ROLES.USER_ID = USERS.ID and ROLE != '"
 			+ Privilege.superUser.name() + "'";
@@ -344,10 +344,10 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public List<Integer> getSubAmenityEmployees(final Integer clubAmenityId)
+	public List<Integer> getSubAmenityEmployees(final Integer clubSubAmenityId)
 			throws NotFoundException {
 		final List<Integer> retVal = getJdbcTemplate().queryForList(
-				GET_EMPLOYEES_FOR_AMENITY_PK, Integer.class, clubAmenityId);
+				GET_EMPLOYEES_FOR_SUBAMENITY_PK, Integer.class, clubSubAmenityId);
 		return retVal;
 	}
 

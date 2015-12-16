@@ -200,7 +200,7 @@ public class BeaconManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	@RequestMapping(value = "/BeaconDetectionWithAmenity")
+	@RequestMapping(value = "/BeaconDetectionWithSubAmenity")
 	public ModelAndView getSubAmenityInfo(
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "beaconActionId") final String beaconActionId)

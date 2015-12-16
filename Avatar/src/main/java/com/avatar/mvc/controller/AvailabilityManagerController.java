@@ -26,9 +26,9 @@ public class AvailabilityManagerController extends BaseController {
 					throws Exception {
 		init();
 		WsResponse<CheckInfo> apiResponse = null;
-		final AccountDto account = authenticationService.getAccount(authToken);
-		final String userId = account.getUserId();
 		try {
+			final AccountDto account = authenticationService.getAccount(authToken);
+			final String userId = account.getUserId();
 			final CheckInfo checkInfo = accountService.getCheckInfo(userId,
 					availId);
 			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",

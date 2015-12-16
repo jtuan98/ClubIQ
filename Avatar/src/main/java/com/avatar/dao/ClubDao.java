@@ -47,12 +47,12 @@ public interface ClubDao {
 	// Return Amenity Names
 	List<String> getSubAmenityDeptName(String clubId) throws NotFoundException;
 
-	List<Integer> getSubAmenityEmployees(Integer clubAmenityId)
+	List<Integer> getSubAmenityEmployees(Integer clubSubAmenityId)
 			throws NotFoundException;
 
-	String getSubAmenityHeaderText(int clubIdPk, int amenityIdPk);
+	String getSubAmenityHeaderText(int clubIdPk, int subAmenityIdPk);
 
-	String getSubAmenitySecondayHeaderText(int clubIdPk, int amenityIdPk);
+	String getSubAmenitySecondayHeaderText(int clubIdPk, int subAmenityIdPk);
 
 	void update(ClubDto club) throws NotFoundException;
 

@@ -144,26 +144,26 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
+	public void addNote(final String memberId, final String noteText, final DateTime parseDateTime)
+			throws NotFoundException {
+		final Integer userPkId = accountDao.getUserIdPkByUserId(memberId);
+		accountDao.addNote(userPkId, noteText, parseDateTime);
+	}
+
+	@Override
 	public void addSubAmenityToUser(final String userId, final String clubSubAmenityId)
 			throws NotFoundException, InvalidParameterException {
 		if (StringUtils.isEmpty(userId)) {
 			throw new InvalidParameterException("UserId cannot be null");
 		}
 		if (StringUtils.isEmpty(clubSubAmenityId)) {
-			throw new InvalidParameterException("ClubAmenityId cannot be null");
+			throw new InvalidParameterException("ClubSubAmenityId cannot be null");
 		}
 
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
 		final Integer clubSubAmenityIdPk = clubDao
 				.getClubSubAmenityIdPk(clubSubAmenityId);
 		accountDao.addSubAmenityToUser(userIdPk, clubSubAmenityIdPk);
-	}
-
-	@Override
-	public void addNote(final String memberId, final String noteText, final DateTime parseDateTime)
-			throws NotFoundException {
-		final Integer userPkId = accountDao.getUserIdPkByUserId(memberId);
-		accountDao.addNote(userPkId, noteText, parseDateTime);
 	}
 
 	@Override
@@ -300,20 +300,9 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public CheckInfo getCheckInfo(final String userId, final String availId) throws NotFoundException {
 		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
-		CheckInfo retVal = reservationDao.getReservation (userIdPk, availId);
+		final CheckInfo retVal = reservationDao.getReservation (userIdPk, availId);
 		if (retVal == null) {
-			if (mockingCheckInfo) {
-				//Mocking only.
-				retVal = new CheckInfo();
-				retVal.setAvailId(availId);
-				retVal.setSubAmenityId("myBar1");
-				retVal.setSubAmenityName("My Bar One");
-				retVal.setPersonNumber(5);
-				retVal.setRequestedClubId("Gentlemens club");
-				retVal.setRequestedDateTime(new Date());
-			} else {
-				throw new NotFoundException();
-			}
+			throw new NotFoundException();
 		}
 		return retVal;
 	}

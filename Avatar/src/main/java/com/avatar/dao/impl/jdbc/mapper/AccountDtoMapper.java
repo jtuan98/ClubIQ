@@ -23,6 +23,7 @@ public class AccountDtoMapper implements RowMapper<AccountDto> {
 		retVal.setId(rs.getInt("ID"));
 		retVal.setAddress(rs.getString("ADDRESS"));
 		retVal.setEmail(rs.getString("EMAIL"));
+		retVal.setTraining("Y".equalsIgnoreCase(rs.getString("TRAINING")));
 		retVal.setStatus(AccountStatus.valueOf(rs.getString("STATUS")));
 		retVal.setName(rs.getString("REALNAME"));
 		retVal.setUserId(rs.getString("USERID"));

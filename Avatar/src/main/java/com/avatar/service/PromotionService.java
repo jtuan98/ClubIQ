@@ -102,23 +102,23 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 	@Override
 	public void newPromotion(final Promotion promotion)
 			throws NotFoundException {
-		populatePkForClubsAndAmenity(promotion);
+		populatePkForClubsAndSubAmenity(promotion);
 		promotionDao.newPromotion(promotion);
 	}
 
-	private void populatePkForClubsAndAmenity(final Promotion promotion)
+	private void populatePkForClubsAndSubAmenity(final Promotion promotion)
 			throws NotFoundException {
 		Assert.notNull(promotion);
 		Assert.notNull(promotion.getClub());
 		Assert.hasText(promotion.getClub().getClubId());
 		Assert.notNull(promotion.getSubAmenity());
-		Assert.hasText(promotion.getSubAmenity().getAmenityId());
+		Assert.hasText(promotion.getSubAmenity().getSubAmenityId());
 		final Integer clubIdPk = clubDao.getClubIdPk(promotion.getClub()
 				.getClubId());
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(promotion
-				.getSubAmenity().getAmenityId());
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(promotion
+				.getSubAmenity().getSubAmenityId());
 		promotion.getClub().setId(clubIdPk);
-		promotion.getSubAmenity().setId(amenityIdPk);
+		promotion.getSubAmenity().setId(subAmenityIdPk);
 	}
 
 	@Override

@@ -19,17 +19,17 @@ import com.avatar.exception.PermissionDeniedException;
 @Repository
 public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
-	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID = "SELECT * FROM PROMOTIONS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID = ? ";
-	private static String GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID = GET_PROMOTIONS_BY_CLUBID_AMENITYID
+	private static String GET_PROMOTIONS_BY_CLUBID_SUBAMENITYID = "SELECT * FROM PROMOTIONS WHERE CLUB_ID = ? AND CLUB_SUBAMENITY_ID = ? ";
+	private static String GET_PROMOTIONS_BY_CLUBID_SUBAMENITYID_VALID = GET_PROMOTIONS_BY_CLUBID_SUBAMENITYID
 			+ " AND CURDATE() >= EFFECTIVE_DATE AND CURDATE() <= ENDING_DATE ";
 
 	private static String INS_PROMO_HISTORY = "INSERT INTO PROMOTION_HISTORY ("
-			+ "      ID,PROMOTION_ID,CLUB_ID,CLUB_AMENITY_ID,USER_ID,PROMO_READ,CREATE_DATE) "
-			+ "SELECT ?,ID,CLUB_ID,CLUB_AMENITY_ID,       ?,        ?, NOW() "
+			+ "      ID,PROMOTION_ID,CLUB_ID,CLUB_SUBAMENITY_ID,USER_ID,PROMO_READ,CREATE_DATE) "
+			+ "SELECT ?,ID,CLUB_ID,CLUB_SUBAMENITY_ID,       ?,        ?, NOW() "
 			+ "FROM PROMOTIONS WHERE ID = ? ";
 
 	private static String INS_NEW_PROMOTION = "INSERT INTO PROMOTIONS ("
-			+ "ID, CLUB_ID, CLUB_AMENITY_ID,	TITLE, DETAILS, EFFECTIVE_DATE, ENDING_DATE, CREATE_DATE) "
+			+ "ID, CLUB_ID, CLUB_SUBAMENITY_ID,	TITLE, DETAILS, EFFECTIVE_DATE, ENDING_DATE, CREATE_DATE) "
 			+ "VALUES(?,?,?,?,?,?,?,NOW())";
 
 	private static String GET_PROMO_ID_PK = "select ID from PROMOTIONS where ID=?";
@@ -73,10 +73,10 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
 	@Override
 	public List<Promotion> getAllPromotions(final Integer clubIdPk,
-			final Integer amenityIdPk) {
+			final Integer subAmenityIdPk) {
 		final List<Promotion> retVal = getJdbcTemplate().query(
-				GET_PROMOTIONS_BY_CLUBID_AMENITYID, promotionMapper, clubIdPk,
-				amenityIdPk);
+				GET_PROMOTIONS_BY_CLUBID_SUBAMENITYID, promotionMapper, clubIdPk,
+				subAmenityIdPk);
 		return retVal;
 	}
 
@@ -106,10 +106,10 @@ public class PromotionDaoJdbc extends BaseJdbcDao implements PromotionDao {
 
 	@Override
 	public List<Promotion> getValidPromotions(final Integer clubIdPk,
-			final Integer amenityIdPk) {
+			final Integer subAmenityIdPk) {
 		final List<Promotion> retVal = getJdbcTemplate().query(
-				GET_PROMOTIONS_BY_CLUBID_AMENITYID_VALID, promotionMapper,
-				clubIdPk, amenityIdPk);
+				GET_PROMOTIONS_BY_CLUBID_SUBAMENITYID_VALID, promotionMapper,
+				clubIdPk, subAmenityIdPk);
 		return retVal;
 	}
 
