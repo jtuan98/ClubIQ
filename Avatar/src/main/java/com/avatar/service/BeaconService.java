@@ -125,6 +125,14 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
+	public AmenityDto getAmenity(final String clubId, final String amenityId)
+			throws NotFoundException {
+		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		return clubDao.getAmenity(clubIdPk, amenityIdPk);
+	}
+
+	@Override
 	public String getAmenityHeaderText(final String clubId,
 			final String amenityId) throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
@@ -266,7 +274,6 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
 		return clubDao.getSubAmenityHeaderText(clubIdPk, subAmenityIdPk);
 	}
-
 	@Override
 	public List<SubAmenityDto> getSubAmenityList(final String clubId,
 			final String amenityId) throws NotFoundException {

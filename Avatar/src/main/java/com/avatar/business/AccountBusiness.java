@@ -9,6 +9,7 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.club.CheckInfo;
 import com.avatar.exception.AccountCreationException;
+import com.avatar.exception.AccountSuspendedException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 
@@ -32,7 +33,7 @@ public interface AccountBusiness {
 
 	boolean deactivateAccount(String userId) throws NotFoundException;
 
-	boolean exists(String userId) throws InvalidParameterException;
+	boolean exists(String userId) throws InvalidParameterException, AccountSuspendedException;
 
 	AccountDto get(String userId) throws NotFoundException, InvalidParameterException;
 
@@ -40,7 +41,7 @@ public interface AccountBusiness {
 
 	List<AccountDto> getMembers(String clubId) throws NotFoundException;
 
-	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException, InvalidParameterException;
+	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException, InvalidParameterException, AccountSuspendedException;
 
 	void suspend(String memberId, DateTime suspendDate)throws NotFoundException, InvalidParameterException;
 

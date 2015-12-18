@@ -30,6 +30,7 @@ import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.AccountCreationException;
+import com.avatar.exception.AccountSuspendedException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 
@@ -833,14 +834,14 @@ public class AccountServiceTest extends BaseServiceTest {
 	// case 1: userId null
 	@Test(expected = InvalidParameterException.class)
 	public void test025Exists_01_null() throws NotFoundException,
-	InvalidParameterException {
+	InvalidParameterException, AccountSuspendedException {
 		final String userId = null;
 		final boolean retVal = service.exists(userId);
 	}
 
 	@Test
 	public void test025Exists_02_daoThrowException() throws NotFoundException,
-	InvalidParameterException {
+	InvalidParameterException, AccountSuspendedException {
 		final String userId = "123";
 		given(accountDao.getUserIdPkByUserId(userId))
 		.willThrow(Exception.class);
@@ -851,7 +852,7 @@ public class AccountServiceTest extends BaseServiceTest {
 	// case 2: non existent userId
 	@Test
 	public void test025Exists_03_NotFoundException() throws NotFoundException,
-	InvalidParameterException {
+	InvalidParameterException, AccountSuspendedException {
 		final String userId = "123";
 		given(accountDao.getUserIdPkByUserId(userId)).willThrow(
 				NotFoundException.class);
@@ -862,7 +863,7 @@ public class AccountServiceTest extends BaseServiceTest {
 	// case 3: valid userId employee account
 	@Test
 	public void test025Exists_04_valid() throws NotFoundException,
-	InvalidParameterException {
+	InvalidParameterException, AccountSuspendedException {
 		final String userId = "123";
 		given(accountDao.getUserIdPkByUserId(userId)).willReturn(1);
 		final boolean retVal = service.exists(userId);

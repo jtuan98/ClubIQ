@@ -1,7 +1,9 @@
 package com.avatar.mvc.controller;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -128,6 +130,33 @@ public class ClubManagerController extends BaseController {
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+
+	// Phase 2
+	@RequestMapping(value = { "/GetAmenityPhotoHeadline", "/getAmenityPhotoHeadline" })
+	public ModelAndView getAmenityPhotoHeadline(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
+					throws Exception {
+		init();
+		try {
+			final AmenityDto amenity = beaconService.getAmenity(clubId, amenityId);
+			final String image = amenity.getImage() != null? amenity.getImage().getPictureAsBase64String(): "";
+			final String headerText = amenity.getHeader();
+			final Map<String, String> data = new HashMap<>();
+			data.put("pictureBase64", image);
+			data.put("amenityHeaderText", headerText);
+			final WsResponse<Map<String, String>> apiResponse = new WsResponse<Map<String, String>>(ResponseStatus.success, "",
+					data, null);
+			return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+		} catch (final Exception e) {
+			final WsResponse<String> apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+			return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+		}
 	}
 
 	// Phase 2
@@ -293,6 +322,28 @@ public class ClubManagerController extends BaseController {
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
+	}
+
+	// Phase 2
+	@RequestMapping(value = { "/GetClubPhoto", "/getClubPhoto" })
+	public ModelAndView getClubPhoto(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId)
+					throws Exception {
+		init();
+
+		WsResponse<String> apiResponse = null;
+		try {
+			final ClubDto club = beaconService.getClub(clubId);
+			final String image = club.getImage() != null? club.getImage().getPictureAsBase64String(): "";
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					image, "pictureBase64");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubAddressView, toModel(apiResponse));
 	}
 
 	private ClubDto getInstance(final String clubId, final String clubName,

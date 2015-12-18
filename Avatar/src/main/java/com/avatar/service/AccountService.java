@@ -33,6 +33,7 @@ import com.avatar.dto.enums.DbTimeZone;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.AccountExistedException;
+import com.avatar.exception.AccountSuspendedException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.google.common.cache.CacheBuilder;
@@ -251,14 +252,20 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public boolean exists(final String userId) throws InvalidParameterException {
+	public boolean exists(final String userId) throws InvalidParameterException, AccountSuspendedException {
 		if (StringUtils.isEmpty(userId)) {
 			throw new InvalidParameterException("UserId cannot be null");
 		}
 		boolean retVal = false;
 		try {
-			accountDao.getUserIdPkByUserId(userId);
+			final int userIdPk = accountDao.getUserIdPkByUserId(userId);
+			final AccountStatus status = accountDao.getStatus(userIdPk);
+			if (AccountStatus.Cancelled.equals(status)||AccountStatus.Terminated.equals(status)) {
+				throw new AccountSuspendedException("Account " + userId + " is "+status.name());
+			}
 			retVal = true;
+		} catch(final AccountSuspendedException e) {
+			throw e;
 		} catch (final Exception e) {
 		}
 		return retVal;
@@ -344,7 +351,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	public void setLinkNumber(final String userId, final String linkNumber, final Date currentDate)
-			throws NotFoundException, InvalidParameterException {
+			throws NotFoundException, InvalidParameterException, AccountSuspendedException {
 		exists(userId);
 		exists(linkNumber);
 		accountDao.linkNumbers(userId, linkNumber, currentDate);

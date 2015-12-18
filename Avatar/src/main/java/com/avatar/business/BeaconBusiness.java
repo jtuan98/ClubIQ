@@ -25,6 +25,8 @@ public interface BeaconBusiness {
 
 	List<AmenityDto> getAmenities(String clubId) throws NotFoundException;
 
+	AmenityDto getAmenity(String clubId, String amenityId) throws NotFoundException;
+
 	String getAmenityHeaderText(String clubId, String amenityId) throws NotFoundException;
 
 	BeaconDto getBeacon(String beaconActionId) throws NotFoundException;
@@ -65,9 +67,6 @@ public interface BeaconBusiness {
 	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityId, Date onDate)
 			throws NotFoundException;
 
-	void setSubAmenityId(String clubId, String apnsToken,
-			String amenityId, String subAmenityId) throws NotFoundException;
-
 	void setAmenityHeaderText(String clubId, String amenityId, String headerText) throws NotFoundException;
 
 	void setClubBodyText(String clubId, String bodyText) throws NotFoundException;
@@ -78,6 +77,9 @@ public interface BeaconBusiness {
 
 	void setSubAmenityHeaderText(String clubId, String subAmenityId,
 			String headerText) throws NotFoundException;
+
+	void setSubAmenityId(String clubId, String apnsToken,
+			String amenityId, String subAmenityId) throws NotFoundException;
 
 	void setSubAmenitySecondaryHeaderText(String clubId, String amenityId,
 			String headerText) throws NotFoundException;

@@ -65,15 +65,6 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		}
 	}
 
-	@Override
-	public void addSubAmenityToUser(final Integer userIdPk,
-			final Integer clubSubAmenityIdPk) throws InvalidParameterException {
-		if (userIdPk == null || clubSubAmenityIdPk == null) {
-			throw new InvalidParameterException("Keys cannot be null");
-		}
-		addLinkSubAmenityUserId(clubSubAmenityIdPk, userIdPk);
-	}
-
 	private void addLinkSubAmenityUserId(final Integer subAmenityIdPk,
 			final Integer userIdPk) {
 
@@ -94,6 +85,15 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 		getJdbcTemplate().update(AccountDaoSql.INS_NOTES, idNoteAdded,
 				userIdPk, noteText, yyyyMMdd_hh24missDtf.print(noteDateTime.getMillis()));
 		return idNoteAdded;
+	}
+
+	@Override
+	public void addSubAmenityToUser(final Integer userIdPk,
+			final Integer clubSubAmenityIdPk) throws InvalidParameterException {
+		if (userIdPk == null || clubSubAmenityIdPk == null) {
+			throw new InvalidParameterException("Keys cannot be null");
+		}
+		addLinkSubAmenityUserId(clubSubAmenityIdPk, userIdPk);
 	}
 
 	@Override
@@ -220,6 +220,14 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	public List<AccountDto> getMembers(final int clubIdPk) throws NotFoundException {
 		// TODO Phase 2
 		return null;
+	}
+
+	@Override
+	public AccountStatus getStatus(final int userIdPk) {
+		final String status = getJdbcTemplate().queryForObject(
+				AccountDaoSql.GET_STATUS_BY_IDPK, String.class,
+				userIdPk);
+		return AccountStatus.valueOf(status);
 	}
 
 	@Override

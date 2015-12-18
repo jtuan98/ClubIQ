@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
+import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.InvalidPasswordException;
@@ -16,10 +17,10 @@ public interface AccountDao {
 	void activate(String userId, String activationToken, Date activateDate)
 			throws NotFoundException;
 
+	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime);
+
 	void addSubAmenityToUser(Integer userIdPk, Integer clubSubAmenityIdPk)
 			throws NotFoundException, InvalidParameterException;
-
-	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime);
 
 	void deactivate(String userId, Date deacticateDate)
 			throws NotFoundException;
@@ -37,6 +38,8 @@ public interface AccountDao {
 	List<Privilege> fetchRoles(final String userId) throws NotFoundException;
 
 	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException;
+
+	AccountStatus getStatus(int userIdPk);
 
 	String getUserIdByDeviceId(String deviceId) throws NotFoundException;
 

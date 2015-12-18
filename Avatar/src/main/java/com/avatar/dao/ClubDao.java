@@ -20,6 +20,8 @@ public interface ClubDao {
 
 	List<AmenityDto> getAmenities(Integer clubIdPk) throws NotFoundException;
 
+	AmenityDto getAmenity(Integer clubIdPk, Integer amenityIdPk)throws NotFoundException;
+
 	String getAmenityHeaderText(int clubIdPk, int amenityIdPk) throws NotFoundException;
 
 	String getBodyText(int clubIdPk);

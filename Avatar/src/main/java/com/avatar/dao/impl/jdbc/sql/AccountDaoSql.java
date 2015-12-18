@@ -79,6 +79,8 @@ public final class AccountDaoSql {
 	public static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
 			+ AccountStatus.Activated.name() + "'";
 
+	public static String GET_STATUS_BY_IDPK = "select STATUS from USERS where id = ?";
+
 	public static String VALIDATE_USERID_NOPASSWD = " SELECT count(*) from USERS where ID = ? and STATUS = '"
 			+ AccountStatus.Activated.name() + "'";
 

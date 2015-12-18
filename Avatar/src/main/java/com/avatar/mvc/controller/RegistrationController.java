@@ -25,6 +25,7 @@ import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.exception.AccountSuspendedException;
 
 @Controller
 public class RegistrationController extends BaseController {
@@ -231,10 +232,15 @@ public class RegistrationController extends BaseController {
 			@RequestParam(required = true, value = "mobileNumber") final String userid)
 					throws Exception {
 		init();
-		final String msg = "";
-		final boolean exists = accountService.exists(userid);
-		final WsResponse<String> apiResponse = new WsResponse<String>(
-				ResponseStatus.success, "", exists ? "true" : "false", "exist");
+		WsResponse<String> apiResponse;
+		try {
+			final boolean exists = accountService.exists(userid);
+			apiResponse = new WsResponse<String>(
+					ResponseStatus.success, "", exists ? "true" : "false", "exist");
+		} catch (final AccountSuspendedException e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 

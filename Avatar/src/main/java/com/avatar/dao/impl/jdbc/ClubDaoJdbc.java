@@ -33,19 +33,22 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	private static String GET_CLUB_FROM_PK = "SELECT * FROM CLUBS where ID = ?";
 
 	private static String GET_CLUB_FROM_CLUBID = "SELECT * FROM CLUBS WHERE CLUBID = ?";
-	private static String GET_IMAGE_ID = "SELECT IMAGE_ID FROM CLUBS WHERE ID=?";
+	private static String GET_CLUB_IMAGE_ID = "SELECT IMAGE_ID FROM CLUBS WHERE ID=?";
 
 	private static String GET_CLUBIDPK = "SELECT ID FROM CLUBS WHERE CLUBID=?";
 	private static String GET_CLUBIDPK_BYKEYCODE = "SELECT CLUB_ID FROM CLUB_KEYS WHERE KEYCODE = ?";
+	private static String GET_AMENITY_IMAGE_ID = "SELECT IMAGE_ID FROM CLUB_AMENITIES WHERE ID=?";
 	private static String SEL_AMENITY_PK_BY_AMENITYID = "SELECT ID FROM CLUB_AMENITIES WHERE AMENITYID = ? ";
-	private static String SEL_AMENITIES_BY_CLUBID= "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? ORDER BY ORDERING";
+	private static String SEL_AMENITY_BY_CLUBID_IDPK = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? and ID = ? ORDER BY ORDERING";
+	private static String SEL_AMENITIES_BY_CLUBID = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? ORDER BY ORDERING";
 	private static String SEL_SUBAMENITY_PK_BY_SUBAMENITYID = "SELECT ID FROM CLUB_SUB_AMENITIES WHERE SUBAMENITYID = ? ";
 	private static String SEL_SUBAMENITY_BY_PK = "SELECT CA.*, AT.AMENITYID FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_ID ";
+	private static String GET_SUBAMENITY_IMAGE_ID = "SELECT IMAGE_ID FROM CLUB_SUB_AMENITIES WHERE ID=?";
 
 	private static String SEL_SUBAMENITIES_BY_CLUBID = "SELECT CA.*, AT.AMENITYID FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.CLUB_ID = ? and AT.ID = CA.AMENITY_ID ";
 
 	private static String SEL_SUBAMENITIES_BY_CLUBID_AMENITYID = SEL_SUBAMENITIES_BY_CLUBID
-			+ " AND UPPER(AT.AMENITYID)=UPPER(?)";
+			+ " AND UPPER(AT.AMENITYID)=UPPER(?) ORDER BY ORDERING";
 
 	private static String UPD_CLUB_INFO = "update CLUBS set NAME=?, ADDRESS=?, ZIPCODE=?,"
 			+ "CITY=?, STATE_ABBR=?, PHONE_NUMBER=?, HZRESTRICTION=?, CLUB_TYPE=?, CLUB_WEBSITE=?, TIME_ZONE=?, X_COORD=?, Y_COORD=? "
@@ -70,12 +73,17 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private static final String UPD_CLUB_AMENITY_HEADER = "UPDATE CLUB_AMENITIES set HEADER = ? where CLUB_ID = ? and ID = ?";
 	private static final String UPD_CLUB_SUBAMENITY = "UPDATE CLUB_SUB_AMENITIES set COLUMN=? where CLUB_ID = ? and ID = ?";
-	private static final String UPD_CLUB_SUBAMENITY_BODY = UPD_CLUB_SUBAMENITY.replace("COLUMN", "BODY_TEXT");
-	private static final String UPD_CLUB_SUBAMENITY_HEADER = UPD_CLUB_SUBAMENITY.replace("COLUMN", "HEADER_TEXT");
-	private static final String UPD_CLUB_SUBAMENITY_SECONDARY_HEADER = UPD_CLUB_SUBAMENITY.replace("COLUMN", "SECONDARY_HEADER_TEXT");
+	private static final String UPD_CLUB_SUBAMENITY_BODY = UPD_CLUB_SUBAMENITY
+			.replace("COLUMN", "BODY_TEXT");
+	private static final String UPD_CLUB_SUBAMENITY_HEADER = UPD_CLUB_SUBAMENITY
+			.replace("COLUMN", "HEADER_TEXT");
+	private static final String UPD_CLUB_SUBAMENITY_SECONDARY_HEADER = UPD_CLUB_SUBAMENITY
+			.replace("COLUMN", "SECONDARY_HEADER_TEXT");
 	private static final String UPD_CLUB = "UPDATE CLUBS SET COLUMN = ? where ID = ?";
-	private static final String UPD_CLUB_BODY = UPD_CLUB.replace("COLUMN", "BODY_TEXT");
-	private static final String UPD_CLUB_HEADER = UPD_CLUB.replace("COLUMN", "HEADER_TEXT");
+	private static final String UPD_CLUB_BODY = UPD_CLUB.replace("COLUMN",
+			"BODY_TEXT");
+	private static final String UPD_CLUB_HEADER = UPD_CLUB.replace("COLUMN",
+			"HEADER_TEXT");
 
 	private final static String GET_AMENITY_HEADER_TEXT = "select HEADER FROM CLUB_AMENITIES where CLUB_ID = ? and ID = ? ";
 
@@ -118,7 +126,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 		if (StringUtils.isEmpty(state)) {
 			retVal = GET_ALL_CLUBS;
 		}
-		switch(orderByClause) {
+		switch (orderByClause) {
 		case clubName:
 			retVal = retVal + " NAME ";
 			break;
@@ -142,7 +150,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			if (includePicture) {
 				try {
 					final Integer imageIdPk = getJdbcTemplate().queryForObject(
-							GET_IMAGE_ID, Integer.class, retVal.getId());
+							GET_CLUB_IMAGE_ID, Integer.class, retVal.getId());
 					final ImagePic image = getImage(imageIdPk);
 					retVal.setImage(image);
 				} catch (final EmptyResultDataAccessException e1) {
@@ -159,7 +167,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 					GET_CLUB_FROM_CLUBID, clubDtoMapper, clubId);
 			try {
 				final Integer imageIdPk = getJdbcTemplate().queryForObject(
-						GET_IMAGE_ID, Integer.class, retVal.getId());
+						GET_CLUB_IMAGE_ID, Integer.class, retVal.getId());
 				final ImagePic image = getImage(imageIdPk);
 				retVal.setImage(image);
 			} catch (final EmptyResultDataAccessException e1) {
@@ -175,7 +183,33 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			throws NotFoundException {
 		final List<AmenityDto> amenities = getJdbcTemplate().query(
 				SEL_AMENITIES_BY_CLUBID, amenityMapper, clubIdPk);
+		if (CollectionUtils.isNotEmpty(amenities)) {
+			for (final AmenityDto amenity : amenities) {
+				final Integer imageIdPk = getJdbcTemplate().queryForObject(
+						GET_AMENITY_IMAGE_ID, Integer.class, amenity.getId());
+				final ImagePic image = getImage(imageIdPk);
+				amenity.setImage(image);
+			}
+		}
 		return amenities;
+	}
+
+	@Override
+	public AmenityDto getAmenity(final Integer clubIdPk,
+			final Integer amenityIdPk) throws NotFoundException {
+		try {
+			final AmenityDto amenity = getJdbcTemplate().queryForObject(
+					SEL_AMENITY_BY_CLUBID_IDPK, amenityMapper, clubIdPk,
+					amenityIdPk);
+			// Populate Photos
+			final Integer imageIdPk = getJdbcTemplate().queryForObject(
+					GET_AMENITY_IMAGE_ID, Integer.class, amenity.getId());
+			final ImagePic image = getImage(imageIdPk);
+			amenity.setImage(image);
+			return amenity;
+		} catch (final EmptyResultDataAccessException e) {
+			throw new NotFoundException();
+		}
 	}
 
 	@Override
@@ -183,8 +217,8 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			throws NotFoundException {
 		String retVal = "";
 		try {
-			retVal = getJdbcTemplate().queryForObject(
-					GET_AMENITY_HEADER_TEXT, stringMapper, clubIdPk, amenityIdPk);
+			retVal = getJdbcTemplate().queryForObject(GET_AMENITY_HEADER_TEXT,
+					stringMapper, clubIdPk, amenityIdPk);
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
@@ -232,13 +266,15 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 		}
 	}
 
-	private Integer getClubIdPkByKeyCode(final String clubKeycode) throws NotFoundException {
+	private Integer getClubIdPkByKeyCode(final String clubKeycode)
+			throws NotFoundException {
 		try {
 			final Integer clubIdPk = getJdbcTemplate().queryForObject(
 					GET_CLUBIDPK_BYKEYCODE, Integer.class, clubKeycode);
 			return clubIdPk;
 		} catch (final IncorrectResultSizeDataAccessException e) {
-			throw new NotFoundException("Club Keycode " + clubKeycode + " not found!");
+			throw new NotFoundException("Club Keycode " + clubKeycode
+					+ " not found!");
 		}
 	}
 
@@ -254,7 +290,6 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 		populateClubDetails(clubs);
 		return clubs;
 	}
-
 
 	@Override
 	public List<ClubDto> getClubsByState(final String state,
@@ -272,13 +307,13 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 		return clubs;
 	}
 
-
 	@Override
 	public Integer getClubSubAmenityIdPk(final String clubSubAmenityId)
 			throws NotFoundException {
 		try {
 			final Integer subAmenityIdPk = getJdbcTemplate().queryForObject(
-					SEL_SUBAMENITY_PK_BY_SUBAMENITYID, Integer.class, clubSubAmenityId);
+					SEL_SUBAMENITY_PK_BY_SUBAMENITYID, Integer.class,
+					clubSubAmenityId);
 			return subAmenityIdPk;
 		} catch (final IncorrectResultSizeDataAccessException e) {
 			throw new NotFoundException("Club Sub Amenity " + clubSubAmenityId
@@ -301,8 +336,18 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	public List<SubAmenityDto> getSubAmenities(final Integer clubIdPk,
 			final String amenityId) throws NotFoundException {
 		final List<SubAmenityDto> amenities = getJdbcTemplate().query(
-				SEL_SUBAMENITIES_BY_CLUBID_AMENITYID, subAmenityMapper, clubIdPk,
-				amenityId);
+				SEL_SUBAMENITIES_BY_CLUBID_AMENITYID, subAmenityMapper,
+				clubIdPk, amenityId);
+		// Populate Photos
+		if (CollectionUtils.isNotEmpty(amenities)) {
+			for (final SubAmenityDto subAmenityDto : amenities) {
+				final Integer imageIdPk = getJdbcTemplate().queryForObject(
+						GET_SUBAMENITY_IMAGE_ID, Integer.class,
+						subAmenityDto.getId());
+				final ImagePic image = getImage(imageIdPk);
+				subAmenityDto.setImage(image);
+			}
+		}
 		return amenities;
 	}
 
@@ -320,11 +365,12 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public String getSubAmenityBodyText(final int clubIdPk, final int subAmenityIdPk) {
+	public String getSubAmenityBodyText(final int clubIdPk,
+			final int subAmenityIdPk) {
 		String retVal = "";
 		try {
-			retVal = getJdbcTemplate().queryForObject(
-					GET_SUBAMENITY_BODY_TEXT, stringMapper, clubIdPk, subAmenityIdPk);
+			retVal = getJdbcTemplate().queryForObject(GET_SUBAMENITY_BODY_TEXT,
+					stringMapper, clubIdPk, subAmenityIdPk);
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
@@ -347,27 +393,32 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	public List<Integer> getSubAmenityEmployees(final Integer clubSubAmenityId)
 			throws NotFoundException {
 		final List<Integer> retVal = getJdbcTemplate().queryForList(
-				GET_EMPLOYEES_FOR_SUBAMENITY_PK, Integer.class, clubSubAmenityId);
+				GET_EMPLOYEES_FOR_SUBAMENITY_PK, Integer.class,
+				clubSubAmenityId);
 		return retVal;
 	}
 
 	@Override
-	public String getSubAmenityHeaderText(final int clubIdPk, final int subAmenityIdPk) {
+	public String getSubAmenityHeaderText(final int clubIdPk,
+			final int subAmenityIdPk) {
 		String retVal = "";
 		try {
 			retVal = getJdbcTemplate().queryForObject(
-					GET_SUBAMENITY_HEADER_TEXT, stringMapper, clubIdPk, subAmenityIdPk);
+					GET_SUBAMENITY_HEADER_TEXT, stringMapper, clubIdPk,
+					subAmenityIdPk);
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
 	}
 
 	@Override
-	public String getSubAmenitySecondayHeaderText(final int clubIdPk, final int subAmenityIdPk) {
+	public String getSubAmenitySecondayHeaderText(final int clubIdPk,
+			final int subAmenityIdPk) {
 		String retVal = "";
 		try {
 			retVal = getJdbcTemplate().queryForObject(
-					GET_SUBAMENITY_SECONDARY_HEADER_TEXT, stringMapper, clubIdPk, subAmenityIdPk);
+					GET_SUBAMENITY_SECONDARY_HEADER_TEXT, stringMapper,
+					clubIdPk, subAmenityIdPk);
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
@@ -378,7 +429,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			for (final ClubDto clubDto : clubs) {
 				try {
 					final Integer imageIdPk = getJdbcTemplate().queryForObject(
-							GET_IMAGE_ID, Integer.class, clubDto.getId());
+							GET_CLUB_IMAGE_ID, Integer.class, clubDto.getId());
 					final ImagePic image = getImage(imageIdPk);
 					clubDto.setImage(image);
 				} catch (final EmptyResultDataAccessException e1) {
@@ -402,13 +453,16 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 				club.getAddress(), club.getZipCode(), club.getCity(),
 				club.getState(), club.getPhoneNumber(),
 				club.getHzRestriction(), club.getClubType(), club.getWebSite(),
-				club.getTimeZone().getDbSetting(), club.getXcoord(), club.getYcoord(), club.getId());
+				club.getTimeZone().getDbSetting(), club.getXcoord(),
+				club.getYcoord(), club.getId());
 	}
 
 	@Override
-	public void updateAmenityHeaderText(final Integer clubIdPk, final Integer amenityIdPk,
-			final String headerText) throws NotFoundException {
-		getJdbcTemplate().update(UPD_CLUB_AMENITY_HEADER, headerText, clubIdPk, amenityIdPk);
+	public void updateAmenityHeaderText(final Integer clubIdPk,
+			final Integer amenityIdPk, final String headerText)
+					throws NotFoundException {
+		getJdbcTemplate().update(UPD_CLUB_AMENITY_HEADER, headerText, clubIdPk,
+				amenityIdPk);
 	}
 
 	@Override
@@ -424,21 +478,27 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public void updateSubAmenityBody(final Integer clubIdPk, final Integer subAmenityIdPk,
-			final String bodyText) throws NotFoundException {
-		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_BODY, bodyText, clubIdPk, subAmenityIdPk);
+	public void updateSubAmenityBody(final Integer clubIdPk,
+			final Integer subAmenityIdPk, final String bodyText)
+					throws NotFoundException {
+		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_BODY, bodyText, clubIdPk,
+				subAmenityIdPk);
 	}
 
 	@Override
-	public void updateSubAmenityHeaderText(final Integer clubIdPk, final Integer subAmenityIdPk,
-			final String headerText) throws NotFoundException {
-		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_HEADER, headerText, clubIdPk, subAmenityIdPk);
+	public void updateSubAmenityHeaderText(final Integer clubIdPk,
+			final Integer subAmenityIdPk, final String headerText)
+					throws NotFoundException {
+		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_HEADER, headerText,
+				clubIdPk, subAmenityIdPk);
 	}
 
 	@Override
-	public void updateSubAmenitySecondaryHeaderText(final Integer clubIdPk, final Integer subAmenityIdPk,
-			final String headerText) throws NotFoundException {
-		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_SECONDARY_HEADER, headerText, clubIdPk, subAmenityIdPk);
+	public void updateSubAmenitySecondaryHeaderText(final Integer clubIdPk,
+			final Integer subAmenityIdPk, final String headerText)
+					throws NotFoundException {
+		getJdbcTemplate().update(UPD_CLUB_SUBAMENITY_SECONDARY_HEADER,
+				headerText, clubIdPk, subAmenityIdPk);
 	}
 
 	@Override
@@ -447,6 +507,5 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 				COUNT_CLUB_PIN, Integer.class, clubPin);
 		return counter > 0;
 	}
-
 
 }
