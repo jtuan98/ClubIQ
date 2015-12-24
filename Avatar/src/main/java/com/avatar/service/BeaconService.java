@@ -151,7 +151,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public List<BeaconDto> getBeacons(final String clubId,
 			final String subAmenityId) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		return beaconDao.getBeacons(clubIdPk, subAmenityIdPk);
 	}
 
@@ -160,7 +160,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			final String subAmenityId, final String month)
 					throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		List<BlackoutDate> retVal = null;
 		if (!mockingBlackoutDates) {
 			retVal = reservationDao.fetchBlackoutDates(clubIdPk, subAmenityIdPk,
@@ -174,7 +174,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			final String subAmenityId, final String requestedDateMMDD)
 					throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		List<BlackoutTime> retVal = null;
 		if (!mockingBlackoutDates) {
 			retVal = reservationDao.fetchBlackoutTimes(clubIdPk, subAmenityIdPk,
@@ -256,7 +256,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public String getSubAmenityBodyText(final String clubId, final String subAmenityId)
 			throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 
 		return clubDao.getSubAmenityBodyText(clubIdPk, subAmenityIdPk);
 	}
@@ -271,7 +271,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public String getSubAmenityHeaderText(final String clubId, final String subAmenityId)
 			throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		return clubDao.getSubAmenityHeaderText(clubIdPk, subAmenityIdPk);
 	}
 	@Override
@@ -285,7 +285,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public String getSubAmenitySecondaryHeaderText(final String clubId,
 			final String subAmenityId) throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		return clubDao.getSubAmenitySecondayHeaderText(clubIdPk, subAmenityIdPk);
 	}
 
@@ -322,7 +322,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public void setSubAmenityBodyText(final String clubId, final String subAmenityId,
 			final String bodyText) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		clubDao.updateSubAmenityBody(clubIdPk, subAmenityIdPk, bodyText);
 	}
 
@@ -330,7 +330,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public void setSubAmenityHeaderText(final String clubId, final String subAmenityId,
 			final String headerText) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		clubDao.updateSubAmenityHeaderText(clubIdPk, subAmenityIdPk, headerText);
 	}
 
@@ -349,7 +349,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			final String subAmenityId, final String headerText)
 					throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		clubDao.updateSubAmenitySecondaryHeaderText(clubIdPk, subAmenityIdPk, headerText);
 	}
 
@@ -412,7 +412,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		final Integer clubIdPk = clubDao.getClubIdPk(beacon.getClub()
 				.getClubId());
 		beacon.getClub().setId(clubIdPk);
-		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(beacon
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, beacon
 				.getSubAmenity().getSubAmenityId());
 		beacon.getSubAmenity().setId(subAmenityIdPk);
 		final Integer installerIdPk = accountDao.getUserIdPkByUserId(beacon

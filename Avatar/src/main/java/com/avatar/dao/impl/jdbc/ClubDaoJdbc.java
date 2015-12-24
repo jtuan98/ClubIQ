@@ -41,7 +41,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	private static String SEL_AMENITY_PK_BY_AMENITYID = "SELECT ID FROM CLUB_AMENITIES WHERE AMENITYID = ? ";
 	private static String SEL_AMENITY_BY_CLUBID_IDPK = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? and ID = ? ORDER BY ORDERING";
 	private static String SEL_AMENITIES_BY_CLUBID = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? ORDER BY ORDERING";
-	private static String SEL_SUBAMENITY_PK_BY_SUBAMENITYID = "SELECT ID FROM CLUB_SUB_AMENITIES WHERE SUBAMENITYID = ? ";
+	private static String SEL_SUBAMENITY_PK_BY_SUBAMENITYID = "SELECT ID FROM CLUB_SUB_AMENITIES WHERE CLUB_ID= ? AND SUBAMENITYID = ? ";
 	private static String SEL_SUBAMENITY_BY_PK = "SELECT CA.*, AT.AMENITYID FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_ID ";
 	private static String GET_SUBAMENITY_IMAGE_ID = "SELECT IMAGE_ID FROM CLUB_SUB_AMENITIES WHERE ID=?";
 
@@ -308,12 +308,12 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public Integer getClubSubAmenityIdPk(final String clubSubAmenityId)
+	public Integer getClubSubAmenityIdPk(final int clubIdPk, final String clubSubAmenityId)
 			throws NotFoundException {
 		try {
 			final Integer subAmenityIdPk = getJdbcTemplate().queryForObject(
 					SEL_SUBAMENITY_PK_BY_SUBAMENITYID, Integer.class,
-					clubSubAmenityId);
+					clubIdPk, clubSubAmenityId);
 			return subAmenityIdPk;
 		} catch (final IncorrectResultSizeDataAccessException e) {
 			throw new NotFoundException("Club Sub Amenity " + clubSubAmenityId

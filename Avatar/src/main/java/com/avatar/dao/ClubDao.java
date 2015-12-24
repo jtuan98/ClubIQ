@@ -36,7 +36,7 @@ public interface ClubDao {
 
 	List<ClubDto> getClubsByState(String state, ClubListingSortBy orderByClause);
 
-	Integer getClubSubAmenityIdPk(String clubSubAmenityId) throws NotFoundException;
+	Integer getClubSubAmenityIdPk(int clubIdPk, String clubSubAmenityId) throws NotFoundException;
 
 	String getHeadlineText(int clubIdPk);
 

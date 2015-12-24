@@ -35,6 +35,8 @@ import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 
 public class AccountServiceTest extends BaseServiceTest {
+	private static final int CLUB_ID_PK = 1;
+
 	static int KEY_VALID_FOR_IN_MINUTES = 1;
 
 	private AccountService service;
@@ -43,17 +45,17 @@ public class AccountServiceTest extends BaseServiceTest {
 			final AccountStatus status, final String deviceId,
 			final Privilege role, final boolean expiredToken,
 			final String userIdOrMobileNumber) {
-		return createAccount(employeeAccount, status, deviceId, role,
+		return createAccount(employeeAccount, 1, status, deviceId, role,
 				expiredToken, userIdOrMobileNumber, null);
 	}
 
-	private AccountDto createAccount(final boolean employeeAccount,
+	private AccountDto createAccount(final boolean employeeAccount, final int clubIdPk,
 			final AccountStatus status, final String deviceId,
 			final Privilege role, final boolean expiredToken,
 			final String userIdOrMobileNumber, final String subAmenityId) {
 		final Set<Privilege> privileges = new HashSet<>();
 		privileges.add(Privilege.user);
-		final ClubDto club = new ClubDtoBuilder().withId(1).getBuiltInstance();
+		final ClubDto club = new ClubDtoBuilder().withId(clubIdPk).getBuiltInstance();
 		final ActivationToken token = new ActivationToken();
 		token.setToken("whatever");
 		token.setExpirationDate(new Date(System.currentTimeMillis()
@@ -94,26 +96,30 @@ public class AccountServiceTest extends BaseServiceTest {
 	}
 
 	private void setupAddAmenityToUserTest(final String userId,
+			final int clubIdPk,
 			final String clubSubAmenityId,
 			final boolean throwNotFoundByAccountDao,
 			final boolean throwNotFoundByClubDao, final Integer userPkId,
-			final Integer clubSubAmenityPkId) throws NotFoundException {
+			final Integer clubSubAmenityPkId) throws NotFoundException, InvalidParameterException {
+		if (userPkId != null) {
+			given(accountDao.getUserIdPkByUserId(eq(userId))).willReturn(
+					userPkId);
+			final AccountDto account = createAccount(false, CLUB_ID_PK, AccountStatus.Activated,
+					"device", Privilege.user, false, userId, null);
+
+			given(accountDao.fetch(eq(userId))).willReturn(
+					account);
+		}
+		if (clubSubAmenityPkId != null) {
+			given(clubDao.getClubSubAmenityIdPk(clubIdPk, clubSubAmenityId)).willReturn(
+					clubSubAmenityPkId);
+		}
 		if (throwNotFoundByAccountDao) {
 			given(accountDao.getUserIdPkByUserId(userId)).willThrow(
 					NotFoundException.class);
 		} else if (throwNotFoundByClubDao) {
-			given(clubDao.getClubSubAmenityIdPk(clubSubAmenityId)).willThrow(
+			given(clubDao.getClubSubAmenityIdPk(clubIdPk, clubSubAmenityId)).willThrow(
 					NotFoundException.class);
-		} else {
-			if (userPkId != null) {
-				given(accountDao.getUserIdPkByUserId(eq(userId))).willReturn(
-						userPkId);
-			}
-			if (clubSubAmenityPkId != null) {
-				given(clubDao.getClubSubAmenityIdPk(clubSubAmenityId)).willReturn(
-						clubSubAmenityPkId);
-			}
-
 		}
 	}
 
@@ -136,15 +142,15 @@ public class AccountServiceTest extends BaseServiceTest {
 			final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) account;
 			if (throwSubAmenityNotFound) {
 				given(
-						clubDao.getClubSubAmenityIdPk(employeeAccountInfo
-								.getSubAmenity().getSubAmenityId())).willThrow(
+						clubDao.getClubSubAmenityIdPk(employeeAccountInfo.getHomeClub().getId(),
+								employeeAccountInfo.getSubAmenity().getSubAmenityId())).willThrow(
 										NotFoundException.class);
 			} else if (employeeAccountInfo.getSubAmenity() != null) {
 				final String subAmenityId = employeeAccountInfo.getSubAmenity()
 						.getSubAmenityId();
 				final Integer subAmenityPkId = employeeAccountInfo.getSubAmenity()
 						.getId();
-				given(clubDao.getClubSubAmenityIdPk(subAmenityId)).willReturn(
+				given(clubDao.getClubSubAmenityIdPk(employeeAccountInfo.getHomeClub().getId(), subAmenityId)).willReturn(
 						subAmenityPkId);
 				final SubAmenityDto subAmenity = employeeAccountInfo.getSubAmenity();
 				when(clubDao.getSubAmenity(subAmenityPkId)).thenReturn(subAmenity);
@@ -354,8 +360,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final Integer userPkId = null;
 		final String clubAmenityId = "whatever";
 		final Integer clubAmenityPkId = 1;
+		final Integer clubPkId = 1;
 
-		setupAddAmenityToUserTest(userId, clubAmenityId, false, false,
+		setupAddAmenityToUserTest(userId, clubPkId, clubAmenityId, false, false,
 				userPkId, clubAmenityPkId);
 		service.addSubAmenityToUser(userId, clubAmenityId);
 		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
@@ -369,7 +376,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final Integer userPkId = null;
 		final String clubAmenityId = "whatever";
 		final Integer clubAmenityPkId = 1;
-		setupAddAmenityToUserTest(userId, clubAmenityId, true, false, userPkId,
+		final Integer clubPkId = 1;
+
+		setupAddAmenityToUserTest(userId, clubPkId, clubAmenityId, true, false, userPkId,
 				clubAmenityPkId);
 		service.addSubAmenityToUser(userId, clubAmenityId);
 		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
@@ -384,8 +393,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final Integer userPkId = 1;
 		final String clubAmenityId = "whatever";
 		final Integer clubAmenityPkId = 1;
+		final Integer clubPkId = 1;
 
-		setupAddAmenityToUserTest(userId, clubAmenityId, false, true, userPkId,
+		setupAddAmenityToUserTest(userId, clubPkId, clubAmenityId, false, true, userPkId,
 				clubAmenityPkId);
 		service.addSubAmenityToUser(userId, clubAmenityId);
 		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
@@ -399,7 +409,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final Integer userPkId = 1;
 		final String clubAmenityId = null;
 		final Integer clubAmenityPkId = 1;
-		setupAddAmenityToUserTest(userId, clubAmenityId, false, false,
+		final Integer clubPkId = 1;
+
+		setupAddAmenityToUserTest(userId, clubPkId, clubAmenityId, false, false,
 				userPkId, clubAmenityPkId);
 		service.addSubAmenityToUser(userId, clubAmenityId);
 		verify(accountDao, never()).addSubAmenityToUser(eq(userPkId),
@@ -414,7 +426,9 @@ public class AccountServiceTest extends BaseServiceTest {
 		final Integer userPkId = 1;
 		final String clubSubAmenityId = "whatever";
 		final Integer clubSubAmenityPkId = 1;
-		setupAddAmenityToUserTest(userId, clubSubAmenityId, false, false,
+		final Integer clubPkId = 1;
+
+		setupAddAmenityToUserTest(userId, clubPkId, clubSubAmenityId, false, false,
 				userPkId, clubSubAmenityPkId);
 		service.addSubAmenityToUser(userId, clubSubAmenityId);
 		verify(accountDao, times(1)).addSubAmenityToUser(eq(userPkId),
@@ -669,7 +683,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.New;
 		final boolean expiredToken = false;
 		final boolean accountExists = false;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", "junkamenity");
 
 		setupCreateAccountTest(account, accountExists, true);
@@ -685,7 +699,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.New;
 		final boolean expiredToken = false;
 		final boolean accountExists = false;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", "junksubamenity");
 
 		setupCreateAccountTest(account, accountExists, false);
@@ -703,7 +717,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.New;
 		final boolean expiredToken = false;
 		final boolean accountExists = false;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", null);
 
 		setupCreateAccountTest(account, accountExists, false);
@@ -720,7 +734,7 @@ public class AccountServiceTest extends BaseServiceTest {
 
 		final boolean expiredToken = false;
 		final boolean accountExists = true;
-		final AccountDto account = createAccount(employeeAccount, null,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, null,
 				"device", Privilege.user, expiredToken, "userid", null);
 
 		setupCreateAccountTest(account, accountExists, false);
@@ -736,7 +750,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.Activated;
 		final boolean expiredToken = false;
 		final boolean accountExists = true;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", null);
 
 		setupCreateAccountTest(account, accountExists, false);
@@ -752,7 +766,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.Terminated;
 		final boolean expiredToken = false;
 		final boolean accountExists = true;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", null);
 
 		setupCreateAccountTest(account, accountExists, false);
@@ -768,7 +782,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.Cancelled;
 		final boolean expiredToken = false;
 		final boolean accountExists = true;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", null);
 
 		setupCreateAccountTest(account, accountExists, false);
@@ -784,7 +798,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.New;
 		final boolean expiredToken = false;
 		final boolean accountExists = true;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", null);
 
 		setupCreateAccountTest(account, accountExists, false);
@@ -801,7 +815,7 @@ public class AccountServiceTest extends BaseServiceTest {
 		final AccountStatus status = AccountStatus.TokenSent;
 		final boolean expiredToken = false;
 		final boolean accountExists = true;
-		final AccountDto account = createAccount(employeeAccount, status,
+		final AccountDto account = createAccount(employeeAccount, CLUB_ID_PK, status,
 				"device", Privilege.user, expiredToken, "userid", null);
 
 		setupCreateAccountTest(account, accountExists, false);

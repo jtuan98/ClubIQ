@@ -85,7 +85,7 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 	public List<Promotion> getPromotions(final String clubId,
 			final String subAmenityId) throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, subAmenityId);
 		final List<Promotion> promotions = promotionDao.getAllPromotions(
 				clubIdPk, subAmenityIdPk);
 		if (CollectionUtils.isNotEmpty(promotions)) {
@@ -115,7 +115,7 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 		Assert.hasText(promotion.getSubAmenity().getSubAmenityId());
 		final Integer clubIdPk = clubDao.getClubIdPk(promotion.getClub()
 				.getClubId());
-		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(promotion
+		final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk, promotion
 				.getSubAmenity().getSubAmenityId());
 		promotion.getClub().setId(clubIdPk);
 		promotion.getSubAmenity().setId(subAmenityIdPk);

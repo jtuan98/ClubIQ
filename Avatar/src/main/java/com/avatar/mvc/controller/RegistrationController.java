@@ -102,7 +102,7 @@ public class RegistrationController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "email") final String email,
 			@RequestParam(required = true, value = "password") final String password,
-			@RequestParam(required = false, value = "homeClubId") final String homeClubId,
+			@RequestParam(required = true, value = "homeClubId") final String homeClubId,
 			@RequestParam(required = false, value = "clubAmenityId") final String clubAmenityId,
 			@RequestParam(required = false, value = "realname") final String name,
 			@RequestParam(required = false, value = "pictureBase64") final String pictureBase64Encoded,

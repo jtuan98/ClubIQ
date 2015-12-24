@@ -46,7 +46,6 @@ import com.google.common.cache.LoadingCache;
 public class AccountService extends BaseService implements AccountBusiness {
 	private static long KEY_VALID_FOR_IN_MINUTES = 60 * 7 * 24;
 
-
 	private final LoadingCache<String, AccountDto> activationCache = CacheBuilder
 			.newBuilder().maximumSize(1000)
 			.expireAfterWrite(KEY_VALID_FOR_IN_MINUTES, TimeUnit.MINUTES)
@@ -84,8 +83,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
-	public boolean activateAccount(final String activationToken, final Date activatedDate)
-			throws InvalidParameterException {
+	public boolean activateAccount(final String activationToken,
+			final Date activatedDate) throws InvalidParameterException {
 		if (StringUtils.isEmpty(activationToken)) {
 			throw new InvalidParameterException(
 					"Activation Token cannot be null");
@@ -100,7 +99,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 						"Activation Token is not for EmployeeAccountDto");
 			}
 			// Update database as activated!
-			accountDao.activate(activationAccount.getUserId(), activationToken, activatedDate);
+			accountDao.activate(activationAccount.getUserId(), activationToken,
+					activatedDate);
 			retVal = true;
 		} catch (InvalidCacheLoadException | ExecutionException
 				| NotFoundException e) {
@@ -113,8 +113,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	public boolean activateMobileAccount(final String mobileNumber,
-			final String deviceId, final String activationToken, final Date activatedDate)
-					throws InvalidParameterException {
+			final String deviceId, final String activationToken,
+			final Date activatedDate) throws InvalidParameterException {
 		boolean retVal = false;
 		if (StringUtils.isEmpty(mobileNumber)) {
 			throw new InvalidParameterException("mobileNumber cannot be null");
@@ -133,7 +133,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 						"Activation Token is not for MemberAccountDto");
 			}
 			// Update database as activated!
-			accountDao.activate(activationAccount.getUserId(), activationToken, activatedDate);
+			accountDao.activate(activationAccount.getUserId(), activationToken,
+					activatedDate);
 			retVal = true;
 		} catch (InvalidCacheLoadException | ExecutionException
 				| NotFoundException e) {
@@ -145,25 +146,33 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public void addNote(final String memberId, final String noteText, final DateTime parseDateTime)
-			throws NotFoundException {
+	public void addNote(final String memberId, final String noteText,
+			final DateTime parseDateTime) throws NotFoundException {
 		final Integer userPkId = accountDao.getUserIdPkByUserId(memberId);
 		accountDao.addNote(userPkId, noteText, parseDateTime);
 	}
 
 	@Override
-	public void addSubAmenityToUser(final String userId, final String clubSubAmenityId)
-			throws NotFoundException, InvalidParameterException {
+	public void addSubAmenityToUser(final String userId,
+			final String clubSubAmenityId) throws NotFoundException,
+			InvalidParameterException {
 		if (StringUtils.isEmpty(userId)) {
 			throw new InvalidParameterException("UserId cannot be null");
 		}
 		if (StringUtils.isEmpty(clubSubAmenityId)) {
-			throw new InvalidParameterException("ClubSubAmenityId cannot be null");
+			throw new InvalidParameterException(
+					"ClubSubAmenityId cannot be null");
 		}
 
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(userId);
-		final Integer clubSubAmenityIdPk = clubDao
-				.getClubSubAmenityIdPk(clubSubAmenityId);
+		final AccountDto account = get(userId);
+		if (account.getHomeClub() == null
+				|| account.getHomeClub().getId() == null) {
+			throw new InvalidParameterException("Account " + userId
+					+ " is missing home club association");
+		}
+		final Integer clubSubAmenityIdPk = clubDao.getClubSubAmenityIdPk(
+				account.getHomeClub().getId(), clubSubAmenityId);
 		accountDao.addSubAmenityToUser(userIdPk, clubSubAmenityIdPk);
 	}
 
@@ -227,9 +236,9 @@ public class AccountService extends BaseService implements AccountBusiness {
 				if (!mobile) {
 					final EmployeeAccountDto employeeAccountInfo = (EmployeeAccountDto) accountInfo;
 					if (employeeAccountInfo.getSubAmenity() != null) {
-						final Integer subAmenityIdPk = clubDao
-								.getClubSubAmenityIdPk(employeeAccountInfo.getSubAmenity()
-										.getSubAmenityId());
+						final Integer subAmenityIdPk = clubDao.getClubSubAmenityIdPk(
+								employeeAccountInfo.getHomeClub().getId(),
+								employeeAccountInfo.getSubAmenity().getSubAmenityId());
 						final SubAmenityDto subAmenityFromDb = clubDao
 								.getSubAmenity(subAmenityIdPk);
 						employeeAccountInfo.getSubAmenity().makeCopy(subAmenityFromDb);
@@ -252,7 +261,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public boolean exists(final String userId) throws InvalidParameterException, AccountSuspendedException {
+	public boolean exists(final String userId)
+			throws InvalidParameterException, AccountSuspendedException {
 		if (StringUtils.isEmpty(userId)) {
 			throw new InvalidParameterException("UserId cannot be null");
 		}
@@ -260,11 +270,13 @@ public class AccountService extends BaseService implements AccountBusiness {
 		try {
 			final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 			final AccountStatus status = accountDao.getStatus(userIdPk);
-			if (AccountStatus.Cancelled.equals(status)||AccountStatus.Terminated.equals(status)) {
-				throw new AccountSuspendedException("Account " + userId + " is "+status.name());
+			if (AccountStatus.Cancelled.equals(status)
+					|| AccountStatus.Terminated.equals(status)) {
+				throw new AccountSuspendedException("Account " + userId
+						+ " is " + status.name());
 			}
 			retVal = true;
-		} catch(final AccountSuspendedException e) {
+		} catch (final AccountSuspendedException e) {
 			throw e;
 		} catch (final Exception e) {
 		}
@@ -303,11 +315,14 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 		return retVal;
 	}
+
 	// Phase2
 	@Override
-	public CheckInfo getCheckInfo(final String userId, final String availId) throws NotFoundException {
+	public CheckInfo getCheckInfo(final String userId, final String availId)
+			throws NotFoundException {
 		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
-		final CheckInfo retVal = reservationDao.getReservation (userIdPk, availId);
+		final CheckInfo retVal = reservationDao.getReservation(userIdPk,
+				availId);
 		if (retVal == null) {
 			throw new NotFoundException();
 		}
@@ -315,7 +330,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public List<AccountDto> getMembers(final String clubId) throws NotFoundException {
+	public List<AccountDto> getMembers(final String clubId)
+			throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
 		List<AccountDto> retVal = accountDao.getMembers(clubIdPk);
 
@@ -341,17 +357,18 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	private String getRandomPhoneNumber() {
-		int pre = (int) (Math.floor(Math.random()*1000) % 1000);
+		int pre = (int) (Math.floor(Math.random() * 1000) % 1000);
 		if (pre < 200) {
 			pre += 200;
 		}
-		final int post = (int) (Math.floor(Math.random()*10000) % 10000);
+		final int post = (int) (Math.floor(Math.random() * 10000) % 10000);
 		return String.format("%03d-%04d", pre, post);
 	}
 
 	@Override
-	public void setLinkNumber(final String userId, final String linkNumber, final Date currentDate)
-			throws NotFoundException, InvalidParameterException, AccountSuspendedException {
+	public void setLinkNumber(final String userId, final String linkNumber,
+			final Date currentDate) throws NotFoundException,
+			InvalidParameterException, AccountSuspendedException {
 		exists(userId);
 		exists(linkNumber);
 		accountDao.linkNumbers(userId, linkNumber, currentDate);
@@ -396,12 +413,15 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public String updateCheckInfo(final String userId,
 			final String requestedClubId, final String subAmenityId,
-			final int numOfPerson, final Date requestedDateTime) throws NotFoundException {
+			final int numOfPerson, final Date requestedDateTime)
+					throws NotFoundException {
 		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 		final int clubIdPk = clubDao.getClubIdPk(requestedClubId);
-		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(subAmenityId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk,
+				subAmenityId);
 		final String reservationId = UUID.randomUUID().toString();
-		reservationDao.reserve(clubIdPk, subAmenityIdPk, userIdPk, numOfPerson, requestedDateTime, reservationId);
+		reservationDao.reserve(clubIdPk, subAmenityIdPk, userIdPk, numOfPerson,
+				requestedDateTime, reservationId);
 		return reservationId;
 	}
 
