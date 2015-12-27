@@ -16,8 +16,11 @@ public class SubAmenityListingSerializer implements JsonSerializer<SubAmenityDto
 			final JsonSerializationContext jsonContext) {
 		if (subamenity != null) {
 			final JsonObject result = new JsonObject();
-			result.add("subamenityId", new JsonPrimitive(subamenity.getSubAmenityId()));
-			result.add("amenityId", new JsonPrimitive(subamenity.getAmenityId()));
+			result.add("subAmenityId", new JsonPrimitive(subamenity.getSubAmenityId()));
+			result.add("subAmenityName", new JsonPrimitive(subamenity.getDescription()));
+			result.add("amenityId", new JsonPrimitive(subamenity.getAmenity().getAmenityId()));
+			result.add("aemnityName", new JsonPrimitive(subamenity.getAmenity().getDescription()));
+
 			return result;
 		}
 		return null;

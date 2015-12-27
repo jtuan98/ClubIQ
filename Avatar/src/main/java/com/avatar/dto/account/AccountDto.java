@@ -52,6 +52,8 @@ public abstract class AccountDto implements Serializable {
 
 	protected List<AccountNotes> noteHistory;
 
+	protected Date lastCheckInDate;
+
 	public AccountDto add(final AccountNotes note) {
 		if (noteHistory == null) {
 			noteHistory = new LinkedList<AccountNotes>();
@@ -92,6 +94,10 @@ public abstract class AccountDto implements Serializable {
 
 	public Integer getId() {
 		return id;
+	}
+
+	public Date getLastCheckInDate() {
+		return lastCheckInDate;
 	}
 
 	public String getLinkMobileNumber() {
@@ -172,6 +178,10 @@ public abstract class AccountDto implements Serializable {
 
 	public void setId(final Integer id) {
 		this.id = id;
+	}
+
+	public void setLastCheckInDate(final Date lastCheckInDate) {
+		this.lastCheckInDate = lastCheckInDate;
 	}
 
 	public void setLinkMobileNumber(final String linkMobileNumber) {

@@ -10,7 +10,6 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -253,6 +252,14 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
+	public List<SubAmenityDto> getSubAmenities(final String clubId)
+			throws NotFoundException {
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		final List<SubAmenityDto> retVal = clubDao.getSubAmenities(clubIdPk);
+		return retVal;
+	}
+
+	@Override
 	public String getSubAmenityBodyText(final String clubId, final String subAmenityId)
 			throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
@@ -260,6 +267,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 
 		return clubDao.getSubAmenityBodyText(clubIdPk, subAmenityIdPk);
 	}
+
 
 	@Override
 	public List<String> getSubAmenityDeptName(final String clubId)
@@ -290,11 +298,10 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
-	public List<ImmutablePair<AccountDto, Date>> getUsers(
+	public List<AccountDto> getUsers(
 			final String subAmenityId, final Date onDate) {
 		return beaconDao.getUsers(subAmenityId, onDate);
 	}
-
 	@Override
 	public void setAmenityHeaderText(final String clubId,
 			final String amenityId, final String headerText)
@@ -302,6 +309,14 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
 		clubDao.updateAmenityHeaderText(clubIdPk, amenityIdPk, headerText);
+	}
+
+	@Override
+	public void setAmenityPhoto(final String clubId, final String amenityId,
+			final String pictureBase64) throws NotFoundException {
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		clubDao.updateAmenityPhoto (clubIdPk, amenityIdPk, pictureBase64);
 	}
 
 	@Override
@@ -316,6 +331,13 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
 		clubDao.updateHeaderText(clubIdPk, headerText);
+	}
+
+	@Override
+	public void setClubPhoto(final String clubId, final String pictureBase64)
+			throws NotFoundException {
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		clubDao.updateClubPhoto (clubIdPk, pictureBase64);
 	}
 
 	@Override

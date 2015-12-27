@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -92,6 +93,12 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private final static String GET_SUBAMENITY_SECONDARY_HEADER_TEXT = "select SECONDARY_HEADER_TEXT FROM CLUB_SUB_AMENITIES where CLUB_ID = ? and ID = ? ";
 	private static String GET_SUBAMENITY_DEPT_NAMES = "SELECT CA.SUBAMENITYID FROM CLUB_SUB_AMENITIES CA WHERE CLUB_ID=? ORDER BY 1";
+
+	public static final String GET_IMAGE_ID_BYCLUBIDPK = "select IMAGE_ID from CLUBS where ID=?";
+	public static final String GET_IMAGE_ID_BYAMENITYIDPK = "select IMAGE_ID from CLUB_AMENITIES where ID=?";
+
+	public static String UPD_CLUB_IMAGE_ID_LINK = "UPDATE CLUBS SET IMAGE_ID = ? WHERE ID = ?";
+	public static String UPD_AMENITY_IMAGE_ID_LINK = "UPDATE CLUB_AMENITIES SET IMAGE_ID = ? WHERE ID = ?";
 
 	@Resource(name = "accountDaoJdbc")
 	private AccountDao accountDao;
@@ -308,12 +315,12 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
-	public Integer getClubSubAmenityIdPk(final int clubIdPk, final String clubSubAmenityId)
-			throws NotFoundException {
+	public Integer getClubSubAmenityIdPk(final int clubIdPk,
+			final String clubSubAmenityId) throws NotFoundException {
 		try {
 			final Integer subAmenityIdPk = getJdbcTemplate().queryForObject(
-					SEL_SUBAMENITY_PK_BY_SUBAMENITYID, Integer.class,
-					clubIdPk, clubSubAmenityId);
+					SEL_SUBAMENITY_PK_BY_SUBAMENITYID, Integer.class, clubIdPk,
+					clubSubAmenityId);
 			return subAmenityIdPk;
 		} catch (final IncorrectResultSizeDataAccessException e) {
 			throw new NotFoundException("Club Sub Amenity " + clubSubAmenityId
@@ -330,6 +337,25 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
+	}
+
+	@Override
+	public List<SubAmenityDto> getSubAmenities(final Integer clubIdPk)
+			throws NotFoundException {
+		final List<SubAmenityDto> subAmenities = getJdbcTemplate().query(
+				SEL_SUBAMENITIES_BY_CLUBID + " ORDER BY AT.AMENITYID, AT.DESCRIPTION", subAmenityMapper,
+				clubIdPk);
+		// Populate Photos
+		if (CollectionUtils.isNotEmpty(subAmenities)) {
+			for (final SubAmenityDto subAmenityDto : subAmenities) {
+				final Integer imageIdPk = getJdbcTemplate().queryForObject(
+						GET_SUBAMENITY_IMAGE_ID, Integer.class,
+						subAmenityDto.getId());
+				final ImagePic image = getImage(imageIdPk);
+				subAmenityDto.setImage(image);
+			}
+		}
+		return subAmenities;
 	}
 
 	@Override
@@ -466,9 +492,58 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	}
 
 	@Override
+	public void updateAmenityPhoto(final int clubIdPk, final Integer amenityIdPk,
+			final String pictureBase64) {
+		final byte[] picture = Base64.decodeBase64(pictureBase64);
+		try {
+			final Integer imageIdPk = getJdbcTemplate().queryForObject(
+					GET_IMAGE_ID_BYAMENITYIDPK, Integer.class, amenityIdPk);
+			final Integer updateImageIdPk = updateImage(imageIdPk, picture);
+			if (updateImageIdPk != imageIdPk) {
+				// Update user image_id link
+				getJdbcTemplate().update(UPD_AMENITY_IMAGE_ID_LINK,
+						updateImageIdPk, amenityIdPk);
+			}
+		} catch (final EmptyResultDataAccessException e) {
+			// Not found!, so insert one in.
+			final ImagePic pic = new ImagePic(pictureBase64);
+			final Integer idImagePk = persistImage(pic);
+			System.out
+			.println("updateClubPhoto: Not found!, so insert one in. idImagePk="
+					+ idImagePk);
+			getJdbcTemplate().update(UPD_AMENITY_IMAGE_ID_LINK, idImagePk,
+					amenityIdPk);
+		}
+	}
+
+	@Override
 	public void updateBodyText(final Integer clubIdPk, final String bodyText)
 			throws NotFoundException {
 		getJdbcTemplate().update(UPD_CLUB_BODY, bodyText, clubIdPk);
+	}
+
+	@Override
+	public void updateClubPhoto(final int clubIdPk, final String pictureBase64) {
+		final byte[] picture = Base64.decodeBase64(pictureBase64);
+		try {
+			final Integer imageIdPk = getJdbcTemplate().queryForObject(
+					GET_IMAGE_ID_BYCLUBIDPK, Integer.class, clubIdPk);
+			final Integer updateImageIdPk = updateImage(imageIdPk, picture);
+			if (updateImageIdPk != imageIdPk) {
+				// Update user image_id link
+				getJdbcTemplate().update(UPD_CLUB_IMAGE_ID_LINK,
+						updateImageIdPk, clubIdPk);
+			}
+		} catch (final EmptyResultDataAccessException e) {
+			// Not found!, so insert one in.
+			final ImagePic pic = new ImagePic(pictureBase64);
+			final Integer idImagePk = persistImage(pic);
+			System.out
+			.println("updateClubPhoto: Not found!, so insert one in. idImagePk="
+					+ idImagePk);
+			getJdbcTemplate().update(UPD_CLUB_IMAGE_ID_LINK, idImagePk,
+					clubIdPk);
+		}
 	}
 
 	@Override

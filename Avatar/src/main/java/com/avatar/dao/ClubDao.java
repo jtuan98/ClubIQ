@@ -40,7 +40,8 @@ public interface ClubDao {
 
 	String getHeadlineText(int clubIdPk);
 
-	List<SubAmenityDto> getSubAmenities(Integer clubIdPk, String amenity) throws NotFoundException;
+	List<SubAmenityDto> getSubAmenities(Integer clubIdPk) throws NotFoundException;
+	List<SubAmenityDto> getSubAmenities(Integer clubIdPk, String amenityId) throws NotFoundException;
 
 	SubAmenityDto getSubAmenity(Integer subAmenityIdPk) throws NotFoundException;
 
@@ -61,7 +62,12 @@ public interface ClubDao {
 	void updateAmenityHeaderText(Integer clubIdPk, Integer amenityIdPk,
 			String headerText) throws NotFoundException;
 
+	void updateAmenityPhoto(int clubIdPk, Integer amenityIdPk,
+			String pictureBase64);
+
 	void updateBodyText(Integer clubIdPk, String bodyText) throws NotFoundException;
+
+	void updateClubPhoto(int clubIdPk, String pictureBase64);
 
 	void updateHeaderText(Integer clubIdPk, String headerText) throws NotFoundException;
 

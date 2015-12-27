@@ -3,8 +3,6 @@ package com.avatar.business;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.club.BeaconDto;
@@ -54,6 +52,8 @@ public interface BeaconBusiness {
 
 	List<ClubDto> getClubs(String state, ClubListingSortBy clubname) throws NotFoundException;
 
+	List<SubAmenityDto> getSubAmenities(String clubId) throws NotFoundException;
+
 	String getSubAmenityBodyText(String clubId, String amenityId) throws NotFoundException;
 
 	List<String> getSubAmenityDeptName(String clubId) throws NotFoundException;
@@ -64,14 +64,18 @@ public interface BeaconBusiness {
 
 	String getSubAmenitySecondaryHeaderText(String clubId, String amenityId)throws NotFoundException;
 
-	List<ImmutablePair<AccountDto, Date>> getUsers(String amenityId, Date onDate)
+	List<AccountDto> getUsers(String amenityId, Date onDate)
 			throws NotFoundException;
 
 	void setAmenityHeaderText(String clubId, String amenityId, String headerText) throws NotFoundException;
 
+	void setAmenityPhoto(String clubId, String amenityId, String pictureBase64) throws NotFoundException;
+
 	void setClubBodyText(String clubId, String bodyText) throws NotFoundException;
 
 	void setClubHeaderText(String clubId, String headerText) throws NotFoundException;
+
+	void setClubPhoto(String clubId, String pictureBase64) throws NotFoundException;
 
 	void setSubAmenityBodyText(String clubId, String subAmenityId, String bodyText) throws NotFoundException;
 

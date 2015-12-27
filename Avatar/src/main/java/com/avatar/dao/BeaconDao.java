@@ -3,8 +3,6 @@ package com.avatar.dao;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.exception.NotFoundException;
@@ -30,13 +28,13 @@ public interface BeaconDao {
 
 	Integer getSubAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
 
-	List<ImmutablePair<AccountDto, Date>> getUsers(String subAmenityId, Date onDate);
-
-	void setSubAmenityId(String clubId, String apnsToken,
-			String amenityId, String amenityDepartment) throws NotFoundException;
+	List<AccountDto> getUsers(String subAmenityId, Date onDate);
 
 	void setApnsToken(final String clubId, final String apnsToken)
 			throws NotFoundException;
+
+	void setSubAmenityId(String clubId, String apnsToken,
+			String amenityId, String amenityDepartment) throws NotFoundException;
 
 	void updateBeaconInfo(BeaconDto beacon) throws NotFoundException;
 

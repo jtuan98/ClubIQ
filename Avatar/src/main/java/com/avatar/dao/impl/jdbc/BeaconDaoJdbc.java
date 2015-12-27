@@ -8,7 +8,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
@@ -212,9 +211,9 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
-	public List<ImmutablePair<AccountDto, Date>> getUsers(
+	public List<AccountDto> getUsers(
 			final String subAmenityId, final Date onDate) {
-		List<ImmutablePair<AccountDto, Date>> users = null;
+		List<AccountDto> users = null;
 		final String orderBy = " ORDER BY BU.CREATE_DATE DESC ";
 		if (onDate == null) {
 			users = getJdbcTemplate().query(
@@ -225,8 +224,8 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 					accountDtoCheckInDateMapper, subAmenityId, onDate);
 		}
 		if (CollectionUtils.isNotEmpty(users)) {
-			for (final ImmutablePair<AccountDto, Date> user : users) {
-				accountDao.populateAccountInfo(user.getKey(), true);
+			for (final AccountDto user : users) {
+				accountDao.populateAccountInfo(user, true);
 			}
 		}
 		return users;

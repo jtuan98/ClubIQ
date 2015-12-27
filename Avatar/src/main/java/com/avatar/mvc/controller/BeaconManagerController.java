@@ -1,8 +1,6 @@
 package com.avatar.mvc.controller;
 
-import java.lang.reflect.Type;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +10,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,16 +18,18 @@ import org.springframework.web.servlet.ModelAndView;
 import com.avatar.business.BeaconBusiness;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.club.BeaconDto;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.dto.serializer.AccountDtoMinimalSerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
-import com.google.gson.reflect.TypeToken;
+import com.avatar.mvc.view.JsonView;
 
 // User Must be Authenticated! and must have admin role
 @Controller
@@ -42,8 +41,7 @@ public class BeaconManagerController extends BaseController {
 	@Resource(name = "beaconService")
 	BeaconBusiness beaconService;
 
-	private final Type collectionAccountDtoType = new TypeToken<ArrayList<AccountDto>>() {
-	}.getType();
+	protected JsonView jsonShowMemberByDeptView = null;
 
 	@RequestMapping(value = { "/DeleteBeacon" })
 	public ModelAndView deleteBeacon(
@@ -224,6 +222,13 @@ public class BeaconManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@Override
+	protected void init() {
+		super.init();
+		jsonShowMemberByDeptView = init(jsonShowMemberByDeptView);
+		jsonShowMemberByDeptView.register(MemberAccountDto.class, new AccountDtoMinimalSerializer());
+	}
+
 	// SetAmenityDeptName is equivalent to setSubAmenity
 	@RequestMapping(value = "/SetAmenityDeptName")
 	public ModelAndView setAmenityDeptName(
@@ -357,19 +362,18 @@ public class BeaconManagerController extends BaseController {
 		if (StringUtils.isNotEmpty(onDate)) {
 			entryDate = new Date(yyyyMMddDtf.parseMillis(onDate));
 		}
-		WsResponse<List<ImmutablePair<AccountDto, Date>>> apiResponse = null;
+		WsResponse<List<AccountDto>> apiResponse = null;
 		try {
-			final List<ImmutablePair<AccountDto, Date>> users = beaconService
+			final List<AccountDto> users = beaconService
 					.getUsers(subAmenityId, entryDate);
 			System.out.println(users.getClass());
-			apiResponse = new WsResponse<List<ImmutablePair<AccountDto, Date>>>(
-					ResponseStatus.success, "", users,
-					collectionAccountDtoType, "users");
+			apiResponse = new WsResponse<List<AccountDto>>(
+					ResponseStatus.success, "", users, "users");
 		} catch (final Exception e) {
-			apiResponse = new WsResponse<List<ImmutablePair<AccountDto, Date>>>(
+			apiResponse = new WsResponse<List<AccountDto>>(
 					ResponseStatus.failure, e.getMessage(), null);
 		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
+		return new ModelAndView(jsonShowMemberByDeptView, toModel(apiResponse));
 	}
 
 }
