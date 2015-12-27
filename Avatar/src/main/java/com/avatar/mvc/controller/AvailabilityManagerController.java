@@ -75,4 +75,5 @@ public class AvailabilityManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+
 }

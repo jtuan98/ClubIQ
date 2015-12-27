@@ -35,7 +35,8 @@ import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
 
 public abstract class BaseController {
-	private static final Privilege[] superUser = new Privilege[] { Privilege.superUser };
+	protected static final Privilege[] superUser = new Privilege[] { Privilege.superUser };
+	protected static final Privilege[] superUserOrStaff = new Privilege[] { Privilege.superUser, Privilege.avatarStaff, Privilege.clubAdmin, Privilege.staff };
 
 	public static void main(final String[] args) {
 		final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat

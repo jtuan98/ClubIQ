@@ -28,11 +28,17 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 			+ "NO_PERSONS,"
 			+ "RESERVATION_DATE) VALUES (?,?,?,?,?,?,?) ";
 
-	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, c.CLUBID FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES csa, CLUBS c WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND USER_ID = ? AND RESERVATION_NUMBER = ?";
+	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, c.CLUBID, CSA.DESCRIPTION SUBAMENITY_NAME FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES csa, CLUBS c WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND USER_ID = ? AND RESERVATION_NUMBER = ?";
 
-	private static final String SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID = "SELECT DAY(BLACKOUT_DATE) BLACKOUT_DAY FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = YEAR(NOW()) and MONTH(BLACKOUT_DATE) = ? ORDER BY 1";
+	private static final String SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID = "SELECT DAY(BLACKOUT_DATE) BLACKOUT_DAY FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = ? and MONTH(BLACKOUT_DATE) = ? ORDER BY 1";
 
-	private static final String SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID = "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = YEAR(NOW()) and MONTH(BLACKOUT_DATE) = ? and DAY(BLACKOUT_DATE) = ? LIMIT 1";
+	private static final String SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID = "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = ? and MONTH(BLACKOUT_DATE) = ? and DAY(BLACKOUT_DATE) = ? LIMIT 1";
+
+	private static final String INS_AMENITY_BLACKOUT_TABLE = "INSERT INTO AMENITY_BLACKOUT (ID, CLUB_ID, SUBAMENITY_ID, BLACKOUT_DATE, BLACKOUT_HOURS) values (?,?,?,?,?)";
+
+	private static final String UPDATE_AMENITY_BLACKOUT_TABLE = "UPDATE AMENITY_BLACKOUT set BLACKOUT_HOURS = ? where club_id = ? and subamenity_id = ? and BLACKOUT_DATE = ?";
+
+	private static final String CHK_AMENITY_BLACKOUT_EXISTS = "select count(*) from AMENITY_BLACKOUT where club_id = ? and subamenity_id = ? and BLACKOUT_DATE = ?";
 
 	private final ReservationMapper reservationMapper = new ReservationMapper();
 
@@ -41,20 +47,26 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	private final BlackoutTimesMapper blackoutTimesMapper = new BlackoutTimesMapper();
 
 	@Override
-	public List<BlackoutDate> fetchBlackoutDates(final int clubIdPk, final int subAmenityIdPk,
-			final String month) {
-		final List<BlackoutDate> retVal = getJdbcTemplate().query(SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID,
-				blackoutDateMapper, clubIdPk, subAmenityIdPk, month);
+	public List<BlackoutDate> fetchBlackoutDates(final int clubIdPk,
+			final int subAmenityIdPk, final String year, final String month) {
+		final List<BlackoutDate> retVal = getJdbcTemplate().query(
+				SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID, blackoutDateMapper,
+				clubIdPk, subAmenityIdPk, year, month);
 		return retVal;
 	}
+
 	@Override
-	public List<BlackoutTime> fetchBlackoutTimes(final int clubIdPk, final int subAmenityIdPk,
-			final String month, final String day) {
+	public List<BlackoutTime> fetchBlackoutTimes(final int clubIdPk,
+			final int subAmenityIdPk, final String year, final String month,
+			final String day) {
 		List<BlackoutTime> retVal = null;
 		try {
-			retVal = getJdbcTemplate().queryForObject(SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID,
-					blackoutTimesMapper, clubIdPk, subAmenityIdPk, Integer.parseInt(month), Integer.parseInt(day));
-		} catch(final EmptyResultDataAccessException e) {
+			retVal = getJdbcTemplate().queryForObject(
+					SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID,
+					blackoutTimesMapper, clubIdPk, subAmenityIdPk,
+					Integer.parseInt(year), Integer.parseInt(month),
+					Integer.parseInt(day));
+		} catch (final EmptyResultDataAccessException e) {
 
 		}
 		return retVal;
@@ -65,8 +77,9 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 			throws NotFoundException {
 		CheckInfo retVal = null;
 		try {
-			retVal = getJdbcTemplate().queryForObject(SEL_RESERVATION_BY_AVAILID,
-					reservationMapper, userIdPk, availId);
+			retVal = getJdbcTemplate().queryForObject(
+					SEL_RESERVATION_BY_AVAILID, reservationMapper, userIdPk,
+					availId);
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
@@ -82,6 +95,23 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 				reservationNumber, userIdPk, clubIdPk, subAmenityIdPk,
 				numberOfPeople, reservationDate);
 		return idReservationAdded;
+	}
+
+	@Override
+	public void setBlackoutTimes(final int clubIdPk, final int subAmenityIdPk,
+			final Date blackoutDate, final String blackoutTimes) {
+		final int counter = getJdbcTemplate().queryForObject(
+				CHK_AMENITY_BLACKOUT_EXISTS, Integer.class, clubIdPk,
+				subAmenityIdPk, blackoutDate);
+		if (counter == 0) {
+			final int idBlackoutPk = sequencer.nextVal("ID_SEQ");
+			getJdbcTemplate().update(INS_AMENITY_BLACKOUT_TABLE, idBlackoutPk,
+					clubIdPk, subAmenityIdPk, blackoutDate, blackoutTimes);
+		} else {
+			// update
+			getJdbcTemplate().update(UPDATE_AMENITY_BLACKOUT_TABLE, blackoutTimes, clubIdPk,
+					subAmenityIdPk, blackoutDate );
+		}
 	}
 
 	@Override

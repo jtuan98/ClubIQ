@@ -33,10 +33,10 @@ public interface BeaconBusiness {
 			throws NotFoundException;
 
 	List<BlackoutDate> getBlackoutDates(String clubId, String subAmenityId,
-			String month) throws NotFoundException;
+			String year, String month) throws NotFoundException;
 
 	List<BlackoutTime> getBlackoutTimes(String clubId, String subAmenityId,
-			String requestedDateMMDD) throws NotFoundException;
+			String requestedDateYear, String requestedDateMonth, String requestedDateDay) throws NotFoundException;
 
 	ClubDto getClub(String clubId) throws NotFoundException;
 
@@ -70,6 +70,9 @@ public interface BeaconBusiness {
 	void setAmenityHeaderText(String clubId, String amenityId, String headerText) throws NotFoundException;
 
 	void setAmenityPhoto(String clubId, String amenityId, String pictureBase64) throws NotFoundException;
+
+	void setBlackoutTimes(String clubId, String subAmenityId,
+			Date requestedDate, String blackoutTimes /* blocks of 30 min */) throws NotFoundException;
 
 	void setClubBodyText(String clubId, String bodyText) throws NotFoundException;
 

@@ -17,6 +17,7 @@ public class ReservationMapper implements RowMapper<CheckInfo> {
 		retVal.setId(rs.getInt("ID"));
 		retVal.setAvailId(rs.getString("RESERVATION_NUMBER"));
 		retVal.setSubAmenityId(rs.getString("SUBAMENITYID"));
+		retVal.setSubAmenityName(rs.getString("SUBAMENITY_NAME"));
 		retVal.setPersonNumber(rs.getInt("NO_PERSONS"));
 		retVal.setRequestedClubId(rs.getString("CLUBID"));
 		if (StringUtils.isNotEmpty(rs.getString("RESERVATION_DATE"))) {

@@ -12,6 +12,10 @@ public class WsResponse<T> {
 	private transient Type dataType;
 	private transient String dataName;
 
+	public WsResponse(final ResponseStatus status, final String message) {
+		this(status, message, null, "data");
+	}
+
 	public WsResponse(final ResponseStatus status, final String message,
 			final T data) {
 		this(status, message, data, "data");

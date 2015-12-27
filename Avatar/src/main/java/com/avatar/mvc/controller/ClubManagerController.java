@@ -99,14 +99,14 @@ public class ClubManagerController extends BaseController {
 					throws Exception {
 		init();
 
-		WsResponse<List<AmenityDto>> apiResponse = null;
+		WsResponse<List<SubAmenityDto>> apiResponse = null;
 		try {
-			final List<AmenityDto> amenities = beaconService
-					.getAmenities(clubId);
-			apiResponse = new WsResponse<List<AmenityDto>>(
-					ResponseStatus.success, "", amenities, "amenities");
+			final List<SubAmenityDto> subAmenities = beaconService
+					.getSubAmenities(clubId);
+			apiResponse = new WsResponse<List<SubAmenityDto>>(
+					ResponseStatus.success, "", subAmenities, "subAmenities");
 		} catch (final Exception e) {
-			apiResponse = new WsResponse<List<AmenityDto>>(
+			apiResponse = new WsResponse<List<SubAmenityDto>>(
 					ResponseStatus.failure, e.getMessage(), null);
 		}
 		return new ModelAndView(jsonAmenitiesListingView, toModel(apiResponse));
@@ -423,7 +423,7 @@ public class ClubManagerController extends BaseController {
 		try {
 			final List<SubAmenityDto> amenities = beaconService.getSubAmenityList(clubId, amenityId);
 			apiResponse = new WsResponse<List<SubAmenityDto>>(ResponseStatus.success, "",
-					amenities, "amenities");
+					amenities, "subAmenities");
 		} catch (final Exception e) {
 			apiResponse = new WsResponse<List<SubAmenityDto>>(ResponseStatus.failure,
 					e.getMessage(), null);

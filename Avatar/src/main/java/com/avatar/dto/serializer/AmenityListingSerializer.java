@@ -19,7 +19,7 @@ public class AmenityListingSerializer implements JsonSerializer<AmenityDto> {
 		if (amenity != null) {
 			final JsonObject result = new JsonObject();
 			result.add("amenityId", new JsonPrimitive(amenity.getAmenityId()));
-			result.add("aemnityName", new JsonPrimitive(amenity.getDescription()));
+			result.add("amenityName", new JsonPrimitive(amenity.getDescription()));
 			if (StringUtils.isNotEmpty(amenity.getHeader())) {
 				result.add("header", new JsonPrimitive(amenity.getHeader()));
 			}
