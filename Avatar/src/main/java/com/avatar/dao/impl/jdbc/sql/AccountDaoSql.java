@@ -76,6 +76,8 @@ public final class AccountDaoSql {
 
 	public static final String GET_USER_ID_BY_DEVICE_ID = "SELECT USERID FROM USERS U, USER_DEVICES UD WHERE USER_ID = U.ID and DEVICE_ID = ? ";
 
+	public static final String UPDATE_NOTICE_INFO = "UPDATE USERS set NOTICED_DATE=?, NOTICED_FLAG=? Where id = ?";
+
 	public static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
 			+ AccountStatus.Activated.name() + "'";
 

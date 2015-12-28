@@ -35,7 +35,7 @@ public class AccountDtoMinimalSerializer implements JsonSerializer<AccountDto> {
 				result.add("realname", new JsonPrimitive(account.getName()));
 			}
 			if (account.getHomeClub() != null && StringUtils.isNotEmpty(account.getHomeClub().getClubId())) {
-				result.add("homeClubId", new JsonPrimitive(account.getHomeClub().getClubId()));
+				result.add("homeClubName", new JsonPrimitive(account.getHomeClub().getClubName()));
 			}
 			return result;
 		}

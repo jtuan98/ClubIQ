@@ -18,9 +18,11 @@ public class AccountDtoMapper implements RowMapper<AccountDto> {
 			throws SQLException {
 		final boolean mobile = "Y".equals(rs.getString("MOBILE_IND"));
 		final boolean training = "Y".equals(rs.getString("TRAINING"));
+		final boolean noticedFlag = "Y".equals(rs.getString("NOTICED_FLAG"));
 		final AccountDto retVal = mobile ? new MemberAccountDto()
 		: new EmployeeAccountDto();
 		retVal.setId(rs.getInt("ID"));
+		retVal.setNoticedFlag(noticedFlag);
 		retVal.setAddress(rs.getString("ADDRESS"));
 		retVal.setEmail(rs.getString("EMAIL"));
 		retVal.setTraining("Y".equalsIgnoreCase(rs.getString("TRAINING")));

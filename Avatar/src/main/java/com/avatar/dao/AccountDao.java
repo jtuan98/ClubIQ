@@ -70,6 +70,8 @@ public interface AccountDao {
 
 	void updateNewToken(ActivationToken token) throws NotFoundException;
 
+	void updateNoticeInfo(int userIdPk, Date currentDate, boolean agreed) throws NotFoundException;
+
 	void updateUserDeviceId(String userId, String deviceId)
 			throws NotFoundException;
 

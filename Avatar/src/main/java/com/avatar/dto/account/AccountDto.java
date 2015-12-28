@@ -54,6 +54,8 @@ public abstract class AccountDto implements Serializable {
 
 	protected Date lastCheckInDate;
 
+	protected boolean noticedFlag = false;
+
 	public AccountDto add(final AccountNotes note) {
 		if (noteHistory == null) {
 			noteHistory = new LinkedList<AccountNotes>();
@@ -148,6 +150,10 @@ public abstract class AccountDto implements Serializable {
 		return userId;
 	}
 
+	public boolean isNoticedFlag() {
+		return noticedFlag;
+	}
+
 	public boolean isStaff() {
 		return (this instanceof EmployeeAccountDto);
 	}
@@ -198,6 +204,10 @@ public abstract class AccountDto implements Serializable {
 
 	public void setNoteHistory(final List<AccountNotes> noteHistory) {
 		this.noteHistory = noteHistory;
+	}
+
+	public void setNoticedFlag(final boolean noticedFlag) {
+		this.noticedFlag = noticedFlag;
 	}
 
 	public void setPassword(final String password) {

@@ -375,6 +375,13 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
+	public void setNoticeInfo(final String userId, final Date currentDate, final boolean agreed)
+			throws NotFoundException, InvalidParameterException {
+		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
+		accountDao.updateNoticeInfo(userIdPk, currentDate, agreed);
+	}
+
+	@Override
 	public void suspend(final String memberId, final DateTime suspendDate)
 			throws NotFoundException, InvalidParameterException {
 		Assert.notNull(suspendDate);

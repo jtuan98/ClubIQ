@@ -43,6 +43,8 @@ public interface AccountBusiness {
 
 	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException, InvalidParameterException, AccountSuspendedException;
 
+	void setNoticeInfo(String userId, Date currentDate, boolean agreed)throws NotFoundException, InvalidParameterException;
+
 	void suspend(String memberId, DateTime suspendDate)throws NotFoundException, InvalidParameterException;
 
 	void unsuspend(String memberId) throws NotFoundException;

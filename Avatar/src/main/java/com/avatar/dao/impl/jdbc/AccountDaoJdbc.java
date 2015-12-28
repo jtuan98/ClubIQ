@@ -476,6 +476,12 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	}
 
 	@Override
+	public void updateNoticeInfo(final int userIdPk, final Date currentDate, final boolean agreed)
+			throws NotFoundException {
+		getJdbcTemplate().update(AccountDaoSql.UPDATE_NOTICE_INFO,  currentDate, agreed? "Y": "N", userIdPk);
+	}
+
+	@Override
 	public void updateUserDeviceId(final String userId, final String deviceId)
 			throws NotFoundException {
 		final int userIdPk = getUserIdPkByUserId(userId);

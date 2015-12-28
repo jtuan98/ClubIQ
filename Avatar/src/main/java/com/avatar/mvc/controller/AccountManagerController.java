@@ -220,6 +220,31 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = { "/setNoticeInfo", "/SetNoticeInfo" })
+	public ModelAndView updateNoticeInfo(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "dateTime") final String dateTimeyyyymmddhh24miss,
+			@RequestParam(required = true, value = "agreed") final boolean agreed)
+					throws Exception {
+		init();
+		WsResponse<String> apiResponse = null;
+		try {
+			final AccountDto account = authenticationService.getAccount(authToken);
+			final String userId = account.getUserId();
+			final Date currentDate = df.parse(dateTimeyyyymmddhh24miss);
+			accountService.setNoticeInfo(userId, currentDate, agreed);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	@RequestMapping(value = { "/MapTangerineHandsetIDwithUser" })
 	public ModelAndView updateTangerineHandsetIDwithUser(
 			final Principal principal,

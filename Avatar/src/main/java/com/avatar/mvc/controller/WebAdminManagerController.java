@@ -14,17 +14,23 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.dto.serializer.AccountDtoMemberDetailsSerializer;
+import com.avatar.dto.serializer.AccountDtoMemberSummarySerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
+import com.avatar.mvc.view.JsonView;
 
 @Controller
 @RequestMapping(value = "/WebAdminMgr")
 public class WebAdminManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.clubAdmin,
 		Privilege.staff, Privilege.superUser };
+
+	private JsonView jsonAccountDetailsView;
 
 	@RequestMapping(value = { "/GetMemberDetails", "/getMemberDetails" })
 	public ModelAndView getMemberDetails(
@@ -56,7 +62,7 @@ public class WebAdminManagerController extends BaseController {
 			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
+		return new ModelAndView(jsonAccountDetailsView, toModel(apiResponse));
 	}
 
 	@RequestMapping(value = { "/GetMembers", "/getMembers" })
@@ -89,6 +95,14 @@ public class WebAdminManagerController extends BaseController {
 					ResponseStatus.failure, e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@Override
+	protected void init() {
+		super.init();
+		jsonAccountDetailsView = super.init(jsonAccountDetailsView);
+		jsonView.register(MemberAccountDto.class, new AccountDtoMemberSummarySerializer());
+		jsonAccountDetailsView.register(MemberAccountDto.class, new AccountDtoMemberDetailsSerializer());
 	}
 
 	@RequestMapping(value = { "/SetMemberNotes", "/setMemberNotes" })

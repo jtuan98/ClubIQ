@@ -1,6 +1,7 @@
 package com.avatar.dto.serializer;
 
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -65,6 +66,9 @@ public class WsResponseSerializer implements JsonSerializer<WsResponse> {
 				result = new JsonObject();
 				result.add(response.getDataName(), element.getAsJsonPrimitive());
 			}
+		}
+		if (response.getData() != null && response.getData() instanceof Collection) {
+			result.add("recordFound", new JsonPrimitive(((Collection)response.getData()).size()));
 		}
 		result.add("statusCode", new JsonPrimitive(response.getStatus()));
 		result.add(
