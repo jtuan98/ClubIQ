@@ -70,6 +70,10 @@
 			<url-pattern>/1/AcctMgr/Employee/*</url-pattern>
 			<url-pattern>/1/AcctMgr/MapTangerineHandsetIDwithUser</url-pattern>
 			<url-pattern>/1/AcctMgr/AddClubAmenityToAccount</url-pattern>
+			<url-pattern>/1/AccountMgr/SetNoticeInfo</url-pattern>
+			<url-pattern>/1/AccountMgr/setNoticeInfo</url-pattern>
+			<url-pattern>/1/AcctMgr/setNoticeInfo</url-pattern>
+			<url-pattern>/1/AcctMgr/SetNoticeInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/SetAccountInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/SetEmployeeAccountInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/GetAcctInfo</url-pattern>

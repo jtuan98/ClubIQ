@@ -51,6 +51,8 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static final String GET_SUBAMENITY_IDPK_BY_BEACON_ID_PK = "SELECT SUBAMENITY_ID FROM BEACONS WHERE ID = ? ";
 
+	private static final String GET_AMENITY_IDPK_BY_BEACON_ID_PK = "SELECT AMENITY_ID FROM BEACONS B, CLUB_SUB_AMENITIES CSA WHERE B.ID = ? and B.SUBAMENITY_ID = CSA.ID ";
+
 	private static String INS_BEACON = "INSERT INTO BEACONS ("
 			+ "ID, BEACONID, CLUB_ID, AMENITY_ID, LOCATION, DESCRIPTION, INSTALLATION_STAFF_ID, INSTALLATION_DATE, CREATE_DATE) "
 			+ "VALUES (?,?,?,?,?,?,?,?,NOW())";
@@ -117,6 +119,20 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk, fromDate,
 				toDate);
 
+	}
+
+	@Override
+	public Integer getAmenityIdPk(final Integer beaconIdPk)
+			throws NotFoundException {
+		try {
+			final Integer clubAmenityIdPk = getJdbcTemplate()
+					.queryForObject(GET_AMENITY_IDPK_BY_BEACON_ID_PK,
+							Integer.class, beaconIdPk);
+			return clubAmenityIdPk;
+		} catch (final EmptyResultDataAccessException e) {
+			throw new NotFoundException("BeaconIdPk : " + beaconIdPk
+					+ " not found!");
+		}
 	}
 
 	@Override
@@ -195,6 +211,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 					+ " not found!");
 		}
 	}
+
 
 	@Override
 	public Integer getSubAmenityIdPk(final Integer beaconIdPk)

@@ -12,7 +12,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.avatar.dao.Sequencer;
 import com.avatar.dao.impl.jdbc.sql.BaseDaoSql;
 
-abstract class BaseJdbcTest {
+abstract class BaseJdbcSqlTest {
 	@Mock
 	protected LobHandler lobHandler;
 	@Mock

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 
 import com.avatar.dao.AccountDao;
 import com.avatar.dao.ClubDao;
+import com.avatar.dao.TruncateDao;
 import com.avatar.dao.impl.jdbc.mapper.AccountDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.AccountNotesDtoMapper;
 import com.avatar.dao.impl.jdbc.mapper.ActivationTokenMapper;
@@ -40,7 +41,7 @@ import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 
 @Repository
-public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
+public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao, TruncateDao {
 
 	private final AccountDtoMapper accountDtoMapper = new AccountDtoMapper();
 	private final RolesMapper rolesMapper = new RolesMapper();
@@ -415,6 +416,11 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao {
 	@Resource(name = "avatarDataSource")
 	public void setDataSource(final DataSource ds) {
 		initTemplate(ds);
+	}
+
+	@Override
+	public void truncate() {
+		truncate("USERS");
 	}
 
 	@Override

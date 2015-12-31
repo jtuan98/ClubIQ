@@ -16,7 +16,7 @@ public interface SurveyDao {
 	Survey getSurvey(Integer surveyId) throws NotFoundException;
 
 	// Get a list of possible survey pk
-	Set<Integer> getSurveyConfiguration(String amenityId)
+	Set<Integer> getSurveyConfiguration(int amenityIdPk)
 			throws NotFoundException;
 
 	Set<Integer> getSurveyIdPkHistory(Integer clubIdPk, Integer amenityIdPk,

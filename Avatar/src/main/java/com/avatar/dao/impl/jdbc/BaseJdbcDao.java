@@ -138,6 +138,10 @@ public abstract class BaseJdbcDao implements DbDateDao {
 		this.lobHandler = lobHandler;
 	}
 
+	protected void truncate(final String tableName) {
+		jdbcTemplate.execute("delete from "+tableName);
+	}
+
 	protected Integer updateImage(final Integer imageIdPk, final byte[] picture) {
 		Integer retVal = imageIdPk;
 		final String imageHash = DigestUtils.md5Hex(picture);

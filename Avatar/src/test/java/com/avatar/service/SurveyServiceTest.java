@@ -200,7 +200,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 				given(surveyDao.getSurvey(eq(surveyIdPk))).willReturn(survey);
 			}
 		}
-		given(surveyDao.getSurveyConfiguration(subAmenity.getAmenityId()))
+		given(surveyDao.getSurveyConfiguration(subAmenity.getAmenity().getId()))
 		.willReturn(surveyPks);
 
 		final Set<Integer> surveyIdsSincePastMon = new HashSet<Integer>();

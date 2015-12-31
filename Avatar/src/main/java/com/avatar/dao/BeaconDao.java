@@ -17,6 +17,8 @@ public interface BeaconDao {
 
 	void deleteBeaconInfoByUserId(Integer userIdPk, Date fromDate, Date toDate);
 
+	Integer getAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
+
 	BeaconDto getBeacon(Integer beaconIdPk);
 
 	Integer getBeaconIdPk(String beaconId) throws NotFoundException;

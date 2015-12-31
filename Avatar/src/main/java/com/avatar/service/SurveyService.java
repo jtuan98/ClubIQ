@@ -16,7 +16,6 @@ import com.avatar.dao.AccountDao;
 import com.avatar.dao.BeaconDao;
 import com.avatar.dao.ClubDao;
 import com.avatar.dao.SurveyDao;
-import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.survey.Survey;
 import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.InvalidParameterException;
@@ -77,20 +76,17 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 		// Get beaconIdPk
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
 		// Get amenityIdPk
-		final Integer subAmenityIdPk = beaconDao.getSubAmenityIdPk(beaconIdPk);
+		final Integer amenityIdPk = beaconDao.getSubAmenityIdPk(beaconIdPk);
 		// Get clubIdPk
 		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
 		// Find Last Mon
 		// Get memeberIdPk
 		final Integer memberIdPk = accountDao.getUserIdPkByUserId(memberId);
-		// Get the Sub Amenity type
-		final SubAmenityDto subAmenity = clubDao.getSubAmenity(subAmenityIdPk);
-		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(subAmenity
-				.getAmenityId());
+		final Set<Integer> surveyPks = surveyDao.getSurveyConfiguration(amenityIdPk);
 		final Date since = getLastMonday(surveyPks.size());
 		final Date lastMondayDate = getLastMonday(1);
 		final Set<Integer> surveyIdsSincePastMon = surveyDao
-				.getSurveyIdPkHistory(clubIdPk, subAmenityIdPk, memberIdPk,
+				.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
 						lastMondayDate);
 		// If member HAS NOT done any survey in the past week.
 		if (CollectionUtils.isEmpty(surveyIdsSincePastMon)) {
@@ -98,7 +94,7 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 			.println("member HAS NOT done any survey in the past week.["
 					+ lastMondayDate + "]");
 			final Set<Integer> surveyIdsSinceBeginning = surveyDao
-					.getSurveyIdPkHistory(clubIdPk, subAmenityIdPk, memberIdPk,
+					.getSurveyIdPkHistory(clubIdPk, amenityIdPk, memberIdPk,
 							since);
 			for (final Integer surveyIdPk : surveyIdsSinceBeginning) {
 				surveyPks.remove(surveyIdPk);

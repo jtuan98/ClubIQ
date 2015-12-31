@@ -10,6 +10,8 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -23,13 +25,12 @@ import com.avatar.exception.NotFoundException;
 
 @Repository
 public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
-
 	private static String SEL_QUESTION_IDS_SURVEY_BY_PK = "SELECT * FROM SURVEYS S WHERE ID = ? ";
+
 	private static String SEL_SURVEY_IDS_BY_AMENITY_TYPE_ID = "SELECT ID FROM SURVEYS S WHERE AMENITY_TYPE_ID = ?";
 	private static String SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID = "SELECT SURVEY_ID FROM SURVEY_ANSWERS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID=? AND MEMBER_ID = ? AND CREATE_DATE > ? AND SURVEY_ANS=? ORDER BY CREATE_DATE";
 	private static String SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID_ALLDATES = "SELECT SURVEY_ID FROM SURVEY_ANSWERS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID=? AND MEMBER_ID = ? AND SURVEY_ANS=? ORDER BY CREATE_DATE";
 	private static String SEL_SURVEY_ANSIDS_BY_CLUBID_AMNT_ID_MEMID = "SELECT ID FROM SURVEY_ANSWERS WHERE CLUB_ID = ? AND CLUB_AMENITY_ID=? AND MEMBER_ID = ? AND CREATE_DATE > ? AND SURVEY_ANS=? ORDER BY CREATE_DATE";
-
 	private static String INS_ANSWERS = "INSERT INTO SURVEY_ANSWERS (ID, CLUB_ID, CLUB_AMENITY_ID, "
 			+ " MEMBER_ID, BEACON_ID, SURVEY_ID, SURVEY_ANS, CREATE_DATE) values (?,?,?,?,?,?,'N',NOW())";
 
@@ -41,9 +42,13 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 
 	static private final String DEL_ANSWERS = "DELETE FROM SURVEY_ANSWERS where MEMBER_ID = ? and CREATE_DATE >= ? and CREATE_DATE <= ?";
 
+	private final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
+			.forPattern("yyyy-MM-dd HH:mm:ss");
+
 	private final SurveyMapper surveyMapper = new SurveyMapper();
 
 	private final SurveyAnswerMapper surveyAnswerMapper = new SurveyAnswerMapper();
+
 
 	@Override
 	public void delete(final Integer memberIdPk, final Date fromDate,
@@ -81,17 +86,8 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 
 	// Returns Survey ID pk
 	@Override
-	public Set<Integer> getSurveyConfiguration(final String amenityId)
+	public Set<Integer> getSurveyConfiguration(final int amenityIdPk)
 			throws NotFoundException {
-		Integer amenityIdPk = null;
-		try {
-			amenityIdPk = getJdbcTemplate().queryForObject(
-					SEL_AMENITY_ID_PK, Integer.class, amenityId);
-		} catch (final EmptyResultDataAccessException e) {
-			throw new NotFoundException("AmenityId " + amenityId
-					+ " not found!");
-		}
-
 		final List<Integer> questionIdsPk = getJdbcTemplate().queryForList(
 				SEL_SURVEY_IDS_BY_AMENITY_TYPE_ID, Integer.class,
 				amenityIdPk);
@@ -110,7 +106,7 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 		} else {
 			questionIdsPk = getJdbcTemplate().queryForList(
 					SEL_SURVEY_IDS_BY_CLUBID_AMNT_ID_MEMID, Integer.class,
-					clubIdPk, amenityIdPk, memberId, since, "Y");
+					clubIdPk, amenityIdPk, memberId, yyyyMMdd_hh24missDtf.print(since.getTime()), "Y");
 		}
 		final Set<Integer> retVal = new LinkedHashSet<>();
 		if (CollectionUtils.isNotEmpty(questionIdsPk)) {

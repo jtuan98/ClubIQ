@@ -33,7 +33,7 @@ public abstract class BaseServiceTest {
 		if (subAmenityId != null) {
 			subAmenity = new SubAmenityDto(1);
 			subAmenity.setSubAmenityId(subAmenityId);
-			subAmenity.setAmenity(new AmenityDto("type"));
+			subAmenity.setAmenity(new AmenityDto(1));
 			subAmenity.setDescription("Test");
 			subAmenity.setHoursOfOperation("1");
 		}

@@ -3,6 +3,7 @@ package com.avatar.dto;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+import java.util.Date;
 import java.util.Set;
 
 import com.avatar.dto.account.AccountDto;
@@ -15,6 +16,8 @@ import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.Privilege;
 
 public class AccountDtoBuilder implements DtoBuilder<AccountDto> {
+	static int KEY_VALID_FOR_IN_MINUTES = 1;
+
 	private final AccountDto account;
 
 	public AccountDtoBuilder(final boolean employee) {
@@ -26,16 +29,18 @@ public class AccountDtoBuilder implements DtoBuilder<AccountDto> {
 	public AccountDto getBuiltInstance() {
 		return account;
 	}
-
 	public AccountDtoBuilder withAddress(final String address) {
 		given(account.getAddress()).willReturn(address);
 		return this;
 	}
-	public AccountDtoBuilder withSubAmenity(final SubAmenityDto subAmenity) {
-		if (subAmenity != null) {
-			given(((EmployeeAccountDto)account).getSubAmenity()).willReturn(subAmenity);
-		}
-		return this;
+
+	public AccountDtoBuilder withDefaultToken(final boolean expiredToken) {
+		final ActivationToken token = new ActivationToken();
+		token.setToken("whatever");
+		token.setExpirationDate(new Date(System.currentTimeMillis()
+				+ (KEY_VALID_FOR_IN_MINUTES * 60 * 1000 * (expiredToken ? -1
+						: 1))));
+		return withToken(token);
 	}
 
 	public AccountDtoBuilder withDeviceId(final String deviceId) {
@@ -85,6 +90,14 @@ public class AccountDtoBuilder implements DtoBuilder<AccountDto> {
 
 	public AccountDtoBuilder withStatus(final AccountStatus status) {
 		given(account.getStatus()).willReturn(status);
+		return this;
+	}
+
+	public AccountDtoBuilder withSubAmenity(final SubAmenityDto subAmenity) {
+		if (subAmenity != null) {
+			given(((EmployeeAccountDto) account).getSubAmenity()).willReturn(
+					subAmenity);
+		}
 		return this;
 	}
 
