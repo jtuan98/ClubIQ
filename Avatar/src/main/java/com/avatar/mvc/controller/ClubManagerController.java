@@ -31,6 +31,7 @@ import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
+import com.avatar.mvc.view.RenderingImageView;
 
 @Controller
 @RequestMapping(value = "/ClubMgr")
@@ -49,6 +50,7 @@ public class ClubManagerController extends BaseController {
 	protected JsonView jsonAmenitiesListingView = null;
 	protected JsonView jsonClubAddressView = null;
 	private JsonView jsonClubListingView;
+	private final RenderingImageView imageRenderer = new RenderingImageView();
 
 	@RequestMapping(value = "/ClubPinVerification")
 	public ModelAndView clubPinVerify(
@@ -494,6 +496,25 @@ public class ClubManagerController extends BaseController {
 				clubId, null);
 	}
 
+
+	@RequestMapping(value = { "/render/ClubPhoto", "/render/clubPhoto" })
+	public ModelAndView renderClubPhoto(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId)
+					throws Exception {
+		init();
+		byte[] image = null;
+		try {
+			final ClubDto club = beaconService.getClub(clubId);
+			if (club.getImage() != null) {
+				image = club.getImage().getPicture();
+			}
+
+		} catch (final Exception e) {
+		}
+		return new ModelAndView(imageRenderer, toModel(image));
+	}
 
 	// Phase 2
 	@RequestMapping(value = { "/SetAmenityHeadline", "/setAmenityHeadline" })

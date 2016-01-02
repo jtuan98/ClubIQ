@@ -47,7 +47,10 @@ public class ImagePic implements Serializable {
 	}
 
 	public String getPictureAsBase64String() {
-		final String base64 = new String(Base64.encodeBase64URLSafe(picture));
+		String base64 = null;
+		if (picture != null) {
+			base64 = new String(Base64.encodeBase64URLSafe(picture));
+		}
 		return base64;
 	}
 
