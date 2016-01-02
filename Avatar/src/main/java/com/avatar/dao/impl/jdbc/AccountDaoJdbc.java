@@ -16,6 +16,7 @@ import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
@@ -80,11 +81,15 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao, TruncateD
 
 	@Override
 	public Number addNote(final Integer userIdPk, final String noteText,
-			final DateTime noteDateTime) {
+			final DateTime noteDateTime) throws NotFoundException {
 		System.out.println("adding note date: " + yyyyMMdd_hh24missDtf.print(noteDateTime.getMillis()));
 		final int idNoteAdded = sequencer.nextVal("ID_SEQ");
-		getJdbcTemplate().update(AccountDaoSql.INS_NOTES, idNoteAdded,
-				userIdPk, noteText, yyyyMMdd_hh24missDtf.print(noteDateTime.getMillis()));
+		try {
+			getJdbcTemplate().update(AccountDaoSql.INS_NOTES, idNoteAdded,
+					userIdPk, noteText, yyyyMMdd_hh24missDtf.print(noteDateTime.getMillis()));
+		} catch(final DataIntegrityViolationException e) {
+			throw new NotFoundException("User ID not found");
+		}
 		return idNoteAdded;
 	}
 
@@ -129,45 +134,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao, TruncateD
 					throw new NotFoundException(paramUserId + " not found!");
 				}
 				populateAccountInfo(account, true);
-				final List<Privilege> roles = fetchRoles(account.getId());
-				account.setPriviledges(new HashSet<Privilege>(roles));
-				try {
-					final Map<String, Object> result = getJdbcTemplate()
-							.queryForMap(
-									AccountDaoSql.SEL_DEVICE_TANGERINE_HANDSET_ID_BY_USER_ID,
-									account.getId());
-					if (MapUtils.isNotEmpty(result)) {
-						account.setDeviceId((String) result.get("DEVICE_ID"));
-						account.setTangerineHandsetId((String) result
-								.get("TANGERINE_HANDSET_ID"));
-					}
-				} catch (final EmptyResultDataAccessException e) {
-
-				}
-				if (account instanceof EmployeeAccountDto) {
-					try {
-						final Integer subAmenityIdPk = getJdbcTemplate()
-								.queryForObject(
-										AccountDaoSql.SEL_SUBAMENITY_ID_BY_USERID,
-										Integer.class, account.getId());
-						final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
-						employeeAccount.setSubAmenity(clubDao
-								.getSubAmenity(subAmenityIdPk));
-					} catch (final EmptyResultDataAccessException e) {
-					}
-				}
-				if ((account.getPicture() != null)
-						&& (account.getPicture().getId() != null)) {
-					System.out.println("Getting the picture!!!");
-					final ImagePic image = getImage(account.getPicture()
-							.getId());
-					account.setPicture(image);
-				}
-
-				// Phase 2: fetch from USER_NOTES
-				final List<AccountNotes> notes = fetchNoteHistory(account.getId());
-				account.setNoteHistory(notes);
-
+				populateOtherAccountInfo(account);
 			} catch (final EmptyResultDataAccessException e) {
 				throw new NotFoundException();
 			}
@@ -219,8 +186,18 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao, TruncateD
 
 	@Override
 	public List<AccountDto> getMembers(final int clubIdPk) throws NotFoundException {
-		// TODO Phase 2
-		return null;
+		List<AccountDto>  accounts = null;
+
+		accounts = getJdbcTemplate().query(AccountDaoSql.SEL_USERS_BY_CLUBID,
+				accountDtoMapper, clubIdPk);
+		if (accounts == null) {
+			throw new NotFoundException(clubIdPk + " not found!");
+		}
+		for (final AccountDto account : accounts) {
+			populateAccountInfo(account, true);
+			populateOtherAccountInfo(account);
+		}
+		return accounts;
 	}
 
 	@Override
@@ -412,6 +389,47 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao, TruncateD
 		}
 	}
 
+	private void populateOtherAccountInfo(final AccountDto account) throws NotFoundException {
+		final List<Privilege> roles = fetchRoles(account.getId());
+		account.setPriviledges(new HashSet<Privilege>(roles));
+		try {
+			final Map<String, Object> result = getJdbcTemplate()
+					.queryForMap(
+							AccountDaoSql.SEL_DEVICE_TANGERINE_HANDSET_ID_BY_USER_ID,
+							account.getId());
+			if (MapUtils.isNotEmpty(result)) {
+				account.setDeviceId((String) result.get("DEVICE_ID"));
+				account.setTangerineHandsetId((String) result
+						.get("TANGERINE_HANDSET_ID"));
+			}
+		} catch (final EmptyResultDataAccessException e) {
+
+		}
+		if (account instanceof EmployeeAccountDto) {
+			try {
+				final Integer subAmenityIdPk = getJdbcTemplate()
+						.queryForObject(
+								AccountDaoSql.SEL_SUBAMENITY_ID_BY_USERID,
+								Integer.class, account.getId());
+				final EmployeeAccountDto employeeAccount = (EmployeeAccountDto) account;
+				employeeAccount.setSubAmenity(clubDao
+						.getSubAmenity(subAmenityIdPk));
+			} catch (final EmptyResultDataAccessException e) {
+			}
+		}
+		if ((account.getPicture() != null)
+				&& (account.getPicture().getId() != null)) {
+			System.out.println("Getting the picture!!!");
+			final ImagePic image = getImage(account.getPicture()
+					.getId());
+			account.setPicture(image);
+		}
+
+		// Phase 2: fetch from USER_NOTES
+		final List<AccountNotes> notes = fetchNoteHistory(account.getId());
+		account.setNoteHistory(notes);
+	}
+
 	@Override
 	@Resource(name = "avatarDataSource")
 	public void setDataSource(final DataSource ds) {
@@ -420,6 +438,7 @@ public class AccountDaoJdbc extends BaseJdbcDao implements AccountDao, TruncateD
 
 	@Override
 	public void truncate() {
+		truncate("USER_ACTIVATION_TOKEN");
 		truncate("USERS");
 	}
 

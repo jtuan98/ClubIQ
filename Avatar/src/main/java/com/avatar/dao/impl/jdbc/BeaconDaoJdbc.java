@@ -275,7 +275,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			final Integer clubIdPk = getJdbcTemplate().queryForObject(
 					GET_CLUB_ID, Integer.class, clubId);
 
-			final Integer amenityPkId = StringUtils.isNotEmpty(amenityId)? clubDao.getClubAmenityIdPk(amenityId): null;
+			final Integer amenityPkId = StringUtils.isNotEmpty(amenityId)? clubDao.getClubAmenityIdPk(clubIdPk, amenityId): null;
 			final int counter = getJdbcTemplate().queryForObject(
 					CHECK_SUBAMENITY_DEPT_NAME, Integer.class, subAmenityId,
 					clubIdPk);

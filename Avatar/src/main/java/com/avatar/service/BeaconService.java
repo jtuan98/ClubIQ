@@ -124,7 +124,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public AmenityDto getAmenity(final String clubId, final String amenityId)
 			throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(clubIdPk, amenityId);
 		return clubDao.getAmenity(clubIdPk, amenityIdPk);
 	}
 
@@ -132,7 +132,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public String getAmenityHeaderText(final String clubId,
 			final String amenityId) throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final int amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final int amenityIdPk = clubDao.getClubAmenityIdPk(clubIdPk, amenityId);
 		return clubDao.getAmenityHeaderText(clubIdPk, amenityIdPk);
 	}
 
@@ -297,7 +297,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 			final String amenityId, final String headerText)
 					throws NotFoundException {
 		final Integer clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(clubIdPk, amenityId);
 		clubDao.updateAmenityHeaderText(clubIdPk, amenityIdPk, headerText);
 	}
 
@@ -305,7 +305,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	public void setAmenityPhoto(final String clubId, final String amenityId,
 			final String pictureBase64) throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(amenityId);
+		final Integer amenityIdPk = clubDao.getClubAmenityIdPk(clubIdPk, amenityId);
 		clubDao.updateAmenityPhoto(clubIdPk, amenityIdPk, pictureBase64);
 	}
 

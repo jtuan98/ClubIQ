@@ -17,7 +17,7 @@ public interface AccountDao {
 	void activate(String userId, String activationToken, Date activateDate)
 			throws NotFoundException;
 
-	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime);
+	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime) throws NotFoundException;
 
 	void addSubAmenityToUser(Integer userIdPk, Integer clubSubAmenityIdPk)
 			throws NotFoundException, InvalidParameterException;

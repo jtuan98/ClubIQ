@@ -78,6 +78,8 @@ public final class AccountDaoSql {
 
 	public static final String UPDATE_NOTICE_INFO = "UPDATE USERS set NOTICED_DATE=?, NOTICED_FLAG=? Where id = ?";
 
+	public static final String SEL_USERS_BY_CLUBID = "select * from USERS where HOME_CLUB_ID = ? ";
+
 	public static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
 			+ AccountStatus.Activated.name() + "'";
 

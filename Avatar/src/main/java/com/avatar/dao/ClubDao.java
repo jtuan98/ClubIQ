@@ -26,7 +26,7 @@ public interface ClubDao {
 
 	String getBodyText(int clubIdPk);
 
-	Integer getClubAmenityIdPk(String amenityId) throws NotFoundException;
+	Integer getClubAmenityIdPk(int clubIdPk, String amenityId) throws NotFoundException;
 
 	ClubDto getClubByKeyCode(String clubKeycode) throws NotFoundException;
 
