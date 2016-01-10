@@ -39,7 +39,7 @@ public interface AccountBusiness {
 
 	CheckInfo getCheckInfo(String userId, String availId) throws NotFoundException;
 
-	List<AccountDto> getMembers(String clubId) throws NotFoundException;
+	List<AccountDto> getMembers(String clubId) throws NotFoundException, InvalidParameterException;
 
 	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException, InvalidParameterException, AccountSuspendedException;
 

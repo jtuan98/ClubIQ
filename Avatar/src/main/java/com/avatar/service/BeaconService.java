@@ -288,7 +288,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 
 	@Override
 	public List<AccountDto> getUsers(final String subAmenityId,
-			final Date onDate) {
+			final Date onDate) throws InvalidParameterException {
 		return beaconDao.getUsers(subAmenityId, onDate);
 	}
 

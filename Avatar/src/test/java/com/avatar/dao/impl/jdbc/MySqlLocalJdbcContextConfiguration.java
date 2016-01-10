@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.avatar.dao.AccountDao;
+import com.avatar.dao.BeaconDao;
 import com.avatar.dao.ClubDao;
 import com.avatar.dao.Sequencer;
 
@@ -21,6 +22,11 @@ public class MySqlLocalJdbcContextConfiguration {
 	@Bean(name = "avatarSequencer")
 	public Sequencer avatarSequencer() {
 		return new AvatarSequencer();
+	}
+
+	@Bean(name = "beaconDaoJdbc")
+	public BeaconDao beaconDaoJdbc() {
+		return new BeaconDaoJdbc();
 	}
 
 	@Bean(name = "clubDaoJdbc")

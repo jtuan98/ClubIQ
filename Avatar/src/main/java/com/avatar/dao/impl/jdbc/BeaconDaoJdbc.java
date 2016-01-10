@@ -229,7 +229,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	@Override
 	public List<AccountDto> getUsers(
-			final String subAmenityId, final Date onDate) {
+			final String subAmenityId, final Date onDate) throws InvalidParameterException {
 		List<AccountDto> users = null;
 		final String orderBy = " ORDER BY BU.CREATE_DATE DESC ";
 		if (onDate == null) {
@@ -242,7 +242,11 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 		}
 		if (CollectionUtils.isNotEmpty(users)) {
 			for (final AccountDto user : users) {
-				accountDao.populateAccountInfo(user, true);
+				try {
+					accountDao.populateAccountInfo(user, true);
+				} catch (final NotFoundException e) {
+
+				}
 			}
 		}
 		return users;

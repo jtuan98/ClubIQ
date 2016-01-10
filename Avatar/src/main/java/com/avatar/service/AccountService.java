@@ -331,7 +331,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Override
 	public List<AccountDto> getMembers(final String clubId)
-			throws NotFoundException {
+			throws NotFoundException, InvalidParameterException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
 		List<AccountDto> retVal = accountDao.getMembers(clubIdPk);
 

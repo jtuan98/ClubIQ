@@ -244,7 +244,7 @@ public class AccountDaoSqlTest extends BaseJdbcSqlTest {
 	}
 
 	@Test(expected=InvalidParameterException.class)
-	public void test002addAmenityToUser_00_nullParam() throws InvalidParameterException {
+	public void test002addAmenityToUser_00_nullParam() throws InvalidParameterException, NotFoundException {
 		final Integer userIdPk = null;
 		final Integer clubAmenityIdPk = null;
 		setUpForAddAmenityToUserTest(userIdPk, clubAmenityIdPk, 0);
@@ -252,7 +252,7 @@ public class AccountDaoSqlTest extends BaseJdbcSqlTest {
 	}
 
 	@Test
-	public void test002addAmenityToUser_01_amenityExists() {
+	public void test002addAmenityToUser_01_amenityExists() throws NotFoundException {
 		final Integer userIdPk = 1;
 		final Integer clubAmenityIdPk = 2;
 		setUpForAddAmenityToUserTest(userIdPk, clubAmenityIdPk, 1);
@@ -267,7 +267,7 @@ public class AccountDaoSqlTest extends BaseJdbcSqlTest {
 	}
 
 	@Test
-	public void test002addAmenityToUser_02_amenityNotExists() {
+	public void test002addAmenityToUser_02_amenityNotExists() throws NotFoundException {
 		final Integer userIdPk = 1;
 		final Integer clubAmenityIdPk = 2;
 		setUpForAddAmenityToUserTest(userIdPk, clubAmenityIdPk, 0);

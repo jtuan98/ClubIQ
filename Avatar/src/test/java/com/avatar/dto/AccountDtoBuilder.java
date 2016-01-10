@@ -83,6 +83,13 @@ public class AccountDtoBuilder implements DtoBuilder<AccountDto> {
 		return this;
 	}
 
+	public AccountDtoBuilder withPicture( final Integer id, final String imageHash, final byte[] picture){
+		final ImagePic pic = new ImagePic(id);
+		pic.setImageHash(imageHash);
+		pic.setPicture(picture);
+		return withPicture(pic);
+	}
+
 	public AccountDtoBuilder withPrivilege(final Set<Privilege> privileges) {
 		given(account.getPriviledges()).willReturn(privileges);
 		return this;
@@ -116,7 +123,6 @@ public class AccountDtoBuilder implements DtoBuilder<AccountDto> {
 		given(account.isTraining()).willReturn(training);
 		return this;
 	}
-
 	public AccountDtoBuilder withUserId(final String userId) {
 		given(account.getUserId()).willReturn(userId);
 		return this;

@@ -65,7 +65,7 @@ public interface BeaconBusiness {
 	String getSubAmenitySecondaryHeaderText(String clubId, String amenityId)throws NotFoundException;
 
 	List<AccountDto> getUsers(String amenityId, Date onDate)
-			throws NotFoundException;
+			throws NotFoundException, InvalidParameterException;
 
 	void setAmenityHeaderText(String clubId, String amenityId, String headerText) throws NotFoundException;
 

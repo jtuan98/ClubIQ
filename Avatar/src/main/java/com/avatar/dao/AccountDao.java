@@ -37,7 +37,7 @@ public interface AccountDao {
 
 	List<Privilege> fetchRoles(final String userId) throws NotFoundException;
 
-	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException;
+	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException, InvalidParameterException;
 
 	AccountStatus getStatus(int userIdPk);
 
@@ -52,10 +52,10 @@ public interface AccountDao {
 
 	// throws NotFoundException, when homeClubId not found!
 	void newAccount(AccountDto account, ActivationToken activationToken)
-			throws NotFoundException;
+			throws NotFoundException, InvalidParameterException;
 
 	public void populateAccountInfo(final AccountDto account,
-			boolean includePicture);
+			boolean includePicture) throws InvalidParameterException, NotFoundException;
 
 	void undeactivate(String userId) throws NotFoundException;
 

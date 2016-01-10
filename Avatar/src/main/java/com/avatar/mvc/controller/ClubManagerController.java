@@ -1,5 +1,6 @@
 package com.avatar.mvc.controller;
 
+import java.io.File;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,10 +31,12 @@ import com.avatar.dto.serializer.ClubAddressSerializer;
 import com.avatar.dto.serializer.ClubListingSerializer;
 import com.avatar.dto.serializer.SubAmenityListingSerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
 import com.avatar.mvc.view.RenderingImageView;
+import com.avatar.util.Md5Sum;
 
 @Controller
 @RequestMapping(value = "/ClubMgr")
@@ -496,6 +501,17 @@ public class ClubManagerController extends BaseController {
 				clubId, null);
 	}
 
+	@RequestMapping(value = { "/render/TestPhoto", "/render/testPhoto" })
+	public ModelAndView renderClubPhoto(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "filename") final String filename
+			)
+					throws Exception {
+		init();
+		final byte[] image = FileUtils.readFileToByteArray(new File(filename));
+		return new ModelAndView(imageRenderer, toModel(image));
+	}
+
 
 	@RequestMapping(value = { "/render/ClubPhoto", "/render/clubPhoto" })
 	public ModelAndView renderClubPhoto(
@@ -711,7 +727,8 @@ public class ClubManagerController extends BaseController {
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
 			@RequestParam(required = true, value = "clubId") final String clubId,
-			@RequestParam(required = true, value = "pictureBase64") final String pictureBase64
+			@RequestParam(required = true, value = "pictureBase64") final String pictureBase64,
+			@RequestParam(required = false, value = "md5HashValidate") final String pictureMd5Hash
 			)
 					throws Exception {
 		init();
@@ -731,6 +748,10 @@ public class ClubManagerController extends BaseController {
 
 		WsResponse<String> apiResponse = null;
 		try {
+			final String hashBase64Decoded = Md5Sum.hashStringBase64Data(pictureBase64);
+			if (StringUtils.isNotEmpty(pictureMd5Hash) && hashBase64Decoded.equalsIgnoreCase(pictureMd5Hash)) {
+				throw new InvalidParameterException("Md5 not matching...");
+			}
 			beaconService.setClubPhoto(clubId, pictureBase64);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "", "");
 		} catch (final Exception e) {

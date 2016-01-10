@@ -31,7 +31,12 @@ public final class AccountDaoSql {
 
 	public static String UPD_ACCOUNT_DEACTIVATION = "update USERS set SUSPENDED_DATE=?, STATUS='"
 			+ AccountStatus.Cancelled.name()
-			+ "' WHERE ID = ? ";
+			+ "', PREVIOUS_STATUS = STATUS WHERE ID = ? AND STATUS <> '"
+			+ AccountStatus.Cancelled.name() + "'";
+
+	public static String UPD_ACCOUNT_UNDEACTIVATION = "update USERS set STATUS=PREVIOUS_STATUS "
+			+ " WHERE ID = ? AND STATUS = '"
+			+ AccountStatus.Cancelled.name() + "'";
 
 	public static String UPD_ACCOUNT_STATUS_NOTIFIED = "update USERS set STATUS='"
 			+ AccountStatus.TokenSent.name()

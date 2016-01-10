@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.BeaconDto;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 
@@ -30,7 +31,7 @@ public interface BeaconDao {
 
 	Integer getSubAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
 
-	List<AccountDto> getUsers(String subAmenityId, Date onDate);
+	List<AccountDto> getUsers(String subAmenityId, Date onDate) throws InvalidParameterException;
 
 	void setApnsToken(final String clubId, final String apnsToken)
 			throws NotFoundException;
