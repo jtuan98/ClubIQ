@@ -65,6 +65,10 @@
 		<fileset dir="${gson.lib.dir}">
 			<include name="gson-*.jar" />
 		</fileset>
+		<fileset dir="${aspectj.lib.dir}">
+			<include name="aspectj-*.jar" />
+		</fileset>
+				
 		<fileset dir="${guava.lib.dir}">
 			<include name="guava-*.jar" />
 		</fileset>
@@ -142,6 +146,9 @@
 			</lib>
 			<lib dir="${joda.lib.dir}" prefix="WEB-INF/lib">
 				<patternset refid="joda.lib.pattern" />
+			</lib>
+			<lib dir="${aspectj.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="aspectj.lib.pattern" />
 			</lib>
 			<lib dir="${bc.lib.dir}" prefix="WEB-INF/lib">
 				<patternset refid="bc.lib.pattern" />

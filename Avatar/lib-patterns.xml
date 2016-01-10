@@ -12,6 +12,9 @@
 	<!-- joda lib versions -->
 	<property name="joda.lib.dir" location="${lib.dir}/joda/2.4" />
 
+	<!-- aspectj lib versions -->
+	<property name="aspectj.lib.dir" location="${lib.dir}/aspectj/1.8.6" />
+
 	<!-- apns lib versions -->
 	<property name="apns.lib.dir" location="${lib.dir}/apns/2.2" />
 	<property name="bc.lib.dir" location="${lib.dir}/bouncycastle" />
@@ -47,6 +50,10 @@
 
 	<patternset id="apns.lib.pattern">
 		<include name="JavaPNS*.jar" />
+	</patternset>
+
+	<patternset id="aspectj.lib.pattern">
+		<include name="aspectj*.jar" />
 	</patternset>
 
 	<patternset id="bc.lib.pattern">
