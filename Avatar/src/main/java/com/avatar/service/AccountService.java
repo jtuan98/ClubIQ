@@ -389,7 +389,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
-	public void unsuspend(final String memberId) throws NotFoundException {
+	public void unsuspend(final String memberId) throws NotFoundException, InvalidParameterException {
 		accountDao.undeactivate(memberId);
 	}
 

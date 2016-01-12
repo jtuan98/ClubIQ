@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
@@ -12,7 +11,6 @@ import javax.annotation.Resource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -230,18 +228,19 @@ public class AccountDaoTest {
 		.withUserId("theUserId").withName("Unit Test")
 		.withDefaultToken(false).getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
-		final int userIdPk = accountDaoJdbc.getUserIdPkByUserId(account.getUserId());
+		final int userIdPk = accountDaoJdbc.getUserIdPkByUserId(account
+				.getUserId());
 
 		final AccountDto acctFromDb = accountDaoJdbc.fetch(userIdPk);
 		assertNotNull(acctFromDb);
 		assertEquals(userIdPk, acctFromDb.getId().intValue());
 		assertTrue(acctFromDb instanceof EmployeeAccountDto);
-		final AccountDto acct2FromDb = accountDaoJdbc.fetch(account.getUserId());
+		final AccountDto acct2FromDb = accountDaoJdbc
+				.fetch(account.getUserId());
 		assertNotNull(acct2FromDb);
 		assertEquals(userIdPk, acct2FromDb.getId().intValue());
 		assertTrue(acct2FromDb instanceof EmployeeAccountDto);
 	}
-
 
 	@Test
 	public void testFetch04MemberUserId() throws NotFoundException,
@@ -251,46 +250,48 @@ public class AccountDaoTest {
 		.withMobileNumber("12345").withDeviceId("device123")
 		.withDefaultToken(false).getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
-		final int userIdPk = accountDaoJdbc.getUserIdPkByUserId(account.getUserId());
+		final int userIdPk = accountDaoJdbc.getUserIdPkByUserId(account
+				.getUserId());
 
 		final AccountDto acctFromDb = accountDaoJdbc.fetch(userIdPk);
 		assertNotNull(acctFromDb);
 		assertEquals(userIdPk, acctFromDb.getId().intValue());
 		assertTrue(acctFromDb instanceof MemberAccountDto);
-		final AccountDto acct2FromDb = accountDaoJdbc.fetch(account.getUserId());
+		final AccountDto acct2FromDb = accountDaoJdbc
+				.fetch(account.getUserId());
 		assertNotNull(acct2FromDb);
 		assertEquals(userIdPk, acct2FromDb.getId().intValue());
 		assertTrue(acct2FromDb instanceof MemberAccountDto);
 	}
 
-	@Test(expected=InvalidParameterException.class)
-	public void testNewAccount01MemberUserIdNoMobileNumber() throws NotFoundException,
-	InvalidParameterException {
+	@Test(expected = InvalidParameterException.class)
+	public void testNewAccount01MemberUserIdNoMobileNumber()
+			throws NotFoundException, InvalidParameterException {
 		final AccountDto account = new AccountDtoBuilder(false)
 		.withUserId("theUserId").withName("Unit Test")
 		.withDefaultToken(false).getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
 	}
 
-	@Test(expected=InvalidParameterException.class)
-	public void testNewAccount02MemberUserIdNoDeviceId() throws NotFoundException,
-	InvalidParameterException {
+	@Test(expected = InvalidParameterException.class)
+	public void testNewAccount02MemberUserIdNoDeviceId()
+			throws NotFoundException, InvalidParameterException {
 		final AccountDto account = new AccountDtoBuilder(false)
 		.withUserId("theUserId").withName("Unit Test")
-		.withMobileNumber("12345")
-		.withDefaultToken(false).getBuiltInstance();
+		.withMobileNumber("12345").withDefaultToken(false)
+		.getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
 	}
 
-	@Test(expected=InvalidParameterException.class)
-	public void testPopulateAccountInfo01NullAccount() throws NotFoundException,
-	InvalidParameterException {
+	@Test(expected = InvalidParameterException.class)
+	public void testPopulateAccountInfo01NullAccount()
+			throws NotFoundException, InvalidParameterException {
 		accountDaoJdbc.populateAccountInfo(null, true);
 	}
 
-	@Test(expected=NotFoundException.class)
-	public void testPopulateAccountInfo02AccountNoId() throws NotFoundException,
-	InvalidParameterException {
+	@Test(expected = NotFoundException.class)
+	public void testPopulateAccountInfo02AccountNoId()
+			throws NotFoundException, InvalidParameterException {
 		final AccountDto account = new AccountDtoBuilder(false)
 		.withUserId("theUserId").withName("Unit Test")
 		.withMobileNumber("12345")
@@ -302,26 +303,37 @@ public class AccountDaoTest {
 	@Test
 	public void testPopulateAccountInfo03Picture() throws NotFoundException,
 	InvalidParameterException, IOException {
-		final byte[] pic = FileUtils.readFileToByteArray(new File("/tmp/Clubhouse.png"));
+		final byte[] pic = com.avatar.util.FileUtils.readAndClose(ClassLoader
+				.getSystemResourceAsStream("test/Clubhouse.png"));
 		final String hash = Md5Sum.hashString(pic);
 
 		final String pictureBase64 = Base64.encodeBase64String(pic);
-		final byte[] picture = Base64.decodeBase64(pictureBase64);
-		final String hashBase64Decoded = Md5Sum.hashStringBase64Data(pictureBase64);
+		final String hashBase64Decoded = Md5Sum
+				.hashStringBase64Data(pictureBase64);
 		assertEquals(hash, hashBase64Decoded);
 
 		final AccountDto account = new AccountDtoBuilder(false)
 		.withUserId("theUserId").withName("Unit Test")
-		.withMobileNumber("12345")
-		.withPicture(1, "12345", pic)
-		.withDeviceId("deviceId")
-		.withDefaultToken(false).getBuiltInstance();
+		.withMobileNumber("12345").withPicture(1, "12345", pic)
+		.withDeviceId("deviceId").withDefaultToken(false)
+		.getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
-		final AccountDto accountFromDb = accountDaoJdbc.fetch(account.getUserId());
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
 		accountDaoJdbc.populateAccountInfo(accountFromDb, true);
 		assertNotNull(accountFromDb.getPicture());
-		final String hashFromDb = Md5Sum.hashString( accountFromDb.getPicture().getPicture());
+		final String hashFromDb = Md5Sum.hashString(accountFromDb.getPicture()
+				.getPicture());
 		assertEquals(hash, hashFromDb);
 	}
 
+	@Test(expected = InvalidParameterException.class)
+	public void testUndeactivate01NullAccount() throws NotFoundException, InvalidParameterException {
+		accountDaoJdbc.undeactivate(null);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUndeactivate02NonExistentAccount() throws NotFoundException, InvalidParameterException {
+		accountDaoJdbc.undeactivate("whatever");
+	}
 }

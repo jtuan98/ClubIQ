@@ -188,6 +188,7 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonClubAddressView, toModel(apiResponse));
 	}
 
+
 	// Phase 2
 	@RequestMapping(value = { "/GetClubBody", "/getClubBody" })
 	public ModelAndView getClubBody(
@@ -499,6 +500,24 @@ public class ClubManagerController extends BaseController {
 		}
 		return beaconManager.setAmenityDeptName(authToken, apnsToken, null,
 				clubId, null);
+	}
+
+	@RequestMapping(value = { "/render/ClubAmenityPhoto", "/render/clubAmenityPhoto" })
+	public ModelAndView renderClubAmenityPhoto(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "amenityId") final String amenityId)
+					throws Exception {
+		init();
+		byte[] image = null;
+		try {
+			final AmenityDto amenity = beaconService.getAmenity(clubId, amenityId);
+			image = amenity.getImage() != null? amenity.getImage().getPicture(): null;
+
+		} catch (final Exception e) {
+		}
+		return new ModelAndView(imageRenderer, toModel(image));
 	}
 
 	@RequestMapping(value = { "/render/TestPhoto", "/render/testPhoto" })

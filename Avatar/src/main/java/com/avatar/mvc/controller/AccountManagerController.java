@@ -106,25 +106,56 @@ public class AccountManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
-	//	@RequestMapping(value = "/GetMemberAcct")
-	//	public ModelAndView getMemberAcct(
-	//			final Principal principal,
-	//			final HttpServletRequest req,
-	//			@RequestParam(required = true, value = "deviceId") final String deviceId)
-	//					throws Exception {
-	//		init();
-	//		WsResponse<AccountDto> apiResponse = null;
-	//		final String userId = principal.getName();
-	//		try {
-	//			final AccountDto account = accountService.get(userId);
-	//			apiResponse = new WsResponse<AccountDto>(ResponseStatus.success,
-	//					"", account);
-	//		} catch (final Exception e) {
-	//			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
-	//					e.getMessage(), null);
-	//		}
-	//		return new ModelAndView(jsonView, toModel(apiResponse));
-	//	}
+	@RequestMapping(value = { "/Mobile/getLinkPhone", "/Mobile/GetLinkPhone" })
+	public ModelAndView getLinkPhone(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "mobileNumber") final String mobileNumber)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, Privilege.values());
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			final AccountDto account = accountService.get(mobileNumber);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					StringUtils.isEmpty(account.getLinkMobileNumber()) ? ""
+							: account.getLinkMobileNumber(), "2ndLinkPhone");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	// @RequestMapping(value = "/GetMemberAcct")
+	// public ModelAndView getMemberAcct(
+	// final Principal principal,
+	// final HttpServletRequest req,
+	// @RequestParam(required = true, value = "deviceId") final String deviceId)
+	// throws Exception {
+	// init();
+	// WsResponse<AccountDto> apiResponse = null;
+	// final String userId = principal.getName();
+	// try {
+	// final AccountDto account = accountService.get(userId);
+	// apiResponse = new WsResponse<AccountDto>(ResponseStatus.success,
+	// "", account);
+	// } catch (final Exception e) {
+	// apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
+	// e.getMessage(), null);
+	// }
+	// return new ModelAndView(jsonView, toModel(apiResponse));
+	// }
 
 	@RequestMapping(value = { "/Mobile/setLinkPhone", "/Mobile/SetLinkPhone" })
 	public ModelAndView setLinkPhone(
@@ -135,18 +166,19 @@ public class AccountManagerController extends BaseController {
 		init();
 		WsResponse<CheckInfo> apiResponse = null;
 		try {
-			final AccountDto account = authenticationService.getAccount(authToken);
+			final AccountDto account = authenticationService
+					.getAccount(authToken);
 			final String userId = account.getUserId();
 			try {
 				final Date currentDate = df.parse(currentDateyyyymmddhh24miss);
 				accountService.setLinkNumber(userId, linkNumber, currentDate);
-				apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",
-						null);
+				apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success,
+						"", null);
 			} catch (final Exception e) {
 				apiResponse = new WsResponse<CheckInfo>(ResponseStatus.failure,
 						e.getMessage(), null);
 			}
-		} catch(final AuthenticationTokenExpiredException e){
+		} catch (final AuthenticationTokenExpiredException e) {
 			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
@@ -231,7 +263,8 @@ public class AccountManagerController extends BaseController {
 		init();
 		WsResponse<String> apiResponse = null;
 		try {
-			final AccountDto account = authenticationService.getAccount(authToken);
+			final AccountDto account = authenticationService
+					.getAccount(authToken);
 			final String userId = account.getUserId();
 			final Date currentDate = df.parse(dateTimeyyyymmddhh24miss);
 			accountService.setNoticeInfo(userId, currentDate, agreed);

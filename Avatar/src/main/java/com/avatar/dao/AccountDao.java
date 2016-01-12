@@ -57,7 +57,7 @@ public interface AccountDao {
 	public void populateAccountInfo(final AccountDto account,
 			boolean includePicture) throws InvalidParameterException, NotFoundException;
 
-	void undeactivate(String userId) throws NotFoundException;
+	void undeactivate(String userId) throws InvalidParameterException, NotFoundException;
 
 	void updateAccountInfoEmail(String userId, String email)
 			throws NotFoundException;

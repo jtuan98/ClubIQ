@@ -47,7 +47,7 @@ public interface AccountBusiness {
 
 	void suspend(String memberId, DateTime suspendDate)throws NotFoundException, InvalidParameterException;
 
-	void unsuspend(String memberId) throws NotFoundException;
+	void unsuspend(String memberId) throws NotFoundException, InvalidParameterException;
 
 	void updateAccountInfo(String userId, String deviceId, String fullName,
 			String email, String pictureBase64) throws NotFoundException, InvalidParameterException;

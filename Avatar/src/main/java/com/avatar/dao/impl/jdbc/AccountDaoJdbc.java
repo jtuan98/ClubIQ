@@ -458,7 +458,8 @@ TruncateDao {
 	}
 
 	@Override
-	public void undeactivate(final String userId) throws NotFoundException {
+	public void undeactivate(final String userId) throws NotFoundException, InvalidParameterException {
+		verify(userId, "User ID cannot be null");
 		final int userIdPk = getUserIdPkByUserId(userId);
 		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_UNDEACTIVATION, userIdPk);
 	}
