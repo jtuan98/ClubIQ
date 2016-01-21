@@ -39,6 +39,8 @@ public interface AccountDao {
 
 	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException, InvalidParameterException;
 
+	AccountStatus getPreviousStatus(int userIdPk);
+
 	AccountStatus getStatus(int userIdPk);
 
 	String getUserIdByDeviceId(String deviceId) throws NotFoundException;
@@ -80,5 +82,4 @@ public interface AccountDao {
 
 	boolean validateUserIdPasswd(String userId, String password)
 			throws NotFoundException, InvalidPasswordException;
-
 }

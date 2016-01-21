@@ -43,7 +43,7 @@ public class AccountDtoMapper implements RowMapper<AccountDto> {
 		}
 
 		if (rs.getString("SUSPENDED_DATE") != null) {
-			retVal.setActDate(rs.getDate("SUSPENDED_DATE"));
+			retVal.setSusDate(rs.getDate("SUSPENDED_DATE"));
 		}
 
 		return retVal;

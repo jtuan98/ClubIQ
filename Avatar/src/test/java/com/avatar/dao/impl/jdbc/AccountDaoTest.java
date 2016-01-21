@@ -2,6 +2,7 @@ package com.avatar.dao.impl.jdbc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -335,5 +336,73 @@ public class AccountDaoTest {
 	@Test(expected = NotFoundException.class)
 	public void testUndeactivate02NonExistentAccount() throws NotFoundException, InvalidParameterException {
 		accountDaoJdbc.undeactivate("whatever");
+	}
+
+	@Test
+	public void testUndeactivate03ExistingAccountNew() throws NotFoundException, InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345")
+		.withDeviceId("deviceId").withDefaultToken(false)
+		.getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		accountDaoJdbc.undeactivate(account.getUserId());
+		final AccountStatus prevStatus = accountDaoJdbc.getPreviousStatus(accountFromDb.getId());
+		assertNull(prevStatus);
+		final AccountStatus status = accountDaoJdbc.getStatus(accountFromDb.getId());
+		assertNotNull(status);
+		assertEquals(AccountStatus.New, status);
+	}
+
+	@Test
+	public void testUndeactivate04ExistingAccountActive() throws NotFoundException, InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345")
+		.withDeviceId("deviceId").withDefaultToken(false)
+		.getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		accountDaoJdbc.activate(account.getUserId(),
+				account.getToken().getToken(), new Date());
+
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		accountDaoJdbc.undeactivate(account.getUserId());
+		final AccountStatus prevStatus = accountDaoJdbc.getPreviousStatus(accountFromDb.getId());
+		assertNull(prevStatus);
+		final AccountStatus status = accountDaoJdbc.getStatus(accountFromDb.getId());
+		assertNotNull(status);
+		assertEquals(AccountStatus.Activated, status);
+	}
+
+
+	@Test
+	public void testUndeactivate05ExistingAccountDeactive() throws NotFoundException, InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345")
+		.withDeviceId("deviceId").withDefaultToken(false)
+		.getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		accountDaoJdbc.activate(account.getUserId(),
+				account.getToken().getToken(), new Date());
+		accountDaoJdbc.deactivate(account.getUserId(), new Date());
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertNotNull(accountFromDb.getSusDate());
+		AccountStatus prevStatus = accountDaoJdbc.getPreviousStatus(accountFromDb.getId());
+		assertEquals(AccountStatus.Activated, prevStatus);
+		AccountStatus status = accountDaoJdbc.getStatus(accountFromDb.getId());
+		assertNotNull(status);
+		assertEquals(AccountStatus.Cancelled, status);
+
+		accountDaoJdbc.undeactivate(account.getUserId());
+		prevStatus = accountDaoJdbc.getPreviousStatus(accountFromDb.getId());
+		assertEquals(AccountStatus.Activated, prevStatus);
+		status = accountDaoJdbc.getStatus(accountFromDb.getId());
+		assertNotNull(status);
+		assertEquals(AccountStatus.Activated, status);
 	}
 }

@@ -29,9 +29,9 @@ public final class AccountDaoSql {
 			+ AccountStatus.Activated.name() + "', '"
 			+ AccountStatus.New.name() + "')";
 
-	public static String UPD_ACCOUNT_DEACTIVATION = "update USERS set SUSPENDED_DATE=?, STATUS='"
+	public static String UPD_ACCOUNT_DEACTIVATION = "update USERS set PREVIOUS_STATUS = STATUS, SUSPENDED_DATE=?, STATUS='"
 			+ AccountStatus.Cancelled.name()
-			+ "', PREVIOUS_STATUS = STATUS WHERE ID = ? AND STATUS <> '"
+			+ "' WHERE ID = ? AND STATUS <> '"
 			+ AccountStatus.Cancelled.name() + "'";
 
 	public static String UPD_ACCOUNT_UNDEACTIVATION = "update USERS set STATUS=PREVIOUS_STATUS "
@@ -43,6 +43,8 @@ public final class AccountDaoSql {
 			+ "' WHERE USERID = ? AND STATUS in ('"
 			+ AccountStatus.New.name()
 			+ "', '" + AccountStatus.TokenSent.name() + "')";
+
+	public static String SEL_LINKPHONE_BY_USERID = "select linked.USERID from USERS main, USERS linked where main.id = ? and main.LINKED_ACCOUNT_ID = linked.id";
 
 	public static String UPD_ACCOUNT_LINK = "update USERS set LINKED_ACCOUNT_ID=? where ID = ?";
 
@@ -84,6 +86,8 @@ public final class AccountDaoSql {
 	public static final String UPDATE_NOTICE_INFO = "UPDATE USERS set NOTICED_DATE=?, NOTICED_FLAG=? Where id = ?";
 
 	public static final String SEL_USERS_BY_CLUBID = "select * from USERS where HOME_CLUB_ID = ? ";
+
+	public static final String GET_PREV_STATUS_BY_IDPK = "select PREVIOUS_STATUS from USERS where id = ?";
 
 	public static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
 			+ AccountStatus.Activated.name() + "'";

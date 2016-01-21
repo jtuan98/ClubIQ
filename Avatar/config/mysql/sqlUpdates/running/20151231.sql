@@ -17,7 +17,6 @@ alter table  AMENITY_EMPLOYEE add constraint subamenity_userid_fk1 foreign key (
 alter table  AMENITY_EMPLOYEE drop foreign key amenity_employee_subamenity_ibfk_1;
 --ran on aws 1/6/2016
 alter table  AMENITY_EMPLOYEE 
---ran on aws 1/6/2016
 add constraint subamenity_employee_subamenity_ibfk_1 
 foreign key (CLUB_SUBAMENITY_ID) REFERENCES CLUB_SUB_AMENITIES(ID);
 

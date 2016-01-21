@@ -194,6 +194,19 @@ TruncateDao {
 		return fetchRoles(getUserIdPkByUserId(userId));
 	}
 
+	private String getLinkPhoneNumber(final Integer id) {
+		String linkNumber = null;
+
+		try {
+			linkNumber = getJdbcTemplate()
+					.queryForObject(
+							AccountDaoSql.SEL_LINKPHONE_BY_USERID,
+							String.class, id);
+		} catch(final EmptyResultDataAccessException e) {
+		}
+		return linkNumber;
+	}
+
 	@Override
 	public List<AccountDto> getMembers(final int clubIdPk)
 			throws NotFoundException, InvalidParameterException {
@@ -209,6 +222,13 @@ TruncateDao {
 			populateOtherAccountInfo(account);
 		}
 		return accounts;
+	}
+
+	@Override
+	public AccountStatus getPreviousStatus(final int userIdPk) {
+		final String status = getJdbcTemplate().queryForObject(
+				AccountDaoSql.GET_PREV_STATUS_BY_IDPK, String.class, userIdPk);
+		return StringUtils.isNotEmpty(status)? AccountStatus.valueOf(status): null;
 	}
 
 	@Override
@@ -363,6 +383,9 @@ TruncateDao {
 	public void populateAccountInfo(final AccountDto account,
 			final boolean includePicture) throws InvalidParameterException, NotFoundException {
 		verify(account,  "Checking account");
+		// Fetch link p[hone number
+		account.setLinkMobileNumber(getLinkPhoneNumber(account.getId()));
+
 		if (includePicture) {
 			try {
 				final Integer imageIdPk = getJdbcTemplate().queryForObject(
