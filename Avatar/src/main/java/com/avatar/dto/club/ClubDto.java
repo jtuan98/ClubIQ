@@ -27,6 +27,8 @@ public class ClubDto implements Serializable {
 	protected List<SubAmenityDto> subAmenities;
 	protected List<AmenityDto> amenities;
 
+	protected Concierge concierge;
+
 	public ClubDto() {
 	}
 
@@ -56,6 +58,10 @@ public class ClubDto implements Serializable {
 
 	public String getClubType() {
 		return clubType;
+	}
+
+	public Concierge getConcierge() {
+		return concierge;
 	}
 
 	public String getHzRestriction() {
@@ -124,6 +130,10 @@ public class ClubDto implements Serializable {
 
 	public void setClubType(final String clubType) {
 		this.clubType = clubType;
+	}
+
+	public void setConcierge(final Concierge concierge) {
+		this.concierge = concierge;
 	}
 
 	public void setHzRestriction(final String hzRestriction) {

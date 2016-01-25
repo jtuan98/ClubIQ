@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/resources"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring-4.1.4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/j2e"/>
@@ -15,5 +16,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/quartz"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/joda"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mockito"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/aspectj"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mysql"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -28,6 +28,7 @@ import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.dto.serializer.AmenityListingSerializer;
 import com.avatar.dto.serializer.ClubAddressSerializer;
+import com.avatar.dto.serializer.ClubConciergeNotifEmailSerializer;
 import com.avatar.dto.serializer.ClubListingSerializer;
 import com.avatar.dto.serializer.SubAmenityListingSerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
@@ -55,6 +56,7 @@ public class ClubManagerController extends BaseController {
 	protected JsonView jsonAmenitiesListingView = null;
 	protected JsonView jsonClubAddressView = null;
 	private JsonView jsonClubListingView;
+	private JsonView jsonClubNotificationEmailView;
 	private final RenderingImageView imageRenderer = new RenderingImageView();
 
 	@RequestMapping(value = "/ClubPinVerification")
@@ -333,6 +335,26 @@ public class ClubManagerController extends BaseController {
 		return new ModelAndView(jsonClubListingView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = { "/GetClubNotifEmail", "/getClubNotifEmail" })
+	public ModelAndView getClubNotifEmail(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId)
+					throws Exception {
+		init();
+
+		WsResponse<ClubDto> apiResponse = null;
+		try {
+			final ClubDto club = beaconService.getClubDetails(clubId);
+			apiResponse = new WsResponse<ClubDto>(ResponseStatus.success, "",
+					club);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<ClubDto>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonClubNotificationEmailView, toModel(apiResponse));
+	}
+
 	// Phase 2
 	@RequestMapping(value = { "/GetClubPhoto", "/getClubPhoto" })
 	public ModelAndView getClubPhoto(
@@ -467,6 +489,8 @@ public class ClubManagerController extends BaseController {
 		jsonAmenitiesListingView = init(jsonAmenitiesListingView);
 		jsonClubListingView = init(jsonClubListingView);
 		jsonClubAddressView = init(jsonClubAddressView);
+		jsonClubNotificationEmailView = init(jsonClubNotificationEmailView);
+		jsonClubNotificationEmailView.register(ClubDto.class, new ClubConciergeNotifEmailSerializer());
 		jsonClubAddressView.register(ClubDto.class, new ClubAddressSerializer());
 		jsonClubAddressView.register(AmenityDto.class, new AmenityListingSerializer());
 		jsonClubListingView.register(ClubDto.class, new ClubListingSerializer());

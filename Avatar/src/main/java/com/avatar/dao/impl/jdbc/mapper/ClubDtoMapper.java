@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.club.ClubDto;
+import com.avatar.dto.club.Concierge;
 import com.avatar.dto.enums.DbTimeZone;
 
 public class ClubDtoMapper implements RowMapper<ClubDto> {
@@ -32,6 +33,9 @@ public class ClubDtoMapper implements RowMapper<ClubDto> {
 		if (rs.getString("IMAGE_ID") != null) {
 			retVal.setImage(new ImagePic(rs.getInt("IMAGE_ID")));
 		}
+		final Concierge concierge = new Concierge(rs.getString("CONCIERGE_FIRSTNAME"), rs.getString("CONCIERGE_LASTNAME"), rs.getString("CONCIERGE_NOTIF_EMAIL"), rs.getString("CONCIERGE_ADMIN_EMAIL"));
+		retVal.setConcierge(concierge);
+
 		return retVal;
 	}
 

@@ -20,6 +20,9 @@ public class ClubAddressSerializer implements JsonSerializer<ClubDto> {
 			final JsonObject result = new JsonObject();
 			result.add("clubId", new JsonPrimitive(club.getClubId()));
 			result.add("clubName", new JsonPrimitive(club.getClubName()));
+			if (club.getImage() != null) {
+				result.add("image", jsonContext.serialize(club.getImage()));
+			}
 			if (StringUtils.isNotEmpty(club.getAddress())) {
 				result.add("address", new JsonPrimitive(club.getAddress()));
 			}

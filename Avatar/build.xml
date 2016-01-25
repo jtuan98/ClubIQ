@@ -132,6 +132,9 @@
 		<delete file="${build-directory}/${war-file-name}" />
 		<war warfile="${build-directory}/${war-file-name}" webxml="${web-xml-file}">
 			<fileset dir="${source-directory}/main/front-end" />
+			<fileset dir="${source-directory}/resources">
+				<include name=".ebextensions/**"/>
+			</fileset>
 			<lib dir="${commons.lib.dir}" prefix="WEB-INF/lib">
 				<patternset refid="commons.lib.pattern" />
 			</lib>
