@@ -489,7 +489,9 @@ TruncateDao {
 
 	@Override
 	public void updateAccountInfoEmail(final String userId, final String email)
-			throws NotFoundException {
+			throws InvalidParameterException, NotFoundException {
+		verify(userId, "User ID cannot be null");
+		verify(email, "email cannot be null");
 		final int updated = getJdbcTemplate().update(
 				AccountDaoSql.UPD_USER_EMAIL, email, userId);
 		if (updated == 0) {
@@ -499,7 +501,9 @@ TruncateDao {
 
 	@Override
 	public void updateAccountInfoName(final String userId, final String fullName)
-			throws NotFoundException {
+			throws NotFoundException, InvalidParameterException {
+		verify(userId, "User ID cannot be null");
+		verify(fullName, "fullName cannot be null");
 		final int updated = getJdbcTemplate().update(
 				AccountDaoSql.UPD_USER_FULLNAME, fullName, userId);
 		if (updated == 0) {
@@ -509,7 +513,11 @@ TruncateDao {
 
 	@Override
 	public void updateAccountInfoPicture(final String userId,
-			final String pictureBase64) throws NotFoundException {
+			final String pictureBase64) throws NotFoundException, InvalidParameterException {
+		verify(userId, "User ID cannot be null");
+		verify(pictureBase64, "pictureBase64 cannot be null");
+		//Must verify that user id exists.
+		final int userIdPk = getUserIdPkByUserId(userId);
 		final byte[] picture = Base64.decodeBase64(pictureBase64);
 		try {
 			final Integer imageIdPk = getJdbcTemplate().queryForObject(
@@ -534,21 +542,34 @@ TruncateDao {
 
 	@Override
 	public void updateNewToken(final ActivationToken token)
-			throws NotFoundException {
-		getJdbcTemplate().update(AccountDaoSql.UPD_TOKEN, token.getToken(),
+			throws NotFoundException, InvalidParameterException {
+		verify(token, "Token cannot be null");
+		verify(token.getId(), "Token ID cannot be null");
+		verify(token.getToken(), "Token string cannot be null");
+		verify(token.getExpirationDate(), "Token expiration date cannot be null");
+		final int rowUpdated = getJdbcTemplate().update(AccountDaoSql.UPD_TOKEN, token.getToken(),
 				token.getExpirationDate(), token.getId());
+		if (rowUpdated == 0) {
+			throw new NotFoundException("Token id " + token.getId() + " not found.");
+		}
 	}
 
 	@Override
 	public void updateNoticeInfo(final int userIdPk, final Date currentDate,
-			final boolean agreed) throws NotFoundException {
-		getJdbcTemplate().update(AccountDaoSql.UPDATE_NOTICE_INFO, currentDate,
+			final boolean agreed) throws NotFoundException, InvalidParameterException {
+		verify(currentDate, "currentDate cannot be null");
+		final int rowUpdated = getJdbcTemplate().update(AccountDaoSql.UPDATE_NOTICE_INFO, currentDate,
 				agreed ? "Y" : "N", userIdPk);
+		if (rowUpdated == 0) {
+			throw new NotFoundException("id " + userIdPk + " not found.");
+		}
 	}
 
 	@Override
 	public void updateUserDeviceId(final String userId, final String deviceId)
-			throws NotFoundException {
+			throws NotFoundException, InvalidParameterException {
+		verify(userId, "userId cannot be null");
+		verify(deviceId, "deviceId cannot be null");
 		final int userIdPk = getUserIdPkByUserId(userId);
 		final int updated = getJdbcTemplate().update(
 				AccountDaoSql.UPD_USER_DEVICEID, deviceId, userId);
@@ -569,7 +590,9 @@ TruncateDao {
 	@Override
 	public void updateUserTangerineHandSetId(final String userId,
 			final String deviceId, final String tangerineHandSetId)
-					throws NotFoundException {
+					throws NotFoundException, InvalidParameterException {
+		verify(userId, "userId cannot be null");
+		verify(deviceId, "deviceId cannot be null");
 		final int userIdPk = getUserIdPkByUserId(userId);
 		final int updated = getJdbcTemplate().update(
 				AccountDaoSql.UPD_USER_TANGERINE_HANDSET_ID,
@@ -591,7 +614,9 @@ TruncateDao {
 	@Override
 	public boolean validateUserIdPasswd(final String userId,
 			final String password) throws NotFoundException,
-			InvalidPasswordException {
+			InvalidPasswordException, InvalidParameterException {
+		verify(userId, "userId cannot be null");
+		verify(password, "password cannot be null");
 		final Integer userIdPk = getUserIdPkByUserId(userId);
 		int validate = 0;
 		if (StringUtils.isNotEmpty(password)) {

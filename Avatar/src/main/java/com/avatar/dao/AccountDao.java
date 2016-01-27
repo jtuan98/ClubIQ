@@ -17,7 +17,8 @@ public interface AccountDao {
 	void activate(String userId, String activationToken, Date activateDate)
 			throws NotFoundException;
 
-	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime) throws NotFoundException;
+	Number addNote(Integer userPkId, String noteText, DateTime parseDateTime)
+			throws NotFoundException;
 
 	void addSubAmenityToUser(Integer userIdPk, Integer clubSubAmenityIdPk)
 			throws NotFoundException, InvalidParameterException;
@@ -25,9 +26,11 @@ public interface AccountDao {
 	void deactivate(String userId, Date deacticateDate)
 			throws NotFoundException;
 
-	AccountDto fetch(Integer userIdPk) throws NotFoundException, InvalidParameterException;
+	AccountDto fetch(Integer userIdPk) throws NotFoundException,
+	InvalidParameterException;
 
-	AccountDto fetch(String userId) throws NotFoundException, InvalidParameterException;
+	AccountDto fetch(String userId) throws NotFoundException,
+	InvalidParameterException;
 
 	AccountDto fetchByToken(final String token, final String userId,
 			final String deviceId) throws NotFoundException,
@@ -37,7 +40,8 @@ public interface AccountDao {
 
 	List<Privilege> fetchRoles(final String userId) throws NotFoundException;
 
-	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException, InvalidParameterException;
+	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException,
+	InvalidParameterException;
 
 	AccountStatus getPreviousStatus(int userIdPk);
 
@@ -57,29 +61,33 @@ public interface AccountDao {
 			throws NotFoundException, InvalidParameterException;
 
 	public void populateAccountInfo(final AccountDto account,
-			boolean includePicture) throws InvalidParameterException, NotFoundException;
+			boolean includePicture) throws InvalidParameterException,
+			NotFoundException;
 
-	void undeactivate(String userId) throws InvalidParameterException, NotFoundException;
+	void undeactivate(String userId) throws InvalidParameterException,
+	NotFoundException;
 
 	void updateAccountInfoEmail(String userId, String email)
-			throws NotFoundException;
+			throws InvalidParameterException, NotFoundException;
 
 	void updateAccountInfoName(String userId, String fullName)
-			throws NotFoundException;
+			throws InvalidParameterException, NotFoundException;
 
 	void updateAccountInfoPicture(String userId, String pictureBase64)
-			throws NotFoundException;
+			throws InvalidParameterException, NotFoundException;
 
-	void updateNewToken(ActivationToken token) throws NotFoundException;
+	void updateNewToken(ActivationToken token)
+			throws InvalidParameterException, NotFoundException;
 
-	void updateNoticeInfo(int userIdPk, Date currentDate, boolean agreed) throws NotFoundException;
+	void updateNoticeInfo(int userIdPk, Date currentDate, boolean agreed)
+			throws InvalidParameterException, NotFoundException;
 
 	void updateUserDeviceId(String userId, String deviceId)
-			throws NotFoundException;
+			throws InvalidParameterException, NotFoundException;
 
 	void updateUserTangerineHandSetId(String userId, String deviceId,
-			String snsToken) throws NotFoundException;
+			String tangerineHandSetId) throws InvalidParameterException, NotFoundException;
 
 	boolean validateUserIdPasswd(String userId, String password)
-			throws NotFoundException, InvalidPasswordException;
+			throws InvalidParameterException, NotFoundException, InvalidPasswordException;
 }

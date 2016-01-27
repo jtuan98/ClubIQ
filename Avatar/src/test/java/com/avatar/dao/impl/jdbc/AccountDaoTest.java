@@ -30,10 +30,12 @@ import com.avatar.dao.ClubDao;
 import com.avatar.dao.TruncateDao;
 import com.avatar.dto.AccountDtoBuilder;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.ActivationToken;
 import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.exception.InvalidParameterException;
+import com.avatar.exception.InvalidPasswordException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.util.Md5Sum;
 
@@ -329,70 +331,76 @@ public class AccountDaoTest {
 	}
 
 	@Test(expected = InvalidParameterException.class)
-	public void testUndeactivate01NullAccount() throws NotFoundException, InvalidParameterException {
+	public void testUndeactivate01NullAccount() throws NotFoundException,
+	InvalidParameterException {
 		accountDaoJdbc.undeactivate(null);
 	}
 
 	@Test(expected = NotFoundException.class)
-	public void testUndeactivate02NonExistentAccount() throws NotFoundException, InvalidParameterException {
+	public void testUndeactivate02NonExistentAccount()
+			throws NotFoundException, InvalidParameterException {
 		accountDaoJdbc.undeactivate("whatever");
 	}
 
 	@Test
-	public void testUndeactivate03ExistingAccountNew() throws NotFoundException, InvalidParameterException {
+	public void testUndeactivate03ExistingAccountNew()
+			throws NotFoundException, InvalidParameterException {
 		final AccountDto account = new AccountDtoBuilder(false)
 		.withUserId("theUserId").withName("Unit Test")
-		.withMobileNumber("12345")
-		.withDeviceId("deviceId").withDefaultToken(false)
-		.getBuiltInstance();
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withDefaultToken(false).getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
 		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
 				.getUserId());
 		accountDaoJdbc.undeactivate(account.getUserId());
-		final AccountStatus prevStatus = accountDaoJdbc.getPreviousStatus(accountFromDb.getId());
+		final AccountStatus prevStatus = accountDaoJdbc
+				.getPreviousStatus(accountFromDb.getId());
 		assertNull(prevStatus);
-		final AccountStatus status = accountDaoJdbc.getStatus(accountFromDb.getId());
+		final AccountStatus status = accountDaoJdbc.getStatus(accountFromDb
+				.getId());
 		assertNotNull(status);
 		assertEquals(AccountStatus.New, status);
 	}
 
 	@Test
-	public void testUndeactivate04ExistingAccountActive() throws NotFoundException, InvalidParameterException {
+	public void testUndeactivate04ExistingAccountActive()
+			throws NotFoundException, InvalidParameterException {
 		final AccountDto account = new AccountDtoBuilder(false)
 		.withUserId("theUserId").withName("Unit Test")
-		.withMobileNumber("12345")
-		.withDeviceId("deviceId").withDefaultToken(false)
-		.getBuiltInstance();
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withDefaultToken(false).getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
-		accountDaoJdbc.activate(account.getUserId(),
-				account.getToken().getToken(), new Date());
+		accountDaoJdbc.activate(account.getUserId(), account.getToken()
+				.getToken(), new Date());
 
 		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
 				.getUserId());
 		accountDaoJdbc.undeactivate(account.getUserId());
-		final AccountStatus prevStatus = accountDaoJdbc.getPreviousStatus(accountFromDb.getId());
+		final AccountStatus prevStatus = accountDaoJdbc
+				.getPreviousStatus(accountFromDb.getId());
 		assertNull(prevStatus);
-		final AccountStatus status = accountDaoJdbc.getStatus(accountFromDb.getId());
+		final AccountStatus status = accountDaoJdbc.getStatus(accountFromDb
+				.getId());
 		assertNotNull(status);
 		assertEquals(AccountStatus.Activated, status);
 	}
 
-
 	@Test
-	public void testUndeactivate05ExistingAccountDeactive() throws NotFoundException, InvalidParameterException {
+	public void testUndeactivate05ExistingAccountDeactive()
+			throws NotFoundException, InvalidParameterException {
 		final AccountDto account = new AccountDtoBuilder(false)
 		.withUserId("theUserId").withName("Unit Test")
-		.withMobileNumber("12345")
-		.withDeviceId("deviceId").withDefaultToken(false)
-		.getBuiltInstance();
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withDefaultToken(false).getBuiltInstance();
 		accountDaoJdbc.newAccount(account, account.getToken());
-		accountDaoJdbc.activate(account.getUserId(),
-				account.getToken().getToken(), new Date());
+		accountDaoJdbc.activate(account.getUserId(), account.getToken()
+				.getToken(), new Date());
 		accountDaoJdbc.deactivate(account.getUserId(), new Date());
 		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
 				.getUserId());
 		assertNotNull(accountFromDb.getSusDate());
-		AccountStatus prevStatus = accountDaoJdbc.getPreviousStatus(accountFromDb.getId());
+		AccountStatus prevStatus = accountDaoJdbc
+				.getPreviousStatus(accountFromDb.getId());
 		assertEquals(AccountStatus.Activated, prevStatus);
 		AccountStatus status = accountDaoJdbc.getStatus(accountFromDb.getId());
 		assertNotNull(status);
@@ -404,5 +412,350 @@ public class AccountDaoTest {
 		status = accountDaoJdbc.getStatus(accountFromDb.getId());
 		assertNotNull(status);
 		assertEquals(AccountStatus.Activated, status);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateAccountInfoEmail01aNullUserId()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoEmail(null, "email");
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateAccountInfoEmail01bNullEmail()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoEmail("junk", null);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUpdateAccountInfoEmail02NonExistentUserId()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoEmail("junk", "email");
+	}
+
+	@Test
+	public void testUpdateAccountInfoEmail03ExistentUserId()
+			throws NotFoundException, InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withDefaultToken(false).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		accountDaoJdbc.updateAccountInfoEmail(account.getUserId(),
+				"email@whatever.com");
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertNotNull(accountFromDb.getEmail());
+		assertEquals("email@whatever.com", accountFromDb.getEmail());
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateAccountInfoName01aNullUserId()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoName(null, "fullName");
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateAccountInfoName01bNullFullName()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoName("junk", null);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUpdateAccountInfoName02NonExistentUserId()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoName("junk", "email");
+	}
+
+	@Test
+	public void testUpdateAccountInfoName03ExistentUserId()
+			throws NotFoundException, InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withDefaultToken(false).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		accountDaoJdbc.updateAccountInfoName(account.getUserId(),
+				"whatever name");
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertNotNull(accountFromDb.getName());
+		assertEquals("whatever name", accountFromDb.getName());
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateAccountInfoPicture01aNullUserId()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoPicture(null, "image base 64");
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateAccountInfoPicture01bNullImage()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoPicture("junk", null);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUpdateAccountInfoPicture02NonExistentUserId()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateAccountInfoPicture("junk", "image base 64");
+	}
+
+	@Test
+	public void testUpdateAccountInfoPicture03ExistentUserIdNonExistImage()
+			throws NotFoundException, InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withDefaultToken(false).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		accountDaoJdbc.updateAccountInfoPicture(account.getUserId(),
+				"whateverimagebase64");
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertNotNull(accountFromDb.getPicture());
+		assertEquals("whateverimagebase64", accountFromDb.getPicture()
+				.getPictureAsBase64String());
+	}
+
+	@Test
+	public void testUpdateAccountInfoPicture04ExistentUserIdExistedImage()
+			throws NotFoundException, InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(false).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		accountDaoJdbc.updateAccountInfoPicture(account.getUserId(),
+				"whateverimagebase64");
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertNotNull(accountFromDb.getPicture());
+		assertEquals("whateverimagebase64", accountFromDb.getPicture()
+				.getPictureAsBase64String());
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateNewToken01aNullToken()
+			throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateNewToken(null);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateNewToken01bNullTokenId()
+			throws InvalidParameterException, NotFoundException {
+		final ActivationToken token = new ActivationToken();
+		accountDaoJdbc.updateNewToken(token);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateNewToken01cNullTokenString()
+			throws InvalidParameterException, NotFoundException {
+		final ActivationToken token = new ActivationToken();
+		token.setId(1);
+		accountDaoJdbc.updateNewToken(token);
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateNewToken01dNullTokenExpirationDate()
+			throws InvalidParameterException, NotFoundException {
+		final ActivationToken token = new ActivationToken();
+		token.setId(1);
+		token.setToken("token");
+		accountDaoJdbc.updateNewToken(token);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUpdateNewToken01eNonExistentToken()
+			throws InvalidParameterException, NotFoundException {
+		final ActivationToken token = new ActivationToken();
+		token.setId(1);
+		token.setToken("token");
+		token.setExpirationDate(new Date());
+		accountDaoJdbc.updateNewToken(token);
+	}
+
+	@Test
+	public void testUpdateNewToken02ExistentToken() throws NotFoundException,
+	InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(true).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		final AccountDto accountFromDbBeforeUpdate = accountDaoJdbc
+				.fetch(account.getUserId());
+		final ActivationToken token = accountFromDbBeforeUpdate.getToken();
+		assertEquals("ever", token.getToken());
+		token.setToken("1234");
+		accountDaoJdbc.updateNewToken(token);
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertNotNull(accountFromDb.getToken());
+		assertEquals("1234", accountFromDb.getToken().getToken());
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateNoticeInfo01NullDate() throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateNoticeInfo(-1, null, true);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUpdateNoticeInfo02NonExistentUserIdPk() throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateNoticeInfo(-1, new Date(), true);
+	}
+
+	@Test
+	public void testUpdateNoticeInfo03ExistentUserId() throws NotFoundException,
+	InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(true).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		final AccountDto accountFromDbBeforeUpdate = accountDaoJdbc
+				.fetch(account.getUserId());
+		accountDaoJdbc.updateNoticeInfo(accountFromDbBeforeUpdate.getId(), new Date(), true);
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertEquals(true, accountFromDb.isNoticedFlag());
+		accountDaoJdbc.updateNoticeInfo(accountFromDbBeforeUpdate.getId(), new Date(), false);
+		final AccountDto accountFromDb2 = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertEquals(false, accountFromDb2.isNoticedFlag());
+	}
+
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateUserDeviceId01aNullUserId() throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateUserDeviceId(null, "deviceId");
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateUserDeviceId01bNullDeviceId() throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateUserDeviceId("junk", null);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUpdateUserDeviceId02NonExistentUserId() throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateUserDeviceId("junk", "deviceId");
+	}
+
+	@Test
+	public void testUpdateUserDeviceId03ExistentUserId() throws NotFoundException,
+	InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(true).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		final AccountDto accountFromDbBeforeUpdate = accountDaoJdbc
+				.fetch(account.getUserId());
+		accountDaoJdbc.updateUserDeviceId(accountFromDbBeforeUpdate.getUserId(), "deviceId1234");
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertEquals("deviceId1234", accountFromDb.getDeviceId());
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testUpdateUserTangerineHandSetId01aNullUserId() throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateUserTangerineHandSetId(null, "deviceId", "tangerineHandSetId");
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testUpdateUserTangerineHandSetId02NonExistentUserId() throws InvalidParameterException, NotFoundException {
+		accountDaoJdbc.updateUserTangerineHandSetId("junk", "deviceId", "tangerineHandSetId");
+	}
+
+	@Test
+	public void testUpdateUserTangerineHandSetId03ExistentUserId() throws NotFoundException,
+	InvalidParameterException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(true).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		final AccountDto accountFromDbBeforeUpdate = accountDaoJdbc
+				.fetch(account.getUserId());
+		accountDaoJdbc.updateUserTangerineHandSetId(accountFromDbBeforeUpdate.getUserId(), "deviceId1234", "tangerineHandSetId");
+		final AccountDto accountFromDb = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertEquals("deviceId1234", accountFromDb.getDeviceId());
+		assertEquals("tangerineHandSetId", accountFromDb.getTangerineHandsetId());
+		accountDaoJdbc.updateUserTangerineHandSetId(accountFromDbBeforeUpdate.getUserId(), "deviceId1234", "tangerineHandSetId2");
+		final AccountDto accountFromDb2 = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertEquals("deviceId1234", accountFromDb2.getDeviceId());
+		assertEquals("tangerineHandSetId2", accountFromDb2.getTangerineHandsetId());
+		accountDaoJdbc.updateUserTangerineHandSetId(accountFromDbBeforeUpdate.getUserId(), "deviceId1235", null);
+		final AccountDto accountFromDb3 = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertEquals("deviceId1235", accountFromDb3.getDeviceId());
+		assertNull(accountFromDb3.getTangerineHandsetId());
+	}
+
+
+	@Test(expected = InvalidParameterException.class)
+	public void testValidateUserIdPasswd01aNullUserId() throws InvalidParameterException, NotFoundException, InvalidPasswordException {
+		accountDaoJdbc.validateUserIdPasswd(null, "passwd");
+	}
+
+	@Test(expected = InvalidParameterException.class)
+	public void testValidateUserIdPasswd01bNullPassword() throws InvalidParameterException, NotFoundException, InvalidPasswordException {
+		accountDaoJdbc.validateUserIdPasswd("userId", null);
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void testValidateUserIdPasswd02NonExistentUserId() throws InvalidParameterException, NotFoundException, InvalidPasswordException {
+		accountDaoJdbc.validateUserIdPasswd("junk", "password");
+	}
+
+	@Test(expected=InvalidPasswordException.class)
+	public void testValidateUserIdPasswd03ExistentUserIdInvalidPassword() throws NotFoundException,
+	InvalidParameterException, InvalidPasswordException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(true).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		final AccountDto accountFromDbBeforeUpdate = accountDaoJdbc
+				.fetch(account.getUserId());
+		accountDaoJdbc.validateUserIdPasswd(accountFromDbBeforeUpdate.getUserId(), "junk");
+	}
+
+	@Test(expected=InvalidPasswordException.class)
+	public void testValidateUserIdPasswd04ExistentUserIdValidPasswordButAccountStatusNotActive() throws NotFoundException,
+	InvalidParameterException, InvalidPasswordException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withPassword("pa22w0rd")
+		.withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(true).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		final AccountDto accountFromDbBeforeUpdate = accountDaoJdbc
+				.fetch(account.getUserId());
+		accountDaoJdbc.validateUserIdPasswd(accountFromDbBeforeUpdate.getUserId(), "pa22w0rd");
+	}
+
+	@Test
+	public void testValidateUserIdPasswd05ExistentUserIdValidPasswordAccountStatusActive() throws NotFoundException,
+	InvalidParameterException, InvalidPasswordException {
+		final AccountDto account = new AccountDtoBuilder(false)
+		.withUserId("theUserId").withPassword("pa22w0rd")
+		.withName("Unit Test")
+		.withMobileNumber("12345").withDeviceId("deviceId")
+		.withPicture(1, "12345", "picture".getBytes())
+		.withDefaultToken(true).getBuiltInstance();
+		accountDaoJdbc.newAccount(account, account.getToken());
+		accountDaoJdbc.activate(account.getUserId(), account.getToken().getToken(), new Date());
+		final AccountDto accountFromDbBeforeUpdate = accountDaoJdbc
+				.fetch(account.getUserId());
+		accountDaoJdbc.validateUserIdPasswd(accountFromDbBeforeUpdate.getUserId(), "pa22w0rd");
 	}
 }
