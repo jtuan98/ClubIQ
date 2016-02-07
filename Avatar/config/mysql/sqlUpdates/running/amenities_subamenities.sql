@@ -72,3 +72,15 @@ alter table PROMOTION_HISTORY change CLUB_AMENITY_ID CLUB_SUBAMENITY_ID int(10);
 -- Ran on aws 12/13/2015.
 alter table PROMOTION_HISTORY add constraint promo_hist_subamenity_ibfk_1 foreign key (CLUB_SUBAMENITY_ID)
 REFERENCES CLUB_AMENITIES(ID);
+
+
+--2016-01-27 Applied to all 3 env
+alter table BEACONS DROP FOREIGN KEY beacons_ibfk_2;
+alter table BEACONS add constraint beacons_ibfk_2 foreign key (SUBAMENITY_ID)
+REFERENCES CLUB_SUB_AMENITIES(ID);
+
+--2016-01-27 Applied to all 3 env
+alter table PROMOTION_HISTORY DROP FOREIGN KEY promotion_history_ibfk_3;
+alter table PROMOTION_HISTORY DROP FOREIGN KEY promo_hist_subamenity_ibfk_1;  
+alter table PROMOTION_HISTORY add constraint promo_hist_subamenity_ibfk_1 foreign key (CLUB_SUBAMENITY_ID)
+REFERENCES CLUB_SUB_AMENITIES(ID);
