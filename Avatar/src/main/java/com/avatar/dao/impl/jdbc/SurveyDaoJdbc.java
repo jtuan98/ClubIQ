@@ -10,8 +10,6 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -41,9 +39,6 @@ public class SurveyDaoJdbc extends BaseJdbcDao implements SurveyDao {
 	private static String SEL_AMENITY_ID_PK = "select ID from CLUB_AMENITIES where AMENITYID=?";
 
 	static private final String DEL_ANSWERS = "DELETE FROM SURVEY_ANSWERS where MEMBER_ID = ? and CREATE_DATE >= ? and CREATE_DATE <= ?";
-
-	private final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
-			.forPattern("yyyy-MM-dd HH:mm:ss");
 
 	private final SurveyMapper surveyMapper = new SurveyMapper();
 

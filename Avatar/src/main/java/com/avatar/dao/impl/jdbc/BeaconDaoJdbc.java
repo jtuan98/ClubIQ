@@ -66,7 +66,7 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	private static final String GET_BEACON_BY_PKID = "SELECT * FROM BEACONS where ID = ? ";
 
-	private static final String DEL_BEACON_BY_MEMBERID = "delete from BEACON_USERS where USER_ID=? and CREATE_DATE >=? and CREATE_DATE < ? ";
+	private static final String DEL_BEACON_BY_MEMBERID = "delete from BEACON_USERS where USER_ID=? and CREATE_DATE >=? and CREATE_DATE <= ? ";
 
 	@Resource(name = "accountDaoJdbc")
 	AccountDao accountDao;
@@ -80,7 +80,10 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	@Override
 	public void addUserIdToBeaconMapping(final String beaconId,
-			final String userId) throws NotFoundException {
+			final String userId) throws NotFoundException, InvalidParameterException {
+		verify(beaconId, "beaconId cannot be null");
+		verify(userId, "userId cannot be null");
+		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 		// Check if beacon id exists
 		try {
 			final Integer beaconIdPk = getJdbcTemplate().queryForObject(
@@ -88,7 +91,6 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 			final int counter = getJdbcTemplate().queryForObject(
 					GET_COUNT_BEACON_ID_USERID, Integer.class, beaconIdPk,
 					userId);
-			final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 			if (counter == 0) {
 				// Insert
 				final int id = sequencer.nextVal("ID_SEQ");
@@ -103,9 +105,9 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	@Override
 	public void delete(final BeaconDto beacon) throws NotFoundException,
-	PermissionDeniedException {
-		Assert.notNull(beacon, "Checking beacon");
-		Assert.notNull(beacon.getId(), "Checking beacon id");
+	PermissionDeniedException, InvalidParameterException {
+		verify(beacon, "Checking beacon");
+		verify(beacon.getId(), "Checking beacon id");
 		try {
 			getJdbcTemplate().update(DEL_BEACON, beacon.getId());
 		} catch (final DataAccessException e) {
@@ -115,10 +117,12 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 
 	@Override
 	public void deleteBeaconInfoByUserId(final Integer userIdPk,
-			final Date fromDate, final Date toDate) {
-		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk, fromDate,
-				toDate);
-
+			final Date fromDate, final Date toDate) throws InvalidParameterException {
+		verify(userIdPk, "userIdPk cannot be null");
+		verify(fromDate, "fromDate cannot be null");
+		verify(toDate, "toDate cannot be null");
+		getJdbcTemplate().update(DEL_BEACON_BY_MEMBERID, userIdPk, 	yyyyMMdd_hh24missDtf.print(fromDate.getTime()),
+				yyyyMMdd_hh24missDtf.print(toDate.getTime()));
 	}
 
 	@Override
@@ -136,26 +140,30 @@ public class BeaconDaoJdbc extends BaseJdbcDao implements BeaconDao {
 	}
 
 	@Override
-	public BeaconDto getBeacon(final Integer beaconIdPk) {
-		final BeaconDto beacon = getJdbcTemplate().queryForObject(
-				GET_BEACON_BY_PKID, beaconDtoMapper, beaconIdPk);
+	public BeaconDto getBeacon(final Integer beaconIdPk) throws NotFoundException {
 		try {
-			beacon.setClub(clubDao.get(beacon.getClub().getId(), false));
-		} catch (final NotFoundException e) {
-		}
-		try {
-			beacon.setSubAmenity(clubDao.getSubAmenity(beacon.getSubAmenity().getId()));
-		} catch (final NotFoundException e) {
-		}
-		if ((beacon.getInstallerStaff() != null)
-				&& (beacon.getInstallerStaff().getId() != null)) {
+			final BeaconDto beacon = getJdbcTemplate().queryForObject(
+					GET_BEACON_BY_PKID, beaconDtoMapper, beaconIdPk);
 			try {
-				beacon.setInstallerStaff(accountDao.fetch(beacon
-						.getInstallerStaff().getId()));
-			} catch (final NotFoundException | InvalidParameterException e) {
+				beacon.setClub(clubDao.get(beacon.getClub().getId(), false));
+			} catch (final NotFoundException e) {
 			}
+			try {
+				beacon.setSubAmenity(clubDao.getSubAmenity(beacon.getSubAmenity().getId()));
+			} catch (final NotFoundException e) {
+			}
+			if ((beacon.getInstallerStaff() != null)
+					&& (beacon.getInstallerStaff().getId() != null)) {
+				try {
+					beacon.setInstallerStaff(accountDao.fetch(beacon
+							.getInstallerStaff().getId()));
+				} catch (final NotFoundException | InvalidParameterException e) {
+				}
+			}
+			return beacon;
+		} catch(final EmptyResultDataAccessException e) {
+			throw new NotFoundException ();
 		}
-		return beacon;
 	}
 
 	@Override

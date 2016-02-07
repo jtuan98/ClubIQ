@@ -12,7 +12,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -633,22 +632,5 @@ TruncateDao {
 					"Incorrect Password or Account Status Not Activated");
 		}
 		return true;
-	}
-
-	private void verify(final Object account, final String message) throws InvalidParameterException {
-		try {
-			Validate.notNull(account);
-		} catch(final NullPointerException e) {
-			throw new InvalidParameterException(message);
-		}
-	}
-
-	private void verify(final String field, final String message)
-			throws InvalidParameterException {
-		try {
-			Validate.notEmpty(field, message);
-		} catch (NullPointerException | IllegalArgumentException e) {
-			throw new InvalidParameterException(message);
-		}
 	}
 }

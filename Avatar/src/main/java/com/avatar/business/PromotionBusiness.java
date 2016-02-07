@@ -4,12 +4,13 @@ import java.util.Date;
 import java.util.List;
 
 import com.avatar.dto.promotion.Promotion;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 
 public interface PromotionBusiness {
 	void cleanupPromoBeaconInfo(String mobileNumber, Date fromDate, Date toDate)
-			throws NotFoundException;
+			throws NotFoundException, InvalidParameterException;
 
 	void delete(Integer promoIdPk) throws NotFoundException,
 	PermissionDeniedException;

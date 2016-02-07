@@ -19,7 +19,7 @@ public interface BeaconBusiness {
 	void addUserIdToBeacon(String beaconId, String userId)
 			throws NotFoundException, InvalidParameterException;
 
-	void deleteBeacon(BeaconDto beacon) throws NotFoundException, PermissionDeniedException;
+	void deleteBeacon(BeaconDto beacon) throws NotFoundException, PermissionDeniedException, InvalidParameterException;
 
 	List<AmenityDto> getAmenities(String clubId) throws NotFoundException;
 

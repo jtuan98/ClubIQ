@@ -15,12 +15,15 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.club.CheckInfo;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.dto.serializer.AccountDtoWithHzRestrictionInfoSerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
+import com.avatar.mvc.view.JsonView;
 
 @Controller
 @RequestMapping(value = { "/AcctMgr", "/AccountMgr" })
@@ -31,6 +34,8 @@ public class AccountManagerController extends BaseController {
 	private static final String YYYYMMDDHH24MISS = "yyyyMMddHHmmss";
 
 	private final DateFormat df = new SimpleDateFormat(YYYYMMDDHH24MISS);
+
+	protected JsonView jsonAccoutWithHzRestrictionView = null;
 
 	@RequestMapping(value = { "/AddClubSubAmenityToAccount" })
 	public ModelAndView addClubAmenityToAccount(
@@ -103,7 +108,7 @@ public class AccountManagerController extends BaseController {
 			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
+		return new ModelAndView(jsonAccoutWithHzRestrictionView, toModel(apiResponse));
 	}
 
 	@RequestMapping(value = { "/Mobile/getLinkPhone", "/Mobile/GetLinkPhone" })
@@ -135,6 +140,13 @@ public class AccountManagerController extends BaseController {
 					e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@Override
+	protected void init() {
+		super.init();
+		jsonAccoutWithHzRestrictionView = init(jsonAccoutWithHzRestrictionView);
+		jsonAccoutWithHzRestrictionView.register(MemberAccountDto.class, new AccountDtoWithHzRestrictionInfoSerializer());
 	}
 
 	// @RequestMapping(value = "/GetMemberAcct")

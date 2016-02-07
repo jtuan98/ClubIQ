@@ -108,7 +108,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 
 	@Override
 	public void deleteBeacon(final BeaconDto beacon) throws NotFoundException,
-	PermissionDeniedException {
+	PermissionDeniedException, InvalidParameterException {
 		Assert.notNull(beacon, "Checking beacon");
 		beaconDao.delete(beacon);
 	}

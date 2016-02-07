@@ -17,6 +17,7 @@ import com.avatar.dao.PromotionDao;
 import com.avatar.dto.club.ClubDto;
 import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.promotion.Promotion;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 
@@ -36,7 +37,7 @@ public class PromotionService extends BaseService implements PromotionBusiness {
 
 	@Override
 	public void cleanupPromoBeaconInfo(final String mobileNumber,
-			final Date fromDate, final Date toDate) throws NotFoundException {
+			final Date fromDate, final Date toDate) throws NotFoundException, InvalidParameterException {
 		final Integer userIdPk = accountDao.getUserIdPkByUserId(mobileNumber);
 
 		promotionDao.delete(userIdPk, fromDate, toDate);

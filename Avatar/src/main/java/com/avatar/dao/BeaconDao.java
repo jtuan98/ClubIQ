@@ -12,15 +12,15 @@ import com.avatar.exception.PermissionDeniedException;
 public interface BeaconDao {
 
 	void addUserIdToBeaconMapping(String beaconId, String userId)
-			throws NotFoundException;
+			throws InvalidParameterException, NotFoundException;
 
-	void delete(BeaconDto beacon) throws NotFoundException, PermissionDeniedException;
+	void delete(BeaconDto beacon) throws InvalidParameterException, NotFoundException, PermissionDeniedException;
 
-	void deleteBeaconInfoByUserId(Integer userIdPk, Date fromDate, Date toDate);
+	void deleteBeaconInfoByUserId(Integer userIdPk, Date fromDate, Date toDate) throws InvalidParameterException;
 
 	Integer getAmenityIdPk(Integer beaconIdPk) throws NotFoundException;
 
-	BeaconDto getBeacon(Integer beaconIdPk);
+	BeaconDto getBeacon(Integer beaconIdPk) throws NotFoundException;
 
 	Integer getBeaconIdPk(String beaconId) throws NotFoundException;
 

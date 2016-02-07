@@ -9,6 +9,9 @@ import javax.sql.DataSource;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -23,6 +26,7 @@ import com.avatar.dao.impl.jdbc.mapper.ImageMapper;
 import com.avatar.dao.impl.jdbc.sql.BaseDaoSql;
 import com.avatar.dto.ImagePic;
 import com.avatar.dto.enums.DbTimeZone;
+import com.avatar.exception.InvalidParameterException;
 
 public abstract class BaseJdbcDao implements DbDateDao {
 
@@ -39,6 +43,9 @@ public abstract class BaseJdbcDao implements DbDateDao {
 
 	@Resource(name = "timezone")
 	private String timezone;
+
+	protected final DateTimeFormatter yyyyMMdd_hh24missDtf = DateTimeFormat
+			.forPattern("yyyy-MM-dd HH:mm:ss");
 
 	protected ImagePic getImage(final Integer imageIdPk) {
 		ImagePic image = null;
@@ -171,6 +178,24 @@ public abstract class BaseJdbcDao implements DbDateDao {
 					new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB });
 		}
 		return retVal;
+	}
+
+
+	protected void verify(final Object object, final String message) throws InvalidParameterException {
+		try {
+			Validate.notNull(object);
+		} catch(final NullPointerException e) {
+			throw new InvalidParameterException(message);
+		}
+	}
+
+	protected void verify(final String field, final String message)
+			throws InvalidParameterException {
+		try {
+			Validate.notEmpty(field, message);
+		} catch (NullPointerException | IllegalArgumentException e) {
+			throw new InvalidParameterException(message);
+		}
 	}
 
 }
