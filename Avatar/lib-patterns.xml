@@ -83,7 +83,7 @@
 		<include name="commons-collections4*.jar" />
 		<include name="commons-codec-*.jar" />
 		<include name="commons-lang3-*.jar" />
-		<include name="commons-pool2-*.jar" />
+		<include name="commons-pool-*.jar" />
 		<include name="commons-dbcp*.jar" />
 	</patternset>
 

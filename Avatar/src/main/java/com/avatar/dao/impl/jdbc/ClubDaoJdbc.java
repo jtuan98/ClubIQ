@@ -188,9 +188,15 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	@Override
 	public List<AmenityDto> getAmenities(final Integer clubIdPk)
 			throws NotFoundException {
+		return getAmenities(clubIdPk, true);
+	}
+
+	@Override
+	public List<AmenityDto> getAmenities(final Integer clubIdPk, final boolean includeImages)
+			throws NotFoundException {
 		final List<AmenityDto> amenities = getJdbcTemplate().query(
 				SEL_AMENITIES_BY_CLUBID, amenityMapper, clubIdPk);
-		if (CollectionUtils.isNotEmpty(amenities)) {
+		if (includeImages && CollectionUtils.isNotEmpty(amenities)) {
 			for (final AmenityDto amenity : amenities) {
 				final Integer imageIdPk = getJdbcTemplate().queryForObject(
 						GET_AMENITY_IMAGE_ID, Integer.class, amenity.getId());
@@ -294,7 +300,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 			clubs = getJdbcTemplate().query(SEL_SUPER_USER_CLUBS_BY_USER_IDPK,
 					clubDtoMapper, userIdPk);
 		}
-		populateClubDetails(clubs);
+		//populateClubDetails(clubs);
 		return clubs;
 	}
 

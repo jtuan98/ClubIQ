@@ -85,7 +85,7 @@ public final class AccountDaoSql {
 
 	public static final String UPDATE_NOTICE_INFO = "UPDATE USERS set NOTICED_DATE=?, NOTICED_FLAG=? Where id = ?";
 
-	public static final String SEL_USERS_BY_CLUBID = "select * from USERS where HOME_CLUB_ID = ? ";
+	public static final String SEL_USERS_BY_CLUBID = "select * from USERS where HOME_CLUB_ID = ? and MOBILE_IND = 'Y' ";
 
 	public static final String GET_PREV_STATUS_BY_IDPK = "select PREVIOUS_STATUS from USERS where id = ?";
 

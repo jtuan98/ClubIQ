@@ -382,7 +382,7 @@ TruncateDao {
 	public void populateAccountInfo(final AccountDto account,
 			final boolean includePicture) throws InvalidParameterException, NotFoundException {
 		verify(account,  "Checking account");
-		// Fetch link p[hone number
+		// Fetch link phone number
 		account.setLinkMobileNumber(getLinkPhoneNumber(account.getId()));
 
 		if (includePicture) {
@@ -615,7 +615,6 @@ TruncateDao {
 			final String password) throws NotFoundException,
 			InvalidPasswordException, InvalidParameterException {
 		verify(userId, "userId cannot be null");
-		verify(password, "password cannot be null");
 		final Integer userIdPk = getUserIdPkByUserId(userId);
 		int validate = 0;
 		if (StringUtils.isNotEmpty(password)) {

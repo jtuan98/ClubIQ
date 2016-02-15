@@ -221,7 +221,7 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 		if (CollectionUtils.isNotEmpty(retVal)) {
 			for (final ClubDto club : retVal) {
 				final List<AmenityDto> amenities = clubDao.getAmenities(club
-						.getId());
+						.getId(), false);
 				club.setAmenities(amenities);
 			}
 		}

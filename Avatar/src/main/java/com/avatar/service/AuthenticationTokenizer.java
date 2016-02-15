@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.avatar.business.AuthenticationTokenizerBusiness;
+import com.avatar.business.CacheBusiness;
 import com.avatar.dao.AccountDao;
 import com.avatar.dto.AuthenticationTokenPrincipal;
 import com.avatar.dto.account.AccountDto;
@@ -42,15 +43,8 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 				}
 			});
 
-	private final LoadingCache<String, AccountDto> accountCache = CacheBuilder
-			.newBuilder().maximumSize(1000)
-			.expireAfterWrite(KEY_VALID_FOR_IN_MINUTES, TimeUnit.MINUTES)
-			.build(new CacheLoader<String, AccountDto>() {
-				@Override
-				public AccountDto load(final String uuidToken) {
-					return null;
-				}
-			});
+	@Resource(name="tokenCache")
+	private CacheBusiness<String, AccountDto> accountCache;
 
 	@Override
 	public AccountDto getAccount(final String token) throws NotFoundException,
@@ -58,13 +52,7 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 		if (token == null) {
 			throw new InvalidParameterException("Token is null");
 		}
-		AccountDto retVal = null;
-		try {
-			retVal = accountCache.get(token);
-		} catch (InvalidCacheLoadException | ExecutionException e) {
-			throw new AuthenticationTokenExpiredException(
-					"Token not found or expired");
-		}
+		final AccountDto retVal = accountCache.get(token);
 		return retVal;
 	}
 
@@ -80,8 +68,11 @@ public class AuthenticationTokenizer implements AuthenticationTokenizerBusiness 
 					.get(token);
 			retVal = principal.getRoles();
 		} catch (InvalidCacheLoadException | ExecutionException e) {
-			throw new AuthenticationTokenExpiredException(
-					"Token not found or expired");
+			final AccountDto account = getAccount(token);
+			final AuthenticationTokenPrincipal principal = new AuthenticationTokenPrincipal(new HashSet<Privilege>(
+					accountDao.fetchRoles(account.getUserId())));
+			tokenCache.put(token, principal);
+			retVal = principal.getRoles();
 		}
 		return retVal;
 	}

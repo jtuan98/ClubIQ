@@ -19,6 +19,7 @@ public interface ClubDao {
 	ClubDto get(String clubId) throws NotFoundException;
 
 	List<AmenityDto> getAmenities(Integer clubIdPk) throws NotFoundException;
+	List<AmenityDto> getAmenities(Integer clubIdPk, boolean includeImages) throws NotFoundException;
 
 	AmenityDto getAmenity(Integer clubIdPk, Integer amenityIdPk)throws NotFoundException;
 

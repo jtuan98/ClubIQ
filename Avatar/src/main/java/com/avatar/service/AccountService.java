@@ -1,7 +1,6 @@
 package com.avatar.service;
 
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -9,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
@@ -30,7 +28,6 @@ import com.avatar.dto.club.CheckInfo;
 import com.avatar.dto.club.SubAmenityDto;
 import com.avatar.dto.enums.AccountStatus;
 import com.avatar.dto.enums.DbTimeZone;
-import com.avatar.dto.enums.Privilege;
 import com.avatar.exception.AccountCreationException;
 import com.avatar.exception.AccountExistedException;
 import com.avatar.exception.AccountSuspendedException;
@@ -78,8 +75,6 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	@Resource(name = "reservationDaoJdbc")
 	private ReservationDao reservationDao;
-
-	private final boolean mockingCheckInfo = false;
 
 	@Override
 	@Transactional(rollbackFor = Throwable.class, readOnly = false)
@@ -333,36 +328,8 @@ public class AccountService extends BaseService implements AccountBusiness {
 	public List<AccountDto> getMembers(final String clubId)
 			throws NotFoundException, InvalidParameterException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
-		List<AccountDto> retVal = accountDao.getMembers(clubIdPk);
-
-		// Phase 2 mocking
-		if (CollectionUtils.isEmpty(retVal)) {
-			retVal = new LinkedList<AccountDto>();
-			for (int i = 0; i < 5; i++) {
-				final AccountDto mockAccount = new MemberAccountDto();
-				mockAccount.add(Privilege.user);
-				mockAccount.setAddress("123" + i + " whatever rd");
-				mockAccount.setDeviceId("whatever deviceid");
-				mockAccount.setEmail("123" + i + "@whatever.com");
-				mockAccount.setId(i);
-				mockAccount.setMobileNumber(getRandomPhoneNumber());
-				mockAccount.setLinkMobileNumber(getRandomPhoneNumber());
-				mockAccount.setName("whatever name " + i);
-				mockAccount.setStatus(AccountStatus.Activated);
-				mockAccount.setUserId(mockAccount.getMobileNumber());
-				retVal.add(mockAccount);
-			}
-		}
+		final List<AccountDto> retVal = accountDao.getMembers(clubIdPk);
 		return retVal;
-	}
-
-	private String getRandomPhoneNumber() {
-		int pre = (int) (Math.floor(Math.random() * 1000) % 1000);
-		if (pre < 200) {
-			pre += 200;
-		}
-		final int post = (int) (Math.floor(Math.random() * 10000) % 10000);
-		return String.format("%03d-%04d", pre, post);
 	}
 
 	@Override

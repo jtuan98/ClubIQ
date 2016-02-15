@@ -8,14 +8,16 @@
 		<constructor-arg value="US/Pacific" />
 	</bean>
 	
-	<bean id="avatarDataSource" class="org.apache.commons.dbcp2.BasicDataSource"
+	<bean id="avatarDataSource" class="org.apache.commons.dbcp.BasicDataSource"
 		destroy-method="close">
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
 		<property name="url" value="${db_url}" />
 		<property name="username" value="avatar" />
 		<property name="password" value="pa22w0rd" />
+        <property name="initialSize" value="20" />
+	    <property name="maxActive" value="30" />
 	</bean>
-
+	 
 	<bean id="transactionManager"
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="avatarDataSource" />

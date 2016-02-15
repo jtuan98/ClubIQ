@@ -50,7 +50,7 @@
 			<url-pattern>/1/AcctMgr/GetMemberAcct</url-pattern>
 			<url-pattern>/1/AcctMgr/GetAccountInfo</url-pattern>
 			<url-pattern>/1/AcctMgr/AddClubSubAmenityToAccount</url-pattern>
-			<url-pattern>/1/AcctMgr/get*</url-pattern>
+			<url-pattern>/1/AcctMgr/*</url-pattern>
 			<url-pattern>/1/BeaconMgr/*</url-pattern>
 			<url-pattern>/1/CalendarMgr/*</url-pattern>
 			<url-pattern>/1/AvailabilityMgr/*</url-pattern>
