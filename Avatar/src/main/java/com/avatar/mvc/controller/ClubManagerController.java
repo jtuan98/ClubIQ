@@ -36,7 +36,6 @@ import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
-import com.avatar.mvc.view.RenderingImageView;
 import com.avatar.util.Md5Sum;
 
 @Controller
@@ -57,7 +56,6 @@ public class ClubManagerController extends BaseController {
 	protected JsonView jsonClubAddressView = null;
 	private JsonView jsonClubListingView;
 	private JsonView jsonClubNotificationEmailView;
-	private final RenderingImageView imageRenderer = new RenderingImageView();
 
 	@RequestMapping(value = "/ClubPinVerification")
 	public ModelAndView clubPinVerify(

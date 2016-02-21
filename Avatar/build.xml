@@ -168,6 +168,10 @@
 			<lib dir="${log4j.lib.dir}" prefix="WEB-INF/lib">
 				<patternset refid="log4j.lib.pattern" />
 			</lib>
+			<lib dir="${quartz.lib.dir}" prefix="WEB-INF/lib">
+				<patternset refid="quartz.lib.pattern" />
+			</lib>
+			
 			<classes dir="${build-classes-directory}" />
 			<fileset dir="${build-directory}">
 				<!-- Need to exclude it since webxml is an attribute of the war tag above -->

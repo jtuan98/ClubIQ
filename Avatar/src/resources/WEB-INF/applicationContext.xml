@@ -28,4 +28,6 @@
 		<constructor-arg value="hdinguyen" />
 	</bean>
 
+	<import resource="avatar-scheduler.xml" />
+
 </beans>

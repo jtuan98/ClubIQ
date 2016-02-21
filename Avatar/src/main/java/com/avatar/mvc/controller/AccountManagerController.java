@@ -24,6 +24,7 @@ import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
+import com.avatar.mvc.view.RenderingImageView;
 
 @Controller
 @RequestMapping(value = { "/AcctMgr", "/AccountMgr" })
@@ -36,6 +37,7 @@ public class AccountManagerController extends BaseController {
 	private final DateFormat df = new SimpleDateFormat(YYYYMMDDHH24MISS);
 
 	protected JsonView jsonAccoutWithHzRestrictionView = null;
+	private final RenderingImageView imageRenderer = new RenderingImageView();
 
 	@RequestMapping(value = { "/AddClubSubAmenityToAccount" })
 	public ModelAndView addClubAmenityToAccount(
@@ -312,4 +314,5 @@ public class AccountManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
+
 }

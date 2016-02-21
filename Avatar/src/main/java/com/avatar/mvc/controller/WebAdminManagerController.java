@@ -105,8 +105,37 @@ public class WebAdminManagerController extends BaseController {
 		jsonAccountDetailsView.register(MemberAccountDto.class, new AccountDtoMemberDetailsSerializer());
 	}
 
+	@RequestMapping(value = { "/render/MemberPhoto", "/render/memberPhoto" })
+	public ModelAndView renderMemberPhoto(
+			final HttpServletRequest req,
+			@RequestParam(required = false, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "memberId") final String memberId,
+			@RequestParam(required = true, value = "clubId") final String clubId)
+					throws Exception {
+		init();
+		byte[] image = null;
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Check authToken with clubId
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		try {
+			final AccountDto member = accountService.get(memberId);
+			image = member.getPicture() != null? member.getPicture().getPicture(): null;
+		} catch (final Exception e) {
+		}
+		return new ModelAndView(imageRenderer, toModel(image));
+	}
+
 	@RequestMapping(value = { "/SetMemberNotes", "/setMemberNotes" })
-	public ModelAndView sMemberNotes(
+	public ModelAndView setMemberNotes(
 			final Principal principal,
 			final HttpServletRequest req,
 			@RequestParam(required = true, value = "authToken") final String authToken,
@@ -213,5 +242,6 @@ public class WebAdminManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
+
 
 }

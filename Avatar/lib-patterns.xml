@@ -43,6 +43,10 @@
 	<property name="mysqlconnector.version" value="5.1.34" />
 	<property name="mysqlconnector.lib.dir" location="${lib.dir}/mysql/${mysqlconnector.version}" />
 
+	<!-- quartz connector lib versions -->
+	<property name="quartz.version" value="2.2.1" />
+	<property name="quartz.lib.dir" location="${lib.dir}/quartz/${quartz.version}" />
+
 	<!-- Pattern Defs -->
 	<patternset id="mail.lib.pattern">
 		<include name="mail-*.jar" />
@@ -75,6 +79,11 @@
 
 	<patternset id="mysqlconnector.lib.pattern">
 		<include name="mysql-connector-*.jar" />
+	</patternset>
+
+	<patternset id="quartz.lib.pattern">
+		<include name="quartz-*.jar" />
+		<include name="slf4j-*.jar" />
 	</patternset>
 
 	<patternset id="commons.lib.pattern">

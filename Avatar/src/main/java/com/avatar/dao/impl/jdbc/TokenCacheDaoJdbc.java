@@ -14,14 +14,19 @@ import com.avatar.exception.NotFoundException;
 
 @Repository
 public class TokenCacheDaoJdbc extends BaseJdbcDao implements TokenCacheDao {
+	@Override
+	public int cleanupExpiredTokens() {
+		return getJdbcTemplate().update("DELETE FROM TOKEN_CACHE where VALID_TILL < NOW()");
+	}
 
 	@Override
 	public int fetchAccountIdPk(final String token) throws NotFoundException {
 		int userIdPk = 0;
 		try {
-			userIdPk= getJdbcTemplate().queryForObject(
-					"SELECT USER_ID FROM TOKEN_CACHE WHERE token = ? and valid_till > NOW()",
-					Integer.class, token);
+			userIdPk = getJdbcTemplate()
+					.queryForObject(
+							"SELECT USER_ID FROM TOKEN_CACHE WHERE token = ? and valid_till > NOW()",
+							Integer.class, token);
 		} catch (final EmptyResultDataAccessException e) {
 			throw new NotFoundException();
 		}
@@ -29,11 +34,14 @@ public class TokenCacheDaoJdbc extends BaseJdbcDao implements TokenCacheDao {
 	}
 
 	@Override
-	public void persist(final String token, final Date validTill, final AccountDto account)
-			throws NotFoundException {
+	public void persist(final String token, final Date validTill,
+			final AccountDto account) throws NotFoundException {
 		final int idToken = sequencer.nextVal("ID_SEQ");
-		getJdbcTemplate().update("INSERT INTO TOKEN_CACHE (ID, TOKEN, VALID_TILL, USER_ID) values (?, ?, ?, ?)",
-				idToken, token, yyyyMMdd_hh24missDtf.print(validTill.getTime()), account.getId());
+		getJdbcTemplate()
+		.update("INSERT INTO TOKEN_CACHE (ID, TOKEN, VALID_TILL, USER_ID) values (?, ?, ?, ?)",
+				idToken, token,
+				yyyyMMdd_hh24missDtf.print(validTill.getTime()),
+				account.getId());
 	}
 
 	@Override

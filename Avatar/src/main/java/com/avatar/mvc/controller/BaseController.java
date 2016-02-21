@@ -33,6 +33,7 @@ import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
+import com.avatar.mvc.view.RenderingImageView;
 
 public abstract class BaseController {
 	protected static final Privilege[] superUser = new Privilege[] { Privilege.superUser };
@@ -75,6 +76,7 @@ public abstract class BaseController {
 			.forPattern("yyyyMMdd HH:mm:ss");
 
 	protected JsonView jsonView = null;
+	protected final RenderingImageView imageRenderer = new RenderingImageView();
 
 	protected Set<Privilege> getUserRoles(final String authToken)
 			throws NotFoundException, AuthenticationTokenExpiredException,

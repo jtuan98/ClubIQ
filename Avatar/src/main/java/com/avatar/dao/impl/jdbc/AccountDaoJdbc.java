@@ -217,7 +217,7 @@ TruncateDao {
 			throw new NotFoundException(clubIdPk + " not found!");
 		}
 		for (final AccountDto account : accounts) {
-			populateAccountInfo(account, true);
+			populateAccountInfo(account, false);
 			populateOtherAccountInfo(account);
 		}
 		return accounts;
@@ -450,13 +450,6 @@ TruncateDao {
 						.getSubAmenity(subAmenityIdPk));
 			} catch (final EmptyResultDataAccessException e) {
 			}
-		}
-		if ((account.getPicture() != null)
-				&& (account.getPicture().getId() != null)
-				&& account.getPicture().getPicture() == null) {
-			System.out.println("Getting the picture!!!");
-			final ImagePic image = getImage(account.getPicture().getId());
-			account.setPicture(image);
 		}
 
 		// Phase 2: fetch from USER_NOTES

@@ -6,6 +6,8 @@ import com.avatar.dto.account.AccountDto;
 import com.avatar.exception.NotFoundException;
 
 public interface TokenCacheDao {
+	int cleanupExpiredTokens();
+
 	int fetchAccountIdPk (String token) throws NotFoundException;
 
 	void persist (String token, Date validTill, AccountDto account) throws NotFoundException;
