@@ -19,16 +19,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
 import com.avatar.business.NotificationBusiness;
-import com.avatar.dao.AccountDao;
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.account.ActivationToken;
 import com.avatar.exception.NotificationException;
 
 @Service
 public class EmailSendService implements NotificationBusiness {
-	@Resource(name = "accountDaoJdbc")
-	private AccountDao accountDao;
-
 	@Resource(name = "mailSender")
 	private MailSender mailSender;
 
@@ -62,7 +58,7 @@ public class EmailSendService implements NotificationBusiness {
 
 	private String buildLink(final ActivationToken token) {
 		final String retVal = ec2Host + accountActivationLink
-				+ token.getToken();
+				+ (token!= null && token.getToken() != null? token.getToken(): "");
 		return retVal;
 	}
 
@@ -75,11 +71,11 @@ public class EmailSendService implements NotificationBusiness {
 			props.put("mail.smtp.auth", "true");
 			props.put("mail.smtp.starttls.enable", "true");
 			mailServerSession = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
-	            @Override
+				@Override
 				protected PasswordAuthentication getPasswordAuthentication() {
-	                return new PasswordAuthentication(mailSmtpUserId, mailSmtpPassword);
-	             }
-	          });
+					return new PasswordAuthentication(mailSmtpUserId, mailSmtpPassword);
+				}
+			});
 		}
 	}
 
@@ -114,14 +110,24 @@ public class EmailSendService implements NotificationBusiness {
 			msgBody.setText(emailText.replaceAll(":THELINK:",
 					buildLink(account.getToken())));
 			msgBody.setHeader("Content-Type", "text/html");
-			final MimeMultipart multipart = new MimeMultipart();
+			final MimeMultipart multipart = new MimeMultipart("related");
 			multipart.addBodyPart(msgBody);
+
+			//Image of account
+			//			if (account.getPicture() != null && account.getPicture().getPicture() != null) {
+			//				final String cid = Md5Sum.hashString(account.getPicture().getPicture());
+			//				final MimeBodyPart imagePart = new MimeBodyPart();
+			//				final ByteArrayDataSource imageSource = new ByteArrayDataSource(account.getPicture().getPicture(), "image/jpeg");
+			//				message.setDataHandler(new DataHandler(imageSource));
+			//				imagePart.setContentID("<" + cid + ">");
+			//				imagePart.setDisposition(MimeBodyPart.INLINE);
+			//				multipart.addBodyPart(imagePart);
+			//			}
 			message.setContent(multipart);
 
 			// Send message
 			Transport.send(message);
 
-			accountDao.markStatusAsNotified(account.getUserId());
 			retVal = true;
 		} catch (final Exception e) {
 			retVal = false;

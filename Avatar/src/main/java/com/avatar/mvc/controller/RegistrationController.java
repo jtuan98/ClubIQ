@@ -122,7 +122,9 @@ public class RegistrationController extends BaseController {
 			System.out.println("In................activationToken=>"
 					+ activationToken.getToken());
 			accountInfo.setToken(activationToken);
-			emailNotificationService.sendNotification(accountInfo);
+			if (emailNotificationService.sendNotification(accountInfo)) {
+				accountService.markStatusAsNotified(accountInfo.getUserId());
+			}
 			apiResponse = new WsResponse<ActivationToken>(
 					ResponseStatus.success, "Token Sent", null);
 		} catch (final Exception e) {

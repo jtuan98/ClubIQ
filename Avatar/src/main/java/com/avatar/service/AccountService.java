@@ -333,6 +333,11 @@ public class AccountService extends BaseService implements AccountBusiness {
 	}
 
 	@Override
+	public void markStatusAsNotified(final String userId) throws NotFoundException {
+		accountDao.markStatusAsNotified(userId);
+	}
+
+	@Override
 	public void setLinkNumber(final String userId, final String linkNumber,
 			final Date currentDate) throws NotFoundException,
 			InvalidParameterException, AccountSuspendedException {

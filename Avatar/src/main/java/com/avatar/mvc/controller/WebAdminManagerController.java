@@ -3,6 +3,7 @@ package com.avatar.mvc.controller;
 import java.security.Principal;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,14 +13,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.avatar.business.NotificationBusiness;
 import com.avatar.dto.WsResponse;
 import com.avatar.dto.account.AccountDto;
+import com.avatar.dto.account.EmployeeAccountDto;
 import com.avatar.dto.account.MemberAccountDto;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
 import com.avatar.dto.serializer.AccountDtoMemberDetailsSerializer;
+import com.avatar.dto.serializer.AccountDtoMemberNoteHistoryOnlySerializer;
 import com.avatar.dto.serializer.AccountDtoMemberSummarySerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
+import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
 import com.avatar.exception.PermissionDeniedException;
 import com.avatar.mvc.view.JsonView;
@@ -31,6 +36,10 @@ public class WebAdminManagerController extends BaseController {
 		Privilege.staff, Privilege.superUser };
 
 	private JsonView jsonAccountDetailsView;
+	private JsonView jsonAccountNoteHistoryView;
+
+	@Resource(name = "emailSendService")
+	private NotificationBusiness emailSendService;
 
 	@RequestMapping(value = { "/GetMemberDetails", "/getMemberDetails" })
 	public ModelAndView getMemberDetails(
@@ -53,6 +62,14 @@ public class WebAdminManagerController extends BaseController {
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
+		final WsResponse<AccountDto> apiResponse = getMemberDetailsInfo(authToken,
+				memberId, clubId);
+		return new ModelAndView(jsonAccountDetailsView, toModel(apiResponse));
+	}
+
+	private WsResponse<AccountDto> getMemberDetailsInfo(final String authToken,
+			final String memberId, final String clubId)
+					throws InvalidParameterException {
 		WsResponse<AccountDto> apiResponse = null;
 		try {
 			final AccountDto member = accountService.get(memberId);
@@ -62,7 +79,33 @@ public class WebAdminManagerController extends BaseController {
 			apiResponse = new WsResponse<AccountDto>(ResponseStatus.failure,
 					e.getMessage(), null);
 		}
-		return new ModelAndView(jsonAccountDetailsView, toModel(apiResponse));
+		return apiResponse;
+	}
+
+	@RequestMapping(value = { "/GetMemberNoteHistory", "/getMemberNoteHistory" })
+	public ModelAndView getMemberNoteHistory(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "memberId") final String memberId,
+			@RequestParam(required = true, value = "clubId") final String clubId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Check authToken with clubId
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		final WsResponse<AccountDto> apiResponse = getMemberDetailsInfo(authToken,
+				memberId, clubId);
+		return new ModelAndView(jsonAccountNoteHistoryView, toModel(apiResponse));
 	}
 
 	@RequestMapping(value = { "/GetMembers", "/getMembers" })
@@ -94,7 +137,7 @@ public class WebAdminManagerController extends BaseController {
 			apiResponse = new WsResponse<List<AccountDto>>(
 					ResponseStatus.failure, e.getMessage(), null);
 		}
-		return new ModelAndView(jsonView, toModel(apiResponse));
+		return new ModelAndView(jsonAccountDetailsView, toModel(apiResponse));
 	}
 
 	@Override
@@ -103,6 +146,9 @@ public class WebAdminManagerController extends BaseController {
 		jsonAccountDetailsView = super.init(jsonAccountDetailsView);
 		jsonView.register(MemberAccountDto.class, new AccountDtoMemberSummarySerializer());
 		jsonAccountDetailsView.register(MemberAccountDto.class, new AccountDtoMemberDetailsSerializer());
+		jsonAccountNoteHistoryView = super.init(jsonAccountNoteHistoryView);
+		jsonAccountNoteHistoryView.register(MemberAccountDto.class, new AccountDtoMemberNoteHistoryOnlySerializer());
+		jsonAccountNoteHistoryView.register(EmployeeAccountDto.class, new AccountDtoMemberNoteHistoryOnlySerializer());
 	}
 
 	@RequestMapping(value = { "/render/MemberPhoto", "/render/memberPhoto" })
@@ -242,6 +288,28 @@ public class WebAdminManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
+
+	@RequestMapping(value = { "/testSend" })
+	public ModelAndView xzyTestSendMember(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "memberId") final String memberId)
+					throws Exception {
+		init();
+		WsResponse<String> apiResponse = null;
+		try {
+			final AccountDto member = accountService.get(memberId);
+			emailSendService.sendNotification(member);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
+					null);
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 
 
 }

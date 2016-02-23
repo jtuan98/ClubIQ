@@ -41,6 +41,8 @@ public interface AccountBusiness {
 
 	List<AccountDto> getMembers(String clubId) throws NotFoundException, InvalidParameterException;
 
+	void markStatusAsNotified(String userId) throws NotFoundException;
+
 	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException, InvalidParameterException, AccountSuspendedException;
 
 	void setNoticeInfo(String userId, Date currentDate, boolean agreed)throws NotFoundException, InvalidParameterException;
