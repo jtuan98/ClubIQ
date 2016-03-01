@@ -286,6 +286,11 @@ public class AccountDaoTest {
 		accountDaoJdbc.newAccount(account, account.getToken());
 	}
 
+	@Test(expected = NotFoundException.class)
+	public void testNonExistantUserIdPasswd01bNullPassword() throws InvalidParameterException, NotFoundException, InvalidPasswordException {
+		accountDaoJdbc.validateUserIdPasswd("userId", null);
+	}
+
 	@Test(expected = InvalidParameterException.class)
 	public void testPopulateAccountInfo01NullAccount()
 			throws NotFoundException, InvalidParameterException {
@@ -412,6 +417,9 @@ public class AccountDaoTest {
 		status = accountDaoJdbc.getStatus(accountFromDb.getId());
 		assertNotNull(status);
 		assertEquals(AccountStatus.Activated, status);
+		final AccountDto accountFromDbAfterUnsuspend = accountDaoJdbc.fetch(account
+				.getUserId());
+		assertNull(accountFromDbAfterUnsuspend.getSusDate());
 	}
 
 	@Test(expected = InvalidParameterException.class)
@@ -606,6 +614,7 @@ public class AccountDaoTest {
 		accountDaoJdbc.updateNoticeInfo(-1, new Date(), true);
 	}
 
+
 	@Test
 	public void testUpdateNoticeInfo03ExistentUserId() throws NotFoundException,
 	InvalidParameterException {
@@ -626,7 +635,6 @@ public class AccountDaoTest {
 				.getUserId());
 		assertEquals(false, accountFromDb2.isNoticedFlag());
 	}
-
 
 	@Test(expected = InvalidParameterException.class)
 	public void testUpdateUserDeviceId01aNullUserId() throws InvalidParameterException, NotFoundException {
@@ -670,6 +678,7 @@ public class AccountDaoTest {
 		accountDaoJdbc.updateUserTangerineHandSetId("junk", "deviceId", "tangerineHandSetId");
 	}
 
+
 	@Test
 	public void testUpdateUserTangerineHandSetId03ExistentUserId() throws NotFoundException,
 	InvalidParameterException {
@@ -698,15 +707,9 @@ public class AccountDaoTest {
 		assertNull(accountFromDb3.getTangerineHandsetId());
 	}
 
-
 	@Test(expected = InvalidParameterException.class)
 	public void testValidateUserIdPasswd01aNullUserId() throws InvalidParameterException, NotFoundException, InvalidPasswordException {
 		accountDaoJdbc.validateUserIdPasswd(null, "passwd");
-	}
-
-	@Test(expected = InvalidParameterException.class)
-	public void testValidateUserIdPasswd01bNullPassword() throws InvalidParameterException, NotFoundException, InvalidPasswordException {
-		accountDaoJdbc.validateUserIdPasswd("userId", null);
 	}
 
 	@Test(expected = NotFoundException.class)

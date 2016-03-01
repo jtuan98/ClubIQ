@@ -7,6 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import com.avatar.dto.account.AccountDto;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 
 public class AccountDtoMemberDetailsSerializer extends AccountDtoMemberSummarySerializer {
@@ -16,9 +17,12 @@ public class AccountDtoMemberDetailsSerializer extends AccountDtoMemberSummarySe
 			final JsonSerializationContext jsonContext) {
 		if (account != null) {
 			final JsonObject result = (JsonObject) super.serialize(account, type, jsonContext);
+			String noteHistoryFlag = "N";
 			if(CollectionUtils.isNotEmpty(account.getNoteHistory())) {
 				result.add("noteHistory", jsonContext.serialize(account.getNoteHistory()));
+				noteHistoryFlag = "Y";
 			}
+			result.add("noteHistoryFlag", new JsonPrimitive(noteHistoryFlag));
 			return result;
 		}
 		return null;
