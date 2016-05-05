@@ -76,7 +76,8 @@ public class SurveyService extends BaseService implements SurveyBusiness {
 		// Get beaconIdPk
 		final Integer beaconIdPk = beaconDao.getBeaconIdPk(beaconId);
 		// Get amenityIdPk
-		final Integer amenityIdPk = beaconDao.getSubAmenityIdPk(beaconIdPk);
+		final Integer amenityIdPk = beaconDao.getAmenityIdPk(beaconIdPk);
+
 		// Get clubIdPk
 		final Integer clubIdPk = beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk);
 		// Find Last Mon

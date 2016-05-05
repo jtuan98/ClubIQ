@@ -16,6 +16,8 @@
 		<property name="password" value="pa22w0rd" />
         <property name="initialSize" value="20" />
 	    <property name="maxActive" value="30" />
+	    <property name="validationQuery" value="SELECT 1" />
+		<property name="testOnBorrow" value="true" />
 	</bean>
 	 
 	<bean id="transactionManager"

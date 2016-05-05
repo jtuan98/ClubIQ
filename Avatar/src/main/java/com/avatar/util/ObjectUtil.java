@@ -18,6 +18,10 @@ public final class ObjectUtil {
 				final Object value = m.invoke(obj);
 				final String key = m.getName().substring(3,4).toLowerCase() + m.getName().substring(4) ;
 				map.put(key, value);
+			} else if (m.getName().startsWith("is")) {
+				final Object value = m.invoke(obj);
+				final String key = m.getName().substring(2,3).toLowerCase() + m.getName().substring(3) ;
+				map.put(key, value);
 			}
 		}
 		return map;

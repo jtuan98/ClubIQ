@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.avatar.dto.club.SubAmenityDto;
+import com.avatar.dto.club.AmenityDto;
 import com.avatar.dto.survey.Survey;
 import com.avatar.dto.survey.SurveyAnswer;
 import com.avatar.exception.InvalidParameterException;
@@ -142,7 +142,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		final String beaconId = "123";
 		final Integer beaconIdPk = 1;
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(beaconIdPk);
-		given(beaconDao.getSubAmenityIdPk(beaconIdPk)).willThrow(
+		given(beaconDao.getAmenityIdPk(beaconIdPk)).willThrow(
 				NotFoundException.class);
 		service.getNextSurvey(beaconId, memberId);
 	}
@@ -177,17 +177,17 @@ public class SurveyServiceTest extends BaseServiceTest {
 			final boolean surveyIdsSinceBeginningFlag)
 					throws NotFoundException, InvalidParameterException {
 		final Integer beaconIdPk = 1;
-		final Integer subAmenityIdPk = 1;
+		final Integer amenityIdPk = 1;
 		final Integer clubIdPk = 1;
 		final Integer userIdPk = 1;
 		given(beaconDao.getBeaconIdPk(beaconId)).willReturn(beaconIdPk);
-		given(beaconDao.getSubAmenityIdPk(beaconIdPk)).willReturn(subAmenityIdPk);
+		given(beaconDao.getAmenityIdPk(beaconIdPk)).willReturn(amenityIdPk);
 		given(beaconDao.getClubIdPkByBeaconIdPk(beaconIdPk)).willReturn(
 				clubIdPk);
 		given(accountDao.getUserIdPkByUserId(memberId)).willReturn(userIdPk);
 
-		final SubAmenityDto subAmenity = getSubAmenityInstance(subAmenityIdPk, "amenity1");
-		given(clubDao.getSubAmenity(subAmenityIdPk)).willReturn(subAmenity);
+		final AmenityDto amenity = getAmenityInstance(amenityIdPk, "amenity1");
+		given(clubDao.getAmenity(clubIdPk, amenityIdPk)).willReturn(amenity);
 
 		final Set<Integer> surveyPks = new HashSet<Integer>();
 		if (!surveyEmpty) {
@@ -200,7 +200,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 				given(surveyDao.getSurvey(eq(surveyIdPk))).willReturn(survey);
 			}
 		}
-		given(surveyDao.getSurveyConfiguration(subAmenity.getAmenity().getId()))
+		given(surveyDao.getSurveyConfiguration(amenity.getId()))
 		.willReturn(surveyPks);
 
 		final Set<Integer> surveyIdsSincePastMon = new HashSet<Integer>();
@@ -209,7 +209,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 		}
 		final Date lastMon = getLastMonday(1);
 		given(
-				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(subAmenityIdPk),
+				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(amenityIdPk),
 						eq(userIdPk), eq(lastMon))).willReturn(
 								surveyIdsSincePastMon);
 
@@ -218,7 +218,7 @@ public class SurveyServiceTest extends BaseServiceTest {
 			surveyIdsSinceBeginning.add(0);
 		}
 		given(
-				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(subAmenityIdPk),
+				surveyDao.getSurveyIdPkHistory(eq(clubIdPk), eq(amenityIdPk),
 						eq(userIdPk), eq(since))).willReturn(
 								surveyIdsSinceBeginning);
 	}

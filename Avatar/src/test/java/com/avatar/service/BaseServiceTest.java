@@ -27,6 +27,13 @@ public abstract class BaseServiceTest {
 
 	protected AccountDtoBuilder builder;
 
+	protected AmenityDto getAmenityInstance(final Integer amenityIdPk,
+			final String amenityId) {
+		final AmenityDto amenity = new AmenityDto(amenityIdPk);
+		amenity.setAmenityId(amenityId);
+		return amenity;
+	}
+
 	protected SubAmenityDto getSubAmenityInstance(final Integer subAmenityIdPk,
 			final String subAmenityId) {
 		SubAmenityDto subAmenity = null;
