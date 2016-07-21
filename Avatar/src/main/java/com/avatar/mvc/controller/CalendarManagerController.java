@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Controller;
@@ -45,6 +46,9 @@ public class CalendarManagerController extends BaseController {
 
 	protected final DateTimeFormatter yyyyMMddDtf = DateTimeFormat
 			.forPattern("yyyyMMdd");
+
+	protected final DateTimeFormatter ddMMyyyyDtf = DateTimeFormat
+			.forPattern("ddMMyyyy");
 
 	// Phase 2
 	@RequestMapping(value = { "/getBlackOutDates", "/GetBlackOutDates" })
@@ -187,6 +191,54 @@ public class CalendarManagerController extends BaseController {
 					requestedDateTimemmdd).toDate();
 			beaconService.setBlackoutTimes(clubId, subAmenityId,
 					blackoutDateTime, blackOutTime);
+			apiResponse = new WsResponse<String>(ResponseStatus.success, "");
+		} catch (final Exception e) {
+			e.printStackTrace();
+			apiResponse = new WsResponse<String>(ResponseStatus.failure,
+					e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
+	@RequestMapping(value = { "/setBlackOutDateRange", "/SetBlackOutDateRange" })
+	public ModelAndView setCheckInfoDateRange(
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
+			@RequestParam(required = true, value = "blackOutFromDate") final String blackOutFromDateDDMMYYYY,
+			@RequestParam(required = true, value = "blackOutToDate") final String blackOutToDateDDMMYYYY,
+			@RequestParam(required = true, value = "blackOutTime") final String blackOutTime)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, superUserOrStaff);
+			// Verify using authToken to see if user have the perm to edit club
+			// info.
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+
+		WsResponse<String> apiResponse = null;
+		try {
+			//Validate blackOutTime
+			validateBlackoutTimes(blackOutTime);
+			final Date blackoutDateTimeFrom = ddMMyyyyDtf.parseDateTime(
+					blackOutFromDateDDMMYYYY).toDate();
+			final Date blackoutDateTimeTo = DateUtils.addDays(ddMMyyyyDtf.parseDateTime(
+					blackOutToDateDDMMYYYY).toDate(), 1);
+
+			Date blackoutDateTime = blackoutDateTimeFrom;
+			do {
+				beaconService.setBlackoutTimes(clubId, subAmenityId,
+						blackoutDateTime, blackOutTime);
+				blackoutDateTime = DateUtils.addDays(blackoutDateTime, 1);
+			} while (blackoutDateTime.before(blackoutDateTimeTo));
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "");
 		} catch (final Exception e) {
 			e.printStackTrace();
