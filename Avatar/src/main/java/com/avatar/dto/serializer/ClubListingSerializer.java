@@ -20,7 +20,9 @@ public class ClubListingSerializer implements JsonSerializer<ClubDto> {
 			final JsonObject result = new JsonObject();
 			result.add("clubId", new JsonPrimitive(club.getClubId()));
 			result.add("clubName", new JsonPrimitive(club.getClubName()));
-			if (StringUtils.isNotEmpty(club.getState())) {
+			if (StringUtils.isNotEmpty(club.getStateLongName())) {
+				result.add("state", new JsonPrimitive(club.getStateLongName()));
+			} else if (StringUtils.isNotEmpty(club.getState())) {
 				result.add("state", new JsonPrimitive(club.getState()));
 			}
 			if (StringUtils.isNotEmpty(club.getXcoord())) {

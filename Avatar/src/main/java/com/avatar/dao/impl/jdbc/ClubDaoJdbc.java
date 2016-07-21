@@ -31,9 +31,11 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private static String INS_USER_TO_CLUB_PK = "INSERT INTO USER_CLUBS (ID, USER_ID, CLUB_ID) VALUES (?,?,?)";
 
-	private static String GET_CLUB_FROM_PK = "SELECT * FROM CLUBS where ID = ?";
+	private static String GET_CLUB_OUTER_JOIN_STATE = "SELECT C.*, R.STATE_NAME FROM CLUBS C LEFT OUTER JOIN  REF_STATES R ON C.STATE_ABBR = R.STATE_ABBR ";
 
-	private static String GET_CLUB_FROM_CLUBID = "SELECT * FROM CLUBS WHERE CLUBID = ?";
+	private static String GET_CLUB_FROM_PK = GET_CLUB_OUTER_JOIN_STATE + " where ID = ? ";
+
+	private static String GET_CLUB_FROM_CLUBID = GET_CLUB_OUTER_JOIN_STATE + " WHERE CLUBID = ?";
 	private static String GET_CLUB_IMAGE_ID = "SELECT IMAGE_ID FROM CLUBS WHERE ID=?";
 
 	private static String GET_CLUBIDPK = "SELECT ID FROM CLUBS WHERE CLUBID=?";
@@ -57,7 +59,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 
 	private static String GET_EMPLOYEES_FOR_SUBAMENITY_PK = "select USER_ID from AMENITY_EMPLOYEE where CLUB_SUBAMENITY_ID = ? ";
 
-	static private String SEL_CLUBS_BY_USER_IDPK = "SELECT CLUBS.* FROM CLUBS, USERS, USER_ROLES where USERS.ID = ? and HOME_CLUB_ID = CLUBS.ID AND USER_ROLES.USER_ID = USERS.ID and ROLE != '"
+	static private String SEL_CLUBS_BY_USER_IDPK = "SELECT CLUBS.*, R.STATE_NAME FROM CLUBS LEFT OUTER JOIN REF_STATES R on CLUBS.STATE_ABBR = R.STATE_ABBR, USERS, USER_ROLES where USERS.ID = ? and HOME_CLUB_ID = CLUBS.ID AND USER_ROLES.USER_ID = USERS.ID and ROLE != '"
 			+ Privilege.superUser.name() + "'";
 
 	static private String SEL_SUPER_USER_CLUBS_BY_USER_IDPK = "SELECT CLUBS.* FROM CLUBS where exists (select 1 from USERS, USER_ROLES where USERS.ID = ? AND USER_ROLES.USER_ID = USERS.ID and ROLE = '"

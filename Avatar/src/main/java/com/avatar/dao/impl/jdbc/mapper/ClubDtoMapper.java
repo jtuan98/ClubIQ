@@ -23,6 +23,7 @@ public class ClubDtoMapper implements RowMapper<ClubDto> {
 		retVal.setClubName(rs.getString("NAME"));
 		retVal.setPhoneNumber(rs.getString("PHONE_NUMBER"));
 		retVal.setState(rs.getString("STATE_ABBR"));
+		retVal.setStateLongName(rs.getString("STATE_NAME"));
 		retVal.setZipCode(rs.getString("ZIPCODE"));
 		retVal.setClubType(rs.getString("CLUB_TYPE"));
 		retVal.setWebSite(rs.getString("CLUB_WEBSITE"));

@@ -16,6 +16,7 @@ public class ClubDto implements Serializable {
 	protected String zipCode;
 	protected String city;
 	protected String state;
+	protected String stateLongName;
 	protected String phoneNumber;
 	protected String clubType;
 	protected String webSite;
@@ -39,15 +40,12 @@ public class ClubDto implements Serializable {
 	public String getAddress() {
 		return address;
 	}
-
 	public List<AmenityDto> getAmenities() {
 		return amenities;
 	}
-
 	public String getCity() {
 		return city;
 	}
-
 	public String getClubId() {
 		return clubId;
 	}
@@ -82,6 +80,10 @@ public class ClubDto implements Serializable {
 
 	public String getState() {
 		return state;
+	}
+
+	public String getStateLongName() {
+		return stateLongName;
 	}
 
 	public List<SubAmenityDto> getSubAmenities() {
@@ -154,6 +156,10 @@ public class ClubDto implements Serializable {
 
 	public void setState(final String state) {
 		this.state = state;
+	}
+
+	public void setStateLongName(final String stateLongName) {
+		this.stateLongName = stateLongName;
 	}
 
 	public void setSubAmenities(final List<SubAmenityDto> subAmenities) {
