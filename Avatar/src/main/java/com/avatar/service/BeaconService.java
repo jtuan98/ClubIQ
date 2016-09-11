@@ -169,6 +169,19 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 
 	@Override
 	public List<BlackoutTime> getBlackoutTimes(final String clubId,
+			final String subAmenityId, final Date requestedDateFrom, final Date requestedDateTo)
+					throws NotFoundException {
+		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk,
+				subAmenityId);
+		List<BlackoutTime> retVal = null;
+		retVal = reservationDao.fetchBlackoutTimes(clubIdPk, subAmenityIdPk,
+				requestedDateFrom, requestedDateTo);
+		return retVal;
+	}
+
+	@Override
+	public List<BlackoutTime> getBlackoutTimes(final String clubId,
 			final String subAmenityId, final String requestedDateYear,
 			final String requestedDateMonth, final String requestedDateDay)
 					throws NotFoundException {

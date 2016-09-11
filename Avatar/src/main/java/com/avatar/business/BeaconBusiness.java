@@ -36,6 +36,9 @@ public interface BeaconBusiness {
 			String year, String month) throws NotFoundException;
 
 	List<BlackoutTime> getBlackoutTimes(String clubId, String subAmenityId,
+			Date requestedDateFrom, Date requestedDateTo) throws NotFoundException;
+
+	List<BlackoutTime> getBlackoutTimes(String clubId, String subAmenityId,
 			String requestedDateYear, String requestedDateMonth, String requestedDateDay) throws NotFoundException;
 
 	ClubDto getClub(String clubId) throws NotFoundException;

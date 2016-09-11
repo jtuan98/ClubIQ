@@ -1,5 +1,6 @@
 package com.avatar.dao.impl.jdbc;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	private static final String SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID = "SELECT DAY(BLACKOUT_DATE) BLACKOUT_DAY FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = ? and MONTH(BLACKOUT_DATE) = ? ORDER BY 1";
 
 	private static final String SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID = "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = ? and MONTH(BLACKOUT_DATE) = ? and DAY(BLACKOUT_DATE) = ? LIMIT 1";
+	private static final String SEL_BLACKOUT_TIMES_BY_FROMDAY_TODAY_AMENITYID= "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and BLACKOUT_DATE between ? and ?  LIMIT 1";
 
 	private static final String INS_AMENITY_BLACKOUT_TABLE = "INSERT INTO AMENITY_BLACKOUT (ID, CLUB_ID, SUBAMENITY_ID, BLACKOUT_DATE, BLACKOUT_HOURS) values (?,?,?,?,?)";
 
@@ -46,12 +48,30 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 
 	private final BlackoutTimesMapper blackoutTimesMapper = new BlackoutTimesMapper();
 
+	SimpleDateFormat yyyymmddFormatter = new SimpleDateFormat("yyyyMMdd");
+
 	@Override
 	public List<BlackoutDate> fetchBlackoutDates(final int clubIdPk,
 			final int subAmenityIdPk, final String year, final String month) {
 		final List<BlackoutDate> retVal = getJdbcTemplate().query(
 				SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID, blackoutDateMapper,
 				clubIdPk, subAmenityIdPk, year, month);
+		return retVal;
+	}
+
+	@Override
+	public List<BlackoutTime> fetchBlackoutTimes(final int clubIdPk,
+			final int subAmenityIdPk, final Date requestedDateFrom, final Date requestedDateTo) {
+		List<BlackoutTime> retVal = null;
+		try {
+			retVal = getJdbcTemplate().queryForObject(
+					SEL_BLACKOUT_TIMES_BY_FROMDAY_TODAY_AMENITYID,
+					blackoutTimesMapper, clubIdPk, subAmenityIdPk,
+					yyyymmddFormatter.format(requestedDateFrom),
+					yyyymmddFormatter.format(requestedDateTo));
+		} catch (final EmptyResultDataAccessException e) {
+
+		}
 		return retVal;
 	}
 
@@ -113,7 +133,6 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 					subAmenityIdPk, blackoutDate );
 		}
 	}
-
 	@Override
 	@Resource(name = "avatarDataSource")
 	public void setDataSource(final DataSource ds) {

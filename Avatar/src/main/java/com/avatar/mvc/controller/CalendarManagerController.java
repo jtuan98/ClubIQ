@@ -133,6 +133,43 @@ public class CalendarManagerController extends BaseController {
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = { "/getBlackOutTimesDateRange", "/GetBlackOutTimesDateRange" })
+	public ModelAndView getBlackOutTimesDateRange(
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "clubId") final String clubId,
+			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
+			@RequestParam(required = true, value = "blackOutFromDate") final String blackOutFromDateDDMMYYYY,
+			@RequestParam(required = true, value = "blackOutToDate") final String blackOutToDateDDMMYYYY)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<List<BlackoutTime>> apiResponse = null;
+		try {
+			final Date blackoutDateTimeFrom = ddMMyyyyDtf.parseDateTime(
+					blackOutFromDateDDMMYYYY).toDate();
+			final Date blackoutDateTimeTo = DateUtils.addDays(ddMMyyyyDtf.parseDateTime(
+					blackOutToDateDDMMYYYY).toDate(), 1);
+			final List<BlackoutTime> times = beaconService.getBlackoutTimes(
+					clubId, subAmenityId,
+					blackoutDateTimeFrom, blackoutDateTimeTo);
+			apiResponse = new WsResponse<List<BlackoutTime>>(
+					ResponseStatus.success, "", times, "blackoutTimes");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<List<BlackoutTime>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonView, toModel(apiResponse));
+	}
+
 	private String getCurrentDate() {
 		final int currentDate = localCalendar.get(Calendar.DAY_OF_MONTH);
 		return String.valueOf(currentDate);
