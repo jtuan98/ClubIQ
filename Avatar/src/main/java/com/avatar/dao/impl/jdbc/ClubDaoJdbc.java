@@ -62,7 +62,7 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	static private String SEL_CLUBS_BY_USER_IDPK = "SELECT CLUBS.*, R.STATE_NAME FROM CLUBS LEFT OUTER JOIN REF_STATES R on CLUBS.STATE_ABBR = R.STATE_ABBR, USERS, USER_ROLES where USERS.ID = ? and HOME_CLUB_ID = CLUBS.ID AND USER_ROLES.USER_ID = USERS.ID and ROLE != '"
 			+ Privilege.superUser.name() + "'";
 
-	static private String SEL_SUPER_USER_CLUBS_BY_USER_IDPK = "SELECT CLUBS.* FROM CLUBS where exists (select 1 from USERS, USER_ROLES where USERS.ID = ? AND USER_ROLES.USER_ID = USERS.ID and ROLE = '"
+	static private String SEL_SUPER_USER_CLUBS_BY_USER_IDPK = "SELECT CLUBS.*, R.STATE_NAME FROM CLUBS LEFT OUTER JOIN REF_STATES R on CLUBS.STATE_ABBR = R.STATE_ABBR where exists (select 1 from USERS, USER_ROLES where USERS.ID = ? AND USER_ROLES.USER_ID = USERS.ID and ROLE = '"
 			+ Privilege.superUser.name() + "')";
 
 	private static String COUNT_CLUB_PIN = "select count(*) from CLUBS where club_pin = ? ";
