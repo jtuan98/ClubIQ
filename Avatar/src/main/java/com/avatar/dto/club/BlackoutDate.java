@@ -12,4 +12,9 @@ public class BlackoutDate implements Serializable {
 	public void setDate(final String date) {
 		this.date = date;
 	}
+
+	@Override
+	public String toString() {
+		return date;
+	}
 }

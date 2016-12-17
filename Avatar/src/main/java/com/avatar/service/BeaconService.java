@@ -2,6 +2,7 @@ package com.avatar.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -168,13 +169,13 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	}
 
 	@Override
-	public List<BlackoutTime> getBlackoutTimes(final String clubId,
+	public Map<String, List<BlackoutTime>> getBlackoutTimes(final String clubId,
 			final String subAmenityId, final Date requestedDateFrom, final Date requestedDateTo)
 					throws NotFoundException {
 		final int clubIdPk = clubDao.getClubIdPk(clubId);
 		final int subAmenityIdPk = clubDao.getClubSubAmenityIdPk(clubIdPk,
 				subAmenityId);
-		List<BlackoutTime> retVal = null;
+		Map<String, List<BlackoutTime>> retVal = null;
 		retVal = reservationDao.fetchBlackoutTimes(clubIdPk, subAmenityIdPk,
 				requestedDateFrom, requestedDateTo);
 		return retVal;

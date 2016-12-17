@@ -2,6 +2,7 @@ package com.avatar.business;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.avatar.dto.account.AccountDto;
 import com.avatar.dto.club.AmenityDto;
@@ -35,7 +36,7 @@ public interface BeaconBusiness {
 	List<BlackoutDate> getBlackoutDates(String clubId, String subAmenityId,
 			String year, String month) throws NotFoundException;
 
-	List<BlackoutTime> getBlackoutTimes(String clubId, String subAmenityId,
+	Map<String, List<BlackoutTime>> getBlackoutTimes(String clubId, String subAmenityId,
 			Date requestedDateFrom, Date requestedDateTo) throws NotFoundException;
 
 	List<BlackoutTime> getBlackoutTimes(String clubId, String subAmenityId,

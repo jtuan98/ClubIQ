@@ -2,11 +2,14 @@ package com.avatar.dao.impl.jdbc;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
@@ -29,12 +32,12 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 			+ "NO_PERSONS,"
 			+ "RESERVATION_DATE) VALUES (?,?,?,?,?,?,?) ";
 
-	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, c.CLUBID, CSA.DESCRIPTION SUBAMENITY_NAME FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES csa, CLUBS c WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND USER_ID = ? AND RESERVATION_NUMBER = ?";
+	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, c.CLUBID, CSA.DESCRIPTION SUBAMENITY_NAME FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES CSA, CLUBS c WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND USER_ID = ? AND RESERVATION_NUMBER = ?";
 
 	private static final String SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID = "SELECT DAY(BLACKOUT_DATE) BLACKOUT_DAY FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = ? and MONTH(BLACKOUT_DATE) = ? ORDER BY 1";
 
 	private static final String SEL_BLACKOUT_TIMES_BY_MONTH_DAY_AMENITYID = "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = ? and MONTH(BLACKOUT_DATE) = ? and DAY(BLACKOUT_DATE) = ? LIMIT 1";
-	private static final String SEL_BLACKOUT_TIMES_BY_FROMDAY_TODAY_AMENITYID= "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and BLACKOUT_DATE between ? and ?  LIMIT 1";
+	private static final String SEL_BLACKOUT_TIMES_BY_FROMDAY_AMENITYID= "SELECT BLACKOUT_HOURS FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and BLACKOUT_DATE = ?  LIMIT 1";
 
 	private static final String INS_AMENITY_BLACKOUT_TABLE = "INSERT INTO AMENITY_BLACKOUT (ID, CLUB_ID, SUBAMENITY_ID, BLACKOUT_DATE, BLACKOUT_HOURS) values (?,?,?,?,?)";
 
@@ -60,17 +63,18 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	}
 
 	@Override
-	public List<BlackoutTime> fetchBlackoutTimes(final int clubIdPk,
+	public Map<String, List<BlackoutTime>> fetchBlackoutTimes(final int clubIdPk,
 			final int subAmenityIdPk, final Date requestedDateFrom, final Date requestedDateTo) {
-		List<BlackoutTime> retVal = null;
-		try {
-			retVal = getJdbcTemplate().queryForObject(
-					SEL_BLACKOUT_TIMES_BY_FROMDAY_TODAY_AMENITYID,
-					blackoutTimesMapper, clubIdPk, subAmenityIdPk,
-					yyyymmddFormatter.format(requestedDateFrom),
-					yyyymmddFormatter.format(requestedDateTo));
-		} catch (final EmptyResultDataAccessException e) {
+		final Map<String, List<BlackoutTime>> retVal = new LinkedHashMap<String, List<BlackoutTime>>();
+		for(Date requestDate=requestedDateFrom;requestDate.getTime()<=requestedDateTo.getTime();requestDate=DateUtils.addDays(requestDate, 1)) {
+			try {
+				retVal.put(yyyymmddFormatter.format(requestDate), getJdbcTemplate().queryForObject(
+						SEL_BLACKOUT_TIMES_BY_FROMDAY_AMENITYID,
+						blackoutTimesMapper, clubIdPk, subAmenityIdPk,
+						yyyymmddFormatter.format(requestDate)));
+			} catch (final EmptyResultDataAccessException e) {
 
+			}
 		}
 		return retVal;
 	}

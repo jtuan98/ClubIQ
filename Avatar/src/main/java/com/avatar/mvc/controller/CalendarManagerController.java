@@ -3,6 +3,7 @@ package com.avatar.mvc.controller;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.annotation.Resource;
@@ -23,6 +24,7 @@ import com.avatar.dto.club.BlackoutDate;
 import com.avatar.dto.club.BlackoutTime;
 import com.avatar.dto.enums.Privilege;
 import com.avatar.dto.enums.ResponseStatus;
+import com.avatar.dto.serializer.DateSerializer;
 import com.avatar.exception.AuthenticationTokenExpiredException;
 import com.avatar.exception.InvalidParameterException;
 import com.avatar.exception.NotFoundException;
@@ -91,7 +93,6 @@ public class CalendarManagerController extends BaseController {
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
 	}
-
 	// Phase 2
 	@RequestMapping(value = { "/getBlackOutTimes", "/GetBlackOutTimes" })
 	public ModelAndView getBlackOutTimes(
@@ -152,19 +153,19 @@ public class CalendarManagerController extends BaseController {
 					e.getMessage(), null);
 			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
 		}
-		WsResponse<List<BlackoutTime>> apiResponse = null;
+		WsResponse<Map<String, List<BlackoutTime>>> apiResponse = null;
 		try {
 			final Date blackoutDateTimeFrom = ddMMyyyyDtf.parseDateTime(
 					blackOutFromDateDDMMYYYY).toDate();
 			final Date blackoutDateTimeTo = DateUtils.addDays(ddMMyyyyDtf.parseDateTime(
 					blackOutToDateDDMMYYYY).toDate(), 1);
-			final List<BlackoutTime> times = beaconService.getBlackoutTimes(
+			final Map<String, List<BlackoutTime>> times = beaconService.getBlackoutTimes(
 					clubId, subAmenityId,
 					blackoutDateTimeFrom, blackoutDateTimeTo);
-			apiResponse = new WsResponse<List<BlackoutTime>>(
+			apiResponse = new WsResponse<Map<String, List<BlackoutTime>>>(
 					ResponseStatus.success, "", times, "blackoutTimes");
 		} catch (final Exception e) {
-			apiResponse = new WsResponse<List<BlackoutTime>>(
+			apiResponse = new WsResponse<Map<String, List<BlackoutTime>>>(
 					ResponseStatus.failure, e.getMessage(), null);
 		}
 		return new ModelAndView(jsonView, toModel(apiResponse));
@@ -183,6 +184,14 @@ public class CalendarManagerController extends BaseController {
 	private String getCurrentYear() {
 		final int currentYear = localCalendar.get(Calendar.YEAR);
 		return String.valueOf(currentYear);
+	}
+
+	@Override
+	protected void init() {
+		super.init();
+		final DateSerializer dateSerializer = new DateSerializer(yyyyMMddDtf);
+		jsonView.register(Date.class, dateSerializer);
+
 	}
 
 	@RequestMapping(value = { "/setBlackOut", "/SetBlackOut" })
