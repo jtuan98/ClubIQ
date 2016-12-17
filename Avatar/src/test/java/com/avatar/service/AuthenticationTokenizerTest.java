@@ -165,28 +165,27 @@ public class AuthenticationTokenizerTest extends BaseServiceTest {
 		final String password = null;
 		service.getToken(userId, password);
 	}
-	//
-	//	// userId and password are acceptable
-	//	@Test
-	//	public void test008GetToken_Valid() throws NotFoundException,
-	//	AuthenticationTokenExpiredException, InvalidPasswordException,
-	//	InvalidParameterException {
-	//
-	//		// set up
-	//		final String userId = "user";
-	//		final String password = "password";
-	//		final LoadingCache<String, AuthenticationTokenPrincipal> tokenCacheMock = mock(LoadingCache.class);
-	//		ReflectionTestUtils.setField(service, "tokenCache", tokenCacheMock);
-	//
-	//		final AuthenticationTokenPrincipal token = new AuthenticationTokenPrincipal(new HashSet<Privilege>());
-	//
-	//		given(accountDao.validateUserIdPasswd(userId, password)).willReturn(true);
-	//
-	//		// call
-	//		final AuthenticationTokenPrincipal returnedToken = service.getToken(userId, password);
-	//		accountDao
-	//
-	//		// verify
-	//		Assert.assertEquals("Checking token", token, returnedToken);
-	//	}
+
+	// userId and password are acceptable
+	@Test
+	public void test008GetToken_Valid() throws NotFoundException,
+	AuthenticationTokenExpiredException, InvalidPasswordException,
+	InvalidParameterException {
+
+		// set up
+		final String userId = "user";
+		final String password = "password";
+		final LoadingCache<String, AuthenticationTokenPrincipal> tokenCacheMock = mock(LoadingCache.class);
+		ReflectionTestUtils.setField(service, "tokencache", tokenCacheMock);
+
+		final AuthenticationTokenPrincipal token = new AuthenticationTokenPrincipal(new HashSet<Privilege>());
+
+		given(service.getToken(userId, password)).willReturn(token);
+
+		// call
+		final AuthenticationTokenPrincipal returnedToken = service.getToken(userId, password);
+
+		// verify
+		Assert.assertEquals("Checking token", token, returnedToken);
+	}
 }
