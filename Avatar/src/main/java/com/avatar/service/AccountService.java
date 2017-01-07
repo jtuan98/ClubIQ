@@ -313,11 +313,9 @@ public class AccountService extends BaseService implements AccountBusiness {
 
 	// Phase2
 	@Override
-	public CheckInfo getCheckInfo(final String userId, final String availId)
+	public CheckInfo getCheckInfo(final String availId)
 			throws NotFoundException {
-		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
-		final CheckInfo retVal = reservationDao.getReservation(userIdPk,
-				availId);
+		final CheckInfo retVal = reservationDao.getReservation(availId);
 		if (retVal == null) {
 			throw new NotFoundException();
 		}

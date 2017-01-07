@@ -37,7 +37,7 @@ public interface AccountBusiness {
 
 	AccountDto get(String userId) throws NotFoundException, InvalidParameterException;
 
-	CheckInfo getCheckInfo(String userId, String availId) throws NotFoundException;
+	CheckInfo getCheckInfo(String availId) throws NotFoundException;
 
 	List<AccountDto> getMembers(String clubId) throws NotFoundException, InvalidParameterException;
 

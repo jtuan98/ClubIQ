@@ -3,6 +3,8 @@ package com.avatar.dto.club;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.avatar.dto.account.MemberAccountDto;
+
 public class CheckInfo implements Serializable {
 	private Integer id;
 	private String availId;
@@ -11,14 +13,7 @@ public class CheckInfo implements Serializable {
 	private String subAmenityName;
 	private int personNumber;
 	private Date requestedDateTime;// in yyyymmddhh24mi
-
-	public String getSubAmenityId() {
-		return subAmenityId;
-	}
-
-	public String getSubAmenityName() {
-		return subAmenityName;
-	}
+	private MemberAccountDto member;
 
 	public String getAvailId() {
 		return availId;
@@ -26,6 +21,10 @@ public class CheckInfo implements Serializable {
 
 	public Integer getId() {
 		return id;
+	}
+
+	public MemberAccountDto getMember() {
+		return member;
 	}
 
 	public int getPersonNumber() {
@@ -40,12 +39,12 @@ public class CheckInfo implements Serializable {
 		return requestedDateTime;
 	}
 
-	public void setSubAmenityId(final String subAmenityId) {
-		this.subAmenityId = subAmenityId;
+	public String getSubAmenityId() {
+		return subAmenityId;
 	}
 
-	public void setSubAmenityName(final String subAmenityName) {
-		this.subAmenityName = subAmenityName;
+	public String getSubAmenityName() {
+		return subAmenityName;
 	}
 
 	public void setAvailId(final String availId) {
@@ -54,6 +53,10 @@ public class CheckInfo implements Serializable {
 
 	public void setId(final Integer id) {
 		this.id = id;
+	}
+
+	public void setMember(final MemberAccountDto member) {
+		this.member = member;
 	}
 
 	public void setPersonNumber(final int personNumber) {
@@ -66,6 +69,14 @@ public class CheckInfo implements Serializable {
 
 	public void setRequestedDateTime(final Date requestedDateTime) {
 		this.requestedDateTime = requestedDateTime;
+	}
+
+	public void setSubAmenityId(final String subAmenityId) {
+		this.subAmenityId = subAmenityId;
+	}
+
+	public void setSubAmenityName(final String subAmenityName) {
+		this.subAmenityName = subAmenityName;
 	}
 
 }

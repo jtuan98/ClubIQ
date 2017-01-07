@@ -19,7 +19,7 @@ public interface ReservationDao {
 	List<BlackoutTime> fetchBlackoutTimes(int clubIdPk, int subAmenityIdPk,
 			String year, String month, String day);
 
-	CheckInfo getReservation(int userIdPk, String availId) throws NotFoundException;
+	CheckInfo getReservation(String availId) throws NotFoundException;
 
 	Number reserve (int clubIdPk, int subAmenityIdPk, int userIdPk, int numberOfPeople, Date reservationDate, String reservationNumber) throws NotFoundException;
 

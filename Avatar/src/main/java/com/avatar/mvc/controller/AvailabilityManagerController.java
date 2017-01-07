@@ -18,6 +18,7 @@ import com.avatar.dto.serializer.DateSerializer;
 @RequestMapping(value = "/AvailabilityMgr")
 public class AvailabilityManagerController extends BaseController {
 	private static Privilege[] REQUIRED_ROLE = { Privilege.user };
+	private static Privilege[] ADMIN_ROLE = { Privilege.superUser, Privilege.avatarStaff };
 
 	@RequestMapping(value = { "/getAvailInfo", "/GetAvailInfo" })
 	public ModelAndView getCheckInfoByAvailId(
@@ -27,10 +28,7 @@ public class AvailabilityManagerController extends BaseController {
 		init();
 		WsResponse<CheckInfo> apiResponse = null;
 		try {
-			final AccountDto account = authenticationService.getAccount(authToken);
-			final String userId = account.getUserId();
-			final CheckInfo checkInfo = accountService.getCheckInfo(userId,
-					availId);
+			final CheckInfo checkInfo = accountService.getCheckInfo(availId);
 			apiResponse = new WsResponse<CheckInfo>(ResponseStatus.success, "",
 					checkInfo);
 		} catch (final Exception e) {

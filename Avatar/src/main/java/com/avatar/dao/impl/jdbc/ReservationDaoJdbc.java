@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
@@ -32,7 +33,7 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 			+ "NO_PERSONS,"
 			+ "RESERVATION_DATE) VALUES (?,?,?,?,?,?,?) ";
 
-	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, c.CLUBID, CSA.DESCRIPTION SUBAMENITY_NAME FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES CSA, CLUBS c WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND USER_ID = ? AND RESERVATION_NUMBER = ?";
+	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, c.CLUBID, CSA.DESCRIPTION SUBAMENITY_NAME, U.USERID, U.MOBILE_NUMBER FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES CSA, CLUBS c, USERS U WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND U.ID = UR.USER_ID AND UR.RESERVATION_NUMBER = ?";
 
 	private static final String SEL_BLACKOUT_DAYS_BY_MONTH_AMENITYID = "SELECT DAY(BLACKOUT_DATE) BLACKOUT_DAY FROM AMENITY_BLACKOUT where club_id = ? and SUBAMENITY_ID = ? and YEAR(BLACKOUT_DATE) = ? and MONTH(BLACKOUT_DATE) = ? ORDER BY 1";
 
@@ -72,7 +73,7 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 						SEL_BLACKOUT_TIMES_BY_FROMDAY_AMENITYID,
 						blackoutTimesMapper, clubIdPk, subAmenityIdPk,
 						yyyymmddFormatter.format(requestDate)));
-			} catch (final EmptyResultDataAccessException e) {
+			} catch (final DataAccessException e) {
 
 			}
 		}
@@ -97,13 +98,12 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	}
 
 	@Override
-	public CheckInfo getReservation(final int userIdPk, final String availId)
+	public CheckInfo getReservation(final String availId)
 			throws NotFoundException {
 		CheckInfo retVal = null;
 		try {
 			retVal = getJdbcTemplate().queryForObject(
-					SEL_RESERVATION_BY_AVAILID, reservationMapper, userIdPk,
-					availId);
+					SEL_RESERVATION_BY_AVAILID, reservationMapper, availId);
 		} catch (final EmptyResultDataAccessException e) {
 		}
 		return retVal;
