@@ -116,6 +116,7 @@ TruncateDao {
 		final int userIdPk = getUserIdPkByUserId(userId);
 		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_DEACTIVATION,
 				yyyyMMdd_hh24missDtf.print(deactivateDate.getTime()), userIdPk);
+		addNote(userIdPk, "Member cancel subscription", new DateTime(deactivateDate));
 	}
 
 	@Override
@@ -209,15 +210,26 @@ TruncateDao {
 	@Override
 	public List<AccountDto> getMembers(final int clubIdPk)
 			throws NotFoundException, InvalidParameterException {
-		List<AccountDto> accounts = null;
+		return getMembers(clubIdPk, null, false);
+	}
 
-		accounts = getJdbcTemplate().query(AccountDaoSql.SEL_USERS_BY_CLUBID,
-				accountDtoMapper, clubIdPk);
+
+	@Override
+	public List<AccountDto> getMembers(final int clubIdPk, final DateTime fromDate, final boolean populatePicture)
+			throws NotFoundException, InvalidParameterException {
+		List<AccountDto> accounts = null;
+		if (fromDate != null) {
+			accounts = getJdbcTemplate().query(AccountDaoSql.SEL_USERS_BY_CLUBID_BY_DATE,
+					accountDtoMapper, clubIdPk, yyyyMMdd_hh24missDtf.print(fromDate));
+		} else {
+			accounts = getJdbcTemplate().query(AccountDaoSql.SEL_USERS_BY_CLUBID,
+					accountDtoMapper, clubIdPk);
+		}
 		if (accounts == null) {
 			throw new NotFoundException(clubIdPk + " not found!");
 		}
 		for (final AccountDto account : accounts) {
-			populateAccountInfo(account, false);
+			populateAccountInfo(account, populatePicture);
 			populateOtherAccountInfo(account);
 		}
 		return accounts;

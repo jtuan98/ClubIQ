@@ -43,6 +43,9 @@ public interface AccountDao {
 	List<AccountDto> getMembers(int clubIdPk) throws NotFoundException,
 	InvalidParameterException;
 
+	List<AccountDto> getMembers(int clubIdPk, DateTime fromDate, boolean populatePicture) throws NotFoundException,
+	InvalidParameterException;
+
 	AccountStatus getPreviousStatus(int userIdPk);
 
 	AccountStatus getStatus(int userIdPk);

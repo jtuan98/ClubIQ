@@ -140,6 +140,40 @@ public class WebAdminManagerController extends BaseController {
 		return new ModelAndView(jsonAccountDetailsView, toModel(apiResponse));
 	}
 
+	@RequestMapping(value = { "/GetMembersByDate", "/getMembersByDate" })
+	public ModelAndView getMembersByDate(
+			final Principal principal,
+			final HttpServletRequest req,
+			@RequestParam(required = true, value = "authToken") final String authToken,
+			@RequestParam(required = true, value = "date") final String fromDateyyyymmddhh24miss,
+			@RequestParam(required = false, value = "clubId") final String clubId)
+					throws Exception {
+		init();
+		WsResponse<String> apiDeniedResponse = null;
+		try {
+			validateUserRoles(authToken, REQUIRED_ROLE);
+			// Check authToken with clubId
+			validateStaffInClub(authenticationService.getAccount(authToken),
+					clubId);
+		} catch (NotFoundException | AuthenticationTokenExpiredException
+				| PermissionDeniedException e) {
+			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,
+					e.getMessage(), null);
+			return new ModelAndView(jsonView, toModel(apiDeniedResponse));
+		}
+		WsResponse<List<AccountDto>> apiResponse = null;
+		try {
+			final List<AccountDto> members = accountService.getMembers(clubId, yyyyMMdd_hh24missDtf
+					.parseDateTime(fromDateyyyymmddhh24miss), true);
+			apiResponse = new WsResponse<List<AccountDto>>(
+					ResponseStatus.success, "", members, "Users");
+		} catch (final Exception e) {
+			apiResponse = new WsResponse<List<AccountDto>>(
+					ResponseStatus.failure, e.getMessage(), null);
+		}
+		return new ModelAndView(jsonAccountDetailsView, toModel(apiResponse));
+	}
+
 	@Override
 	protected void init() {
 		super.init();

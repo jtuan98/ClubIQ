@@ -41,6 +41,8 @@ public interface AccountBusiness {
 
 	List<AccountDto> getMembers(String clubId) throws NotFoundException, InvalidParameterException;
 
+	List<AccountDto> getMembers(String clubId, DateTime fromDate, boolean populatePicture) throws NotFoundException, InvalidParameterException;
+
 	void markStatusAsNotified(String userId) throws NotFoundException;
 
 	void setLinkNumber(String userId, String linkNumber, Date currentDate)throws NotFoundException, InvalidParameterException, AccountSuspendedException;

@@ -87,6 +87,8 @@ public final class AccountDaoSql {
 
 	public static final String SEL_USERS_BY_CLUBID = "select * from USERS where HOME_CLUB_ID = ? and MOBILE_IND = 'Y' ";
 
+	public static final String SEL_USERS_BY_CLUBID_BY_DATE = SEL_USERS_BY_CLUBID + " and CREATE_DATE >= ? ";
+
 	public static final String GET_PREV_STATUS_BY_IDPK = "select PREVIOUS_STATUS from USERS where id = ?";
 
 	public static String VALIDATE_USERID_PASSWD = " SELECT count(*) from USERS where ID = ? and PASSWORD = ? and STATUS = '"
