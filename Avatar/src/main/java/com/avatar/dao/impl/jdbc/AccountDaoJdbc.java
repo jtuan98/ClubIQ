@@ -116,7 +116,8 @@ TruncateDao {
 		final int userIdPk = getUserIdPkByUserId(userId);
 		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_DEACTIVATION,
 				yyyyMMdd_hh24missDtf.print(deactivateDate.getTime()), userIdPk);
-		addNote(userIdPk, "Member cancel subscription", new DateTime(deactivateDate));
+		addNote(userIdPk, "Member cancel subscription", new DateTime(
+				deactivateDate));
 	}
 
 	@Override
@@ -198,11 +199,9 @@ TruncateDao {
 		String linkNumber = null;
 
 		try {
-			linkNumber = getJdbcTemplate()
-					.queryForObject(
-							AccountDaoSql.SEL_LINKPHONE_BY_USERID,
-							String.class, id);
-		} catch(final EmptyResultDataAccessException e) {
+			linkNumber = getJdbcTemplate().queryForObject(
+					AccountDaoSql.SEL_LINKPHONE_BY_USERID, String.class, id);
+		} catch (final EmptyResultDataAccessException e) {
 		}
 		return linkNumber;
 	}
@@ -213,17 +212,31 @@ TruncateDao {
 		return getMembers(clubIdPk, null, false);
 	}
 
-
 	@Override
-	public List<AccountDto> getMembers(final int clubIdPk, final DateTime fromDate, final boolean populatePicture)
-			throws NotFoundException, InvalidParameterException {
+	public List<AccountDto> getMembers(final int clubIdPk,
+			final DateTime fromDate, final boolean populatePicture)
+					throws NotFoundException, InvalidParameterException {
 		List<AccountDto> accounts = null;
 		if (fromDate != null) {
-			accounts = getJdbcTemplate().query(AccountDaoSql.SEL_USERS_BY_CLUBID_BY_DATE,
-					accountDtoMapper, clubIdPk, yyyyMMdd_hh24missDtf.print(fromDate));
+			if (clubIdPk > 0) {
+				accounts = getJdbcTemplate().query(
+						AccountDaoSql.SEL_USERS_BY_CLUBID_BY_DATE,
+						accountDtoMapper, clubIdPk,
+						yyyyMMdd_hh24missDtf.print(fromDate));
+			} else {
+				accounts = getJdbcTemplate().query(
+						AccountDaoSql.SEL_USERS_BY_DATE, accountDtoMapper,
+						yyyyMMdd_hh24missDtf.print(fromDate));
+			}
 		} else {
-			accounts = getJdbcTemplate().query(AccountDaoSql.SEL_USERS_BY_CLUBID,
-					accountDtoMapper, clubIdPk);
+			if (clubIdPk > 0) {
+				accounts = getJdbcTemplate().query(
+						AccountDaoSql.SEL_USERS_BY_CLUBID, accountDtoMapper,
+						clubIdPk);
+			} else {
+				accounts = getJdbcTemplate().query(AccountDaoSql.SEL_USERS,
+						accountDtoMapper);
+			}
 		}
 		if (accounts == null) {
 			throw new NotFoundException(clubIdPk + " not found!");
@@ -239,7 +252,8 @@ TruncateDao {
 	public AccountStatus getPreviousStatus(final int userIdPk) {
 		final String status = getJdbcTemplate().queryForObject(
 				AccountDaoSql.GET_PREV_STATUS_BY_IDPK, String.class, userIdPk);
-		return StringUtils.isNotEmpty(status)? AccountStatus.valueOf(status): null;
+		return StringUtils.isNotEmpty(status) ? AccountStatus.valueOf(status)
+				: null;
 	}
 
 	@Override
@@ -392,8 +406,9 @@ TruncateDao {
 
 	@Override
 	public void populateAccountInfo(final AccountDto account,
-			final boolean includePicture) throws InvalidParameterException, NotFoundException {
-		verify(account,  "Checking account");
+			final boolean includePicture) throws InvalidParameterException,
+			NotFoundException {
+		verify(account, "Checking account");
 		// Fetch link phone number
 		account.setLinkMobileNumber(getLinkPhoneNumber(account.getId()));
 
@@ -485,10 +500,12 @@ TruncateDao {
 	}
 
 	@Override
-	public void undeactivate(final String userId) throws NotFoundException, InvalidParameterException {
+	public void undeactivate(final String userId) throws NotFoundException,
+	InvalidParameterException {
 		verify(userId, "User ID cannot be null");
 		final int userIdPk = getUserIdPkByUserId(userId);
-		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_UNDEACTIVATION, userIdPk);
+		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_UNDEACTIVATION,
+				userIdPk);
 	}
 
 	@Override
@@ -517,10 +534,11 @@ TruncateDao {
 
 	@Override
 	public void updateAccountInfoPicture(final String userId,
-			final String pictureBase64) throws NotFoundException, InvalidParameterException {
+			final String pictureBase64) throws NotFoundException,
+			InvalidParameterException {
 		verify(userId, "User ID cannot be null");
 		verify(pictureBase64, "pictureBase64 cannot be null");
-		//Must verify that user id exists.
+		// Must verify that user id exists.
 		final int userIdPk = getUserIdPkByUserId(userId);
 		final byte[] picture = Base64.decodeBase64(pictureBase64);
 		try {
@@ -550,19 +568,24 @@ TruncateDao {
 		verify(token, "Token cannot be null");
 		verify(token.getId(), "Token ID cannot be null");
 		verify(token.getToken(), "Token string cannot be null");
-		verify(token.getExpirationDate(), "Token expiration date cannot be null");
-		final int rowUpdated = getJdbcTemplate().update(AccountDaoSql.UPD_TOKEN, token.getToken(),
+		verify(token.getExpirationDate(),
+				"Token expiration date cannot be null");
+		final int rowUpdated = getJdbcTemplate().update(
+				AccountDaoSql.UPD_TOKEN, token.getToken(),
 				token.getExpirationDate(), token.getId());
 		if (rowUpdated == 0) {
-			throw new NotFoundException("Token id " + token.getId() + " not found.");
+			throw new NotFoundException("Token id " + token.getId()
+					+ " not found.");
 		}
 	}
 
 	@Override
 	public void updateNoticeInfo(final int userIdPk, final Date currentDate,
-			final boolean agreed) throws NotFoundException, InvalidParameterException {
+			final boolean agreed) throws NotFoundException,
+			InvalidParameterException {
 		verify(currentDate, "currentDate cannot be null");
-		final int rowUpdated = getJdbcTemplate().update(AccountDaoSql.UPDATE_NOTICE_INFO, currentDate,
+		final int rowUpdated = getJdbcTemplate().update(
+				AccountDaoSql.UPDATE_NOTICE_INFO, currentDate,
 				agreed ? "Y" : "N", userIdPk);
 		if (rowUpdated == 0) {
 			throw new NotFoundException("id " + userIdPk + " not found.");

@@ -152,9 +152,6 @@ public class WebAdminManagerController extends BaseController {
 		WsResponse<String> apiDeniedResponse = null;
 		try {
 			validateUserRoles(authToken, REQUIRED_ROLE);
-			// Check authToken with clubId
-			validateStaffInClub(authenticationService.getAccount(authToken),
-					clubId);
 		} catch (NotFoundException | AuthenticationTokenExpiredException
 				| PermissionDeniedException e) {
 			apiDeniedResponse = new WsResponse<String>(ResponseStatus.denied,

@@ -332,7 +332,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public List<AccountDto> getMembers(final String clubId, final DateTime fromDate, final boolean populatePicture)
 			throws NotFoundException, InvalidParameterException {
-		final int clubIdPk = clubDao.getClubIdPk(clubId);
+		final int clubIdPk = StringUtils.isEmpty(clubId)? 0: clubDao.getClubIdPk(clubId);
 		final List<AccountDto> retVal = accountDao.getMembers(clubIdPk, fromDate, populatePicture);
 		return retVal;
 	}
