@@ -16,6 +16,7 @@ public class SubAmenityDtoMapper implements RowMapper<SubAmenityDto> {
 		retVal.setId(rs.getInt("ID"));
 		retVal.setDescription(rs.getString("DESCRIPTION"));
 		retVal.setSubAmenityId(rs.getString("SUBAMENITYID"));
+		retVal.setOrdering(rs.getInt("ORDERING"));
 		retVal.setHoursOfOperation(rs.getString("HOURS_OPERATION_NOTE"));
 		retVal.setBody(rs.getString("BODY_TEXT"));
 		retVal.setHeader(rs.getString("HEADER_TEXT"));

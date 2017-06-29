@@ -14,6 +14,7 @@ public class SubAmenityDto implements Serializable {
 	protected String header;
 	protected String headerSecondary;
 	protected String body;
+	protected int ordering;
 
 	public SubAmenityDto() {
 	}
@@ -60,6 +61,10 @@ public class SubAmenityDto implements Serializable {
 
 	public ImagePic getImage() {
 		return image;
+	}
+
+	public int getOrdering() {
+		return ordering;
 	}
 
 	public String getSubAmenityId() {
@@ -113,8 +118,11 @@ public class SubAmenityDto implements Serializable {
 		this.image = image;
 	}
 
+	public void setOrdering(final int ordering) {
+		this.ordering = ordering;
+	}
+
 	public void setSubAmenityId(final String subamenityId) {
 		this.subAmenityId = subamenityId;
 	}
-
 }

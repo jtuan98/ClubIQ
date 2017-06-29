@@ -174,7 +174,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public void cancelMembership(final String userId, final Date currentDate)
 			throws NotFoundException {
-		accountDao.deactivate(userId, currentDate);
+		accountDao.deactivate(userId, currentDate, true);
 	}
 
 	@Override

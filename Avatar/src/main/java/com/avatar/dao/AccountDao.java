@@ -26,6 +26,9 @@ public interface AccountDao {
 	void deactivate(String userId, Date deacticateDate)
 			throws NotFoundException;
 
+	void deactivate(String userId, Date deacticateDate, boolean cancelNoteFlag)
+			throws NotFoundException;
+
 	AccountDto fetch(Integer userIdPk) throws NotFoundException,
 	InvalidParameterException;
 

@@ -113,11 +113,19 @@ TruncateDao {
 	@Override
 	public void deactivate(final String userId, final Date deactivateDate)
 			throws NotFoundException {
+		deactivate(userId, deactivateDate, false);
+	}
+
+	@Override
+	public void deactivate(final String userId, final Date deactivateDate, final boolean cancelNoteFlag)
+			throws NotFoundException {
 		final int userIdPk = getUserIdPkByUserId(userId);
 		getJdbcTemplate().update(AccountDaoSql.UPD_ACCOUNT_DEACTIVATION,
 				yyyyMMdd_hh24missDtf.print(deactivateDate.getTime()), userIdPk);
-		addNote(userIdPk, "Member cancel subscription", new DateTime(
-				deactivateDate));
+		if (cancelNoteFlag) {
+			addNote(userIdPk, "Member cancel subscription", new DateTime(
+					deactivateDate));
+		}
 	}
 
 	@Override
