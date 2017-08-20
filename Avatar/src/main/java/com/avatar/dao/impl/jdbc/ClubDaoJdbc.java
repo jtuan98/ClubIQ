@@ -45,10 +45,10 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	private static String SEL_AMENITY_BY_CLUBID_IDPK = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? and ID = ? ORDER BY ORDERING";
 	private static String SEL_AMENITIES_BY_CLUBID = "SELECT * FROM CLUB_AMENITIES WHERE CLUB_ID = ? ORDER BY ORDERING";
 	private static String SEL_SUBAMENITY_PK_BY_SUBAMENITYID = "SELECT ID FROM CLUB_SUB_AMENITIES WHERE CLUB_ID= ? AND SUBAMENITYID = ? ";
-	private static String SEL_SUBAMENITY_BY_PK = "SELECT CA.*, AT.AMENITYID, AT.DESCRIPTION AMENITY_NAME FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_ID ";
+	private static String SEL_SUBAMENITY_BY_PK = "SELECT CA.*, AT.AMENITYID, AT.DESCRIPTION AMENITY_NAME, AT.ORDERING AMENITY_ORDERING FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.ID = ? and AT.ID = CA.AMENITY_ID ";
 	private static String GET_SUBAMENITY_IMAGE_ID = "SELECT IMAGE_ID FROM CLUB_SUB_AMENITIES WHERE ID=?";
 
-	private static String SEL_SUBAMENITIES_BY_CLUBID = "SELECT CA.*, AT.AMENITYID, AT.DESCRIPTION AMENITY_NAME FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.CLUB_ID = ? and AT.ID = CA.AMENITY_ID ";
+	private static String SEL_SUBAMENITIES_BY_CLUBID = "SELECT CA.*, AT.AMENITYID, AT.DESCRIPTION AMENITY_NAME, AT.ORDERING AMENITY_ORDERING FROM CLUB_SUB_AMENITIES CA, CLUB_AMENITIES AT WHERE CA.CLUB_ID = ? and AT.ID = CA.AMENITY_ID ";
 
 	private static String SEL_SUBAMENITIES_BY_CLUBID_AMENITYID = SEL_SUBAMENITIES_BY_CLUBID
 			+ " AND UPPER(AT.AMENITYID)=UPPER(?) ORDER BY ORDERING";
@@ -309,6 +309,12 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 	@Override
 	public List<ClubDto> getClubsByState(final String state,
 			final ClubListingSortBy orderByClause) {
+		return getClubsByState(state, orderByClause, true);
+	}
+
+	@Override
+	public List<ClubDto> getClubsByState(final String state,
+			final ClubListingSortBy orderByClause, final boolean retrieveImagesFlag) {
 		List<ClubDto> clubs = null;
 		if (StringUtils.isEmpty(state)) {
 			clubs = getJdbcTemplate().query(
@@ -318,7 +324,9 @@ public class ClubDaoJdbc extends BaseJdbcDao implements ClubDao {
 					buildClubsByStateSql(state, orderByClause), clubDtoMapper,
 					state, state);
 		}
-		populateClubDetails(clubs);
+		if (retrieveImagesFlag) {
+			populateClubDetails(clubs);
+		}
 		return clubs;
 	}
 

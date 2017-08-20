@@ -56,6 +56,8 @@ public interface BeaconBusiness {
 
 	List<ClubDto> getClubs(String state, ClubListingSortBy clubname) throws NotFoundException;
 
+	List<ClubDto> getClubs(String state, ClubListingSortBy clubname, boolean retrieveImagesFlag) throws NotFoundException;
+
 	List<SubAmenityDto> getSubAmenities(String clubId) throws NotFoundException;
 
 	String getSubAmenityBodyText(String clubId, String amenityId) throws NotFoundException;

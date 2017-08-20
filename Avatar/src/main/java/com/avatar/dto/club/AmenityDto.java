@@ -10,6 +10,7 @@ public class AmenityDto implements Serializable {
 	protected String description; //
 	protected String header;
 	protected ImagePic image;
+	protected int ordering;
 
 	public AmenityDto() {
 	}
@@ -42,6 +43,10 @@ public class AmenityDto implements Serializable {
 		return image;
 	}
 
+	public int getOrdering() {
+		return ordering;
+	}
+
 	public void makeCopy(final AmenityDto theCopy) {
 		id = theCopy.id;
 		amenityId = theCopy.amenityId;
@@ -67,5 +72,9 @@ public class AmenityDto implements Serializable {
 
 	public void setImage(final ImagePic image) {
 		this.image = image;
+	}
+
+	public void setOrdering(final int ordering) {
+		this.ordering = ordering;
 	}
 }

@@ -283,7 +283,7 @@ public class ClubManagerController extends BaseController {
 		WsResponse<List<ClubDto>> apiResponse = null;
 		try {
 			final List<ClubDto> clubs = beaconService.getClubs(state,
-					ClubListingSortBy.clubName);
+					ClubListingSortBy.clubName, false);
 			apiResponse = new WsResponse<List<ClubDto>>(ResponseStatus.success,
 					"", clubs, "clubList");
 		} catch (final Exception e) {
@@ -304,7 +304,7 @@ public class ClubManagerController extends BaseController {
 		WsResponse<List<ClubDto>> apiResponse = null;
 		try {
 			final List<ClubDto> clubs = beaconService.getClubs(state,
-					ClubListingSortBy.state);
+					ClubListingSortBy.state, false);
 			apiResponse = new WsResponse<List<ClubDto>>(ResponseStatus.success,
 					"", clubs, "clubList");
 		} catch (final Exception e) {

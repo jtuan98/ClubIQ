@@ -16,6 +16,7 @@ public class AmenityMapper implements RowMapper<AmenityDto>{
 		retVal.setDescription(rs.getString("DESCRIPTION"));
 		retVal.setAmenityId(rs.getString("AMENITYID"));
 		retVal.setHeader(rs.getString("HEADER"));
+		retVal.setOrdering(rs.getInt("ORDERING"));
 		return retVal;
 	}
 

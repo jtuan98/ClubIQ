@@ -21,6 +21,7 @@ public class SubAmenityListingSerializer implements JsonSerializer<SubAmenityDto
 			result.add("amenityId", new JsonPrimitive(subamenity.getAmenity().getAmenityId()));
 			result.add("aemnityName", new JsonPrimitive(subamenity.getAmenity().getDescription()));
 			result.add("subAmenityOrdering", new JsonPrimitive(subamenity.getOrdering()));
+			result.add("aemnityOrdering", new JsonPrimitive(subamenity.getAmenity().getOrdering()));
 
 			return result;
 		}

@@ -43,6 +43,9 @@ public class AccountDtoMemberSummarySerializer implements JsonSerializer<Account
 			if (account.getHomeClub() != null && StringUtils.isNotEmpty(account.getHomeClub().getClubId())) {
 				result.add("homeClub", new JsonPrimitive(account.getHomeClub().getClubName()));
 			}
+			if (account.getStatus() != null) {
+				result.add("status", new JsonPrimitive(account.getStatus().name()));
+			}
 			return result;
 		}
 		return null;

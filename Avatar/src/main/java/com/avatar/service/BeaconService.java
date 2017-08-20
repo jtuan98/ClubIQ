@@ -245,10 +245,17 @@ public class BeaconService extends BaseService implements BeaconBusiness {
 	@Override
 	public List<ClubDto> getClubs(final String state,
 			final ClubListingSortBy orderByClause) throws NotFoundException {
-		final List<ClubDto> retVal = clubDao.getClubsByState(state,
-				orderByClause);
-		return retVal;
+		return getClubs(state, orderByClause, true);
 	}
+
+	@Override
+	public List<ClubDto> getClubs(final String state, final ClubListingSortBy orderByClause, final boolean retrieveImagesFlag) throws NotFoundException{
+		final List<ClubDto> retVal = clubDao.getClubsByState(state,
+				orderByClause, retrieveImagesFlag);
+		return retVal;
+
+	}
+
 
 	@Override
 	public List<SubAmenityDto> getSubAmenities(final String clubId)
