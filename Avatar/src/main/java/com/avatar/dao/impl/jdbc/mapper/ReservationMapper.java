@@ -24,6 +24,9 @@ public class ReservationMapper implements RowMapper<CheckInfo> {
 		if (StringUtils.isNotEmpty(rs.getString("RESERVATION_DATE"))) {
 			retVal.setRequestedDateTime(rs.getTimestamp("RESERVATION_DATE"));
 		}
+		if (StringUtils.isNotEmpty(rs.getString("RESERVATION_TODATE"))) {
+			retVal.setRequestedToDate(rs.getTimestamp("RESERVATION_TODATE"));
+		}
 		final MemberAccountDto member = new MemberAccountDto();
 		member.setUserId(rs.getString("USERID"));
 		member.setMobileNumber(rs.getString("MOBILE_NUMBER"));

@@ -13,6 +13,7 @@ public class CheckInfo implements Serializable {
 	private String subAmenityName;
 	private int personNumber;
 	private Date requestedDateTime;// in yyyymmddhh24mi
+	private Date requestedToDate;// in yyyymmdd
 	private MemberAccountDto member;
 
 	public String getAvailId() {
@@ -37,6 +38,10 @@ public class CheckInfo implements Serializable {
 
 	public Date getRequestedDateTime() {
 		return requestedDateTime;
+	}
+
+	public Date getRequestedToDate() {
+		return requestedToDate;
 	}
 
 	public String getSubAmenityId() {
@@ -71,6 +76,10 @@ public class CheckInfo implements Serializable {
 		this.requestedDateTime = requestedDateTime;
 	}
 
+	public void setRequestedToDate(final Date requestedToDate) {
+		this.requestedToDate = requestedToDate;
+	}
+
 	public void setSubAmenityId(final String subAmenityId) {
 		this.subAmenityId = subAmenityId;
 	}
@@ -78,5 +87,4 @@ public class CheckInfo implements Serializable {
 	public void setSubAmenityName(final String subAmenityName) {
 		this.subAmenityName = subAmenityName;
 	}
-
 }

@@ -21,7 +21,7 @@ public interface ReservationDao {
 
 	CheckInfo getReservation(String availId) throws NotFoundException;
 
-	Number reserve (int clubIdPk, int subAmenityIdPk, int userIdPk, int numberOfPeople, Date reservationDate, String reservationNumber) throws NotFoundException;
+	Number reserve (int clubIdPk, int subAmenityIdPk, int userIdPk, int numberOfPeople, Date reservationDate, String reservationNumber, Date requestedToDateTime) throws NotFoundException;
 
 	void setBlackoutTimes(int clubIdPk, int subAmenityIdPk,
 			Date requestedDate, String blackoutTimes);

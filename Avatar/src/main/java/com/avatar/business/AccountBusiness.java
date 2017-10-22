@@ -58,7 +58,7 @@ public interface AccountBusiness {
 
 	//Returns availId
 	String updateCheckInfo(String userId, String requestedClubId,
-			String subAmenityId, int numOfPerson, Date requestedDateTime) throws NotFoundException;
+			String subAmenityId, int numOfPerson, Date requestedDateTime, Date requestedToDateTime) throws NotFoundException;
 
 	// SNS token is different than the activation Token.
 	void updateUserTangerineHandSetId(String userId, String deviceId,

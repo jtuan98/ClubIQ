@@ -31,7 +31,8 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 			+ "CLUB_ID,"
 			+ "SUBAMENITY_ID,"
 			+ "NO_PERSONS,"
-			+ "RESERVATION_DATE) VALUES (?,?,?,?,?,?,?) ";
+			+ "RESERVATION_DATE,"
+			+ "RESERVATION_TODATE) VALUES (?,?,?,?,?,?,?,?) ";
 
 	private static final String SEL_RESERVATION_BY_AVAILID = "SELECT UR.*, CSA.SUBAMENITYID, c.CLUBID, CSA.DESCRIPTION SUBAMENITY_NAME, U.USERID, U.MOBILE_NUMBER FROM USER_RESERVATIONS UR, CLUB_SUB_AMENITIES CSA, CLUBS c, USERS U WHERE c.id = UR.CLUB_ID and UR.SUBAMENITY_ID = CSA.ID AND U.ID = UR.USER_ID AND UR.RESERVATION_NUMBER = ?";
 
@@ -112,12 +113,12 @@ public class ReservationDaoJdbc extends BaseJdbcDao implements ReservationDao {
 	@Override
 	public Number reserve(final int clubIdPk, final int subAmenityIdPk,
 			final int userIdPk, final int numberOfPeople,
-			final Date reservationDate, final String reservationNumber)
+			final Date reservationDate, final String reservationNumber, final Date requestedToDateTime)
 					throws NotFoundException {
 		final int idReservationAdded = sequencer.nextVal("ID_SEQ");
 		getJdbcTemplate().update(INS_RESERVATION, idReservationAdded,
 				reservationNumber, userIdPk, clubIdPk, subAmenityIdPk,
-				numberOfPeople, reservationDate);
+				numberOfPeople, reservationDate, requestedToDateTime);
 		return idReservationAdded;
 	}
 

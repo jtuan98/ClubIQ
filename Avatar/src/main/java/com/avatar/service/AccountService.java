@@ -397,7 +397,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 	@Override
 	public String updateCheckInfo(final String userId,
 			final String requestedClubId, final String subAmenityId,
-			final int numOfPerson, final Date requestedDateTime)
+			final int numOfPerson, final Date requestedDateTime, final Date requestedToDateTime)
 					throws NotFoundException {
 		final int userIdPk = accountDao.getUserIdPkByUserId(userId);
 		final int clubIdPk = clubDao.getClubIdPk(requestedClubId);
@@ -405,7 +405,7 @@ public class AccountService extends BaseService implements AccountBusiness {
 				subAmenityId);
 		final String reservationId = UUID.randomUUID().toString();
 		reservationDao.reserve(clubIdPk, subAmenityIdPk, userIdPk, numOfPerson,
-				requestedDateTime, reservationId);
+				requestedDateTime, reservationId, requestedToDateTime);
 		return reservationId;
 	}
 

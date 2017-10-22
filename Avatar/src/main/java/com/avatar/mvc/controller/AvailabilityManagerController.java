@@ -2,6 +2,7 @@ package com.avatar.mvc.controller;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,7 +53,8 @@ public class AvailabilityManagerController extends BaseController {
 			@RequestParam(required = true, value = "requestedClubId") final String requestedClubId,
 			@RequestParam(required = true, value = "subAmenityId") final String subAmenityId,
 			@RequestParam(required = true, value = "numOfPerson", defaultValue = "1") final int numOfPerson,
-			@RequestParam(required = true, value = "requestedDateTime") final String requestedDateTimeyyyymmddhh24mi)
+			@RequestParam(required = true, value = "requestedDateTime") final String requestedDateTimeyyyymmddhh24mi,
+			@RequestParam(required = false, value = "requestedToDate") final String requestedToDateTimeyyyymmdd)
 					throws Exception {
 		init();
 		WsResponse<String> apiResponse = null;
@@ -60,9 +62,13 @@ public class AvailabilityManagerController extends BaseController {
 		final String userId = account.getUserId();
 		try {
 			final Date requestedDateTime = yyyyMMdd_hh24missDtf.parseDateTime(requestedDateTimeyyyymmddhh24mi).toDate();
+			Date requestedToDateTime = null;
+			if (StringUtils.isNotEmpty(requestedToDateTimeyyyymmdd)) {
+				requestedToDateTime = yyyyMMddDtf.parseDateTime(requestedToDateTimeyyyymmdd).toDate();
+			}
 			final String availId = accountService.updateCheckInfo(userId,
 					requestedClubId, subAmenityId, numOfPerson,
-					requestedDateTime);
+					requestedDateTime, requestedToDateTime);
 			apiResponse = new WsResponse<String>(ResponseStatus.success, "",
 					availId, "availId");
 		} catch (final Exception e) {
